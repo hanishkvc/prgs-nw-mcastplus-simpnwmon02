@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                         iMCDelay[i] += 1;
                     } catch (IOException e) {
                         iMCDelay[i] += 1;
+                        break;
                     }
                 }
                 publishProgress();
@@ -114,6 +115,16 @@ public class MainActivity extends AppCompatActivity {
                 }
                 tvTemp.setBackgroundColor(tColor);
             }
+        }
+
+        @Override
+        protected void onCancelled(Void aVoid) {
+            Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -134,10 +145,15 @@ public class MainActivity extends AppCompatActivity {
         btnMCastAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sMCName[iNumMCasts] = etMCastName.getText().toString();
-                sMCGroup[iNumMCasts] = etMCastGroup.getText().toString();
-                iMCPort[iNumMCasts] = Integer.getInteger(etMCastPort.getText().toString());
-                iNumMCasts += 1;
+                try {
+                    sMCName[iNumMCasts] = etMCastName.getText().toString();
+                    sMCGroup[iNumMCasts] = etMCastGroup.getText().toString();
+                    //iMCPort[iNumMCasts] = Integer.getInteger(etMCastPort.getText().toString());
+                    iMCPort[iNumMCasts] = 3333;
+                    iNumMCasts += 1;
+                } catch (Exception e) {
+
+                }
                 Toast.makeText(getApplicationContext(),"NumOfItems="+iNumMCasts, Toast.LENGTH_SHORT).show();
             }
         });
