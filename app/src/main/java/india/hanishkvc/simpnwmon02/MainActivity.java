@@ -73,11 +73,13 @@ public class MainActivity extends AppCompatActivity {
     AdapterLVMCasts adapterLVMCasts = new AdapterLVMCasts();
 
     private class MCastMonitor extends AsyncTask<Void, Void, Void> {
+
+        int iNumMCastsSaved = iNumMCasts;
         MulticastSocket[] socks = new MulticastSocket[10];
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                for(int i = 0; i < iNumMCasts; i++) {
+                for(int i = 0; i < iNumMCastsSaved; i++) {
                     socks[i] = new MulticastSocket(iMCPort[i]);
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].setSoTimeout(50);
@@ -89,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             while (!isCancelled()) {
-                for(int i = 0; i < iNumMCasts; i++) {
+                for(int i = 0; i < iNumMCastsSaved; i++) {
                     try {
                         socks[i].receive(pkt);
                         iMCDelay[i] = 0;
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(Void... values) {
-            for (int i = 0; i < iNumMCasts; i++) {
+            for (int i = 0; i < iNumMCastsSaved; i++) {
                 TextView tvTemp = ((TextView)lvMCasts.getChildAt(0).findViewById(R.id.tvName));
                 int tColor = 0x00800080;
                 if (iMCDelay[i] > 100) {
