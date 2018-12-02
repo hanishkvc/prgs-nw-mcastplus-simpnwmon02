@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             }
             ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+":"+iMCPort[position]);
+            ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]);
             return convertView;
         }
     }

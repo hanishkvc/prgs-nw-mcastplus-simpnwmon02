@@ -10,6 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="128dp"
+        android:layout_weight="1"
         android:text="TVName" />
 
     <TextView
@@ -17,6 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="128dp"
+        android:layout_weight="1"
         android:text="TVDelay" />
 
     <TextView
@@ -24,5 +26,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="128dp"
+        android:layout_weight="2"
         android:text="TVInfo" />
 </LinearLayout>
