@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             }
             ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
+            ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("0");
             ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
             return convertView;
         }
@@ -102,13 +104,16 @@ public class MainActivity extends AppCompatActivity {
             while (!isCancelled()) {
                 for(int i = 0; i < iNumMCastsSaved; i++) {
                     try {
+                        //TODO: Clear the old content from pkt, as the same pkt is used across channels
+                        // as well as across packets of the same channel.
                         socks[i].receive(pkt);
                         iMCDelay[i] = 0;
                         try {
                             ByteBuffer bb = ByteBuffer.wrap(pkt.getData(), iMCSeqOffset[i], 4);
+                            bb.order(ByteOrder.LITTLE_ENDIAN);
                             iSeqNum[i] = bb.getInt();
                         } catch (Exception e) {
-                            iSeqNum[i] = 9999;
+                            iSeqNum[i] = 987654321;
                         }
                     } catch (SocketTimeoutException e) {
                         iMCDelay[i] += 1;
