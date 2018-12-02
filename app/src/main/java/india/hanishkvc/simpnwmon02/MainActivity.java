@@ -1,5 +1,12 @@
 package india.hanishkvc.simpnwmon02;
 
+/*
+    Simple Network Monitor 02
+    v20181202IST0409
+    HanishKVC, GPL, 2018
+ */
+
+
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
