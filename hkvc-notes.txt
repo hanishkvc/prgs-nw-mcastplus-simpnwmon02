@@ -12,3 +12,18 @@ on other channels.
 
 And see the impact of the same practically.
 
+NOTE1:
+
+Supports max of 10 MCast channels i.e MCastGroupIP+Port.
+It waits for upto 50msecs before timing out wrt each channel being monitored.
+So if there are 10 channels being monitored and 9 of them don't have any data
+then it will take 450+timeToReadDataFromTheSingleChannelWIthData msecs for 
+each packet of data read from the alive channel.
+
+So this will work for monitoring upto 10 channels with activitiy of 1 or 2
+packets per second.
+
+However if the data throughput is heavy, then monitor that single channel only 
+to avoid lossing data packets due to overflow wrt buffers allocated by kernel
+for the channel.
+ 
