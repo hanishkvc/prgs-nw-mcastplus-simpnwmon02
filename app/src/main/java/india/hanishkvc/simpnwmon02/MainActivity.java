@@ -110,10 +110,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Void... values) {
             for (int i = 0; i < iNumMCastsSaved; i++) {
-                TextView tvTemp = ((TextView)lvMCasts.getChildAt(0).findViewById(R.id.tvName));
-                int tColor = 0x00800080;
+                TextView tvTemp = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
+                int tColor = 0x00808080;
                 if (iMCDelay[i] > 100) {
-                    tColor = 0x80000080;
+                    tColor = 0x80800000;
                 }
                 tvTemp.setBackgroundColor(tColor);
             }
