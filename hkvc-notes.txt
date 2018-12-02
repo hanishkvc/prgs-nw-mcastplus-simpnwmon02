@@ -1,0 +1,14 @@
+
+
+v20181202
+============
+
+TODO1:
+
+Verify if any buffering occurs if lot of packets are recieved on a given channel. 
+Because in a given loop I read only 1 packet from a given channel and wait for 
+timeout or reception (again read only 1 packet, even if more are there) of data 
+on other channels.
+
+And see the impact of the same practically.
+
