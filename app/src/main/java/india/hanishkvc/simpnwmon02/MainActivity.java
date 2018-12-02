@@ -20,6 +20,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
 
         int iNumMCastsSaved = iNumMCasts;
         MulticastSocket[] socks = new MulticastSocket[10];
+        int[] iSeqNum = new int[10];
+
         @Override
         protected Void doInBackground(Void... voids) {
             try {
@@ -101,6 +104,12 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         socks[i].receive(pkt);
                         iMCDelay[i] = 0;
+                        try {
+                            ByteBuffer bb = ByteBuffer.wrap(pkt.getData(), iMCSeqOffset[i], 4);
+                            iSeqNum[i] = bb.getInt();
+                        } catch (Exception e) {
+                            iSeqNum[i] = 9999;
+                        }
                     } catch (SocketTimeoutException e) {
                         iMCDelay[i] += 1;
                     } catch (IOException e) {
@@ -128,12 +137,14 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
                     TextView tvTempDelay = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDelay));
+                    TextView tvSeqNum = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvSeqNum));
                     int tColor = 0x00808080;
                     if (iMCDelay[i] > iMCRedDelay[i]) {
                         tColor = 0x80800000;
                     }
                     tvTempName.setBackgroundColor(tColor);
                     tvTempDelay.setText(Integer.toString(iMCDelay[i]));
+                    tvSeqNum.setText(Integer.toString(iSeqNum[i]));
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.getMessage(), Toast.LENGTH_LONG).show();
                 }
