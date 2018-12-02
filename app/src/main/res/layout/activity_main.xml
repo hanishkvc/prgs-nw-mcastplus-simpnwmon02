@@ -22,14 +22,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="128dp"
+                android:layout_weight="1"
                 android:text="SimpNwMon02" />
 
             <Button
                 android:id="@+id/btnStartMon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxWidth="256dp"
+                android:layout_weight="1"
                 android:text="StartMon" />
 
         </LinearLayout>
