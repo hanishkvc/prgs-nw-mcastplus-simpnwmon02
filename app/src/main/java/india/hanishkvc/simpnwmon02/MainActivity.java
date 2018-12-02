@@ -150,13 +150,13 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     sMCName[iNumMCasts] = etMCastName.getText().toString();
                     sMCGroup[iNumMCasts] = etMCastGroup.getText().toString();
-                    //iMCPort[iNumMCasts] = Integer.getInteger(etMCastPort.getText().toString());
-                    iMCPort[iNumMCasts] = 3333;
+                    iMCPort[iNumMCasts] = Integer.parseInt(etMCastPort.getText().toString());
                     iNumMCasts += 1;
                 } catch (Exception e) {
 
                 }
                 Toast.makeText(getApplicationContext(),"NumOfItems="+iNumMCasts, Toast.LENGTH_SHORT).show();
+                lvMCasts.requestLayout();
             }
         });
 
