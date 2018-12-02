@@ -104,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 publishProgress();
             }
+
+            try {
+                for (int i = 0; i < iNumMCastsSaved; i++) {
+                    socks[i].leaveGroup(InetAddress.getByName(sMCGroup[i]));
+                    socks[i].close();
+                }
+            } catch (Exception e) {
+                return null;
+            }
             return null;
         }
 
