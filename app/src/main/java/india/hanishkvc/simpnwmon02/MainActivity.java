@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     EditText etMCastGroup;
     EditText etMCastPort;
     EditText etMCastRedDelay;
+    EditText etMCastSeqOffset;
     ListView lvMCasts;
     Button btnMCastAdd;
     Button btnStartMon;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     int[] iMCPort = new int[10];
     int[] iMCDelay = new int[10];
     int[] iMCRedDelay = new int[10];
+    int[] iMCSeqOffset = new int[10];
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             }
             ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , "+iMCRedDelay[position]);
+            ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
             return convertView;
         }
     }
@@ -160,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         etMCastGroup = findViewById(R.id.etMCastGroup);
         etMCastPort = findViewById(R.id.etMCastPort);
         etMCastRedDelay = findViewById(R.id.etMCastRedDelay);
+        etMCastSeqOffset = findViewById(R.id.etMCastSeqOffset);
         lvMCasts = findViewById(R.id.lvMCasts);
         lvMCasts.setAdapter(adapterLVMCasts);
         btnMCastAdd = findViewById(R.id.btnMCastAdd);
@@ -172,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
                     sMCGroup[iNumMCasts] = etMCastGroup.getText().toString();
                     iMCPort[iNumMCasts] = Integer.parseInt(etMCastPort.getText().toString());
                     iMCRedDelay[iNumMCasts] = Integer.parseInt(etMCastRedDelay.getText().toString());
+                    iMCSeqOffset[iNumMCasts] = Integer.parseInt(etMCastSeqOffset.getText().toString());
                     iNumMCasts += 1;
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "Error: Check Values are fine", Toast.LENGTH_LONG).show();
