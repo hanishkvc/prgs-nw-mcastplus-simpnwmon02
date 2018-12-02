@@ -23,6 +23,7 @@ import java.net.SocketTimeoutException;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MCASTTIMEOUT = 50;
     EditText etMCastName;
     EditText etMCastGroup;
     EditText etMCastPort;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 for(int i = 0; i < iNumMCastsSaved; i++) {
                     socks[i] = new MulticastSocket(iMCPort[i]);
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
-                    socks[i].setSoTimeout(50);
+                    socks[i].setSoTimeout(MCASTTIMEOUT);
                     iMCDelay[i] = 0;
                 }
             } catch (Exception e) {
