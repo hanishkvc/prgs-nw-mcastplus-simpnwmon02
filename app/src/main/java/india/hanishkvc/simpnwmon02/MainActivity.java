@@ -167,9 +167,10 @@ public class MainActivity extends AppCompatActivity {
                 if (taskMon == null) {
                     taskMon = new MCastMonitor();
                     taskMon.execute();
-                    Toast.makeText(getApplicationContext(), "StartMon", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "StartMon: "+iNumMCasts, Toast.LENGTH_SHORT).show();
                 } else {
                     taskMon.cancel(true);
+                    taskMon = null;
                     Toast.makeText(getApplicationContext(), "StopMon", Toast.LENGTH_SHORT).show();
                 }
             }
