@@ -110,12 +110,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Void... values) {
             for (int i = 0; i < iNumMCastsSaved; i++) {
-                TextView tvTemp = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
-                int tColor = 0x00808080;
-                if (iMCDelay[i] > 100) {
-                    tColor = 0x80800000;
+                try {
+                    TextView tvTemp = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
+                    int tColor = 0x00808080;
+                    if (iMCDelay[i] > 100) {
+                        tColor = 0x80800000;
+                    }
+                    tvTemp.setBackgroundColor(tColor);
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate caught exception", Toast.LENGTH_LONG).show();
                 }
-                tvTemp.setBackgroundColor(tColor);
             }
         }
 
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                     iMCPort[iNumMCasts] = Integer.parseInt(etMCastPort.getText().toString());
                     iNumMCasts += 1;
                 } catch (Exception e) {
-
+                    Toast.makeText(getApplicationContext(), "Error: Check Values are fine", Toast.LENGTH_LONG).show();
                 }
                 Toast.makeText(getApplicationContext(),"NumOfItems="+iNumMCasts, Toast.LENGTH_SHORT).show();
                 lvMCasts.requestLayout();
