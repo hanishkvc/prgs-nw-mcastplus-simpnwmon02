@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 convertView = getLayoutInflater().inflate(R.layout.listitem_mcast, null);
             }
             ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
+            ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
             ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+":"+iMCPort[position]);
             return convertView;
         }
@@ -120,14 +121,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Void... values) {
             for (int i = 0; i < iNumMCastsSaved; i++) {
                 try {
-                    TextView tvTemp = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
+                    TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
+                    TextView tvTempDelay = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDelay));
                     int tColor = 0x00808080;
                     if (iMCDelay[i] > 100) {
                         tColor = 0x80800000;
                     }
-                    tvTemp.setBackgroundColor(tColor);
+                    tvTempName.setBackgroundColor(tColor);
+                    tvTempDelay.setText(Integer.toString(iMCDelay[i]));
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate caught exception", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
         }
