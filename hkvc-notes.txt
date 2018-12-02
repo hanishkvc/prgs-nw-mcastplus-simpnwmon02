@@ -26,4 +26,24 @@ packets per second.
 However if the data throughput is heavy, then monitor that single channel only 
 to avoid lossing data packets due to overflow wrt buffers allocated by kernel
 for the channel.
- 
+
+NOTE2:
+
+ONe can specify different delay counts wrt when to treat delay in data activity
+on a channel to be critical to mark it red. If only 1 channel is monitored,
+then the delay count corresponds to delaycount*50msec of delay. However if more
+than 1 channel is monitored, then the delay count to time mapping is more
+complicated and dependent on data activity in realtime across all those
+channels. Rather the delaycount can be treated as how many times the
+applications checked to see if there is any data for a given channel and then
+timedout.
+
+TODO2: If I account timeout wrt other channels also, for each given channel,
+then the delay count mirrors the actual time lost more accurately, and the 
+delaycount*50msec can still be valid to a great extent. However the current
+logic doesn't do this. Also this logic would assume that any channel which
+reads data instead of leading to a timeout, will read the data at a very fast
+rate which is in the vicinity of within a msec or so. Else the delta between
+the actual delaycount based time calculation and real wall clock time will
+increase.
+
