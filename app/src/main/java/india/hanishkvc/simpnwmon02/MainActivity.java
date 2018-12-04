@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
             ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("0");
+            ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("0");
+            ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("0");
             ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
             return convertView;
         }
