@@ -1,14 +1,29 @@
 
+v20181204
+============
+
+Now If only one mcast channel is being monitored, then it assumes that it could
+be a high throughtput channel, so it will update the progress wrt monitoring in
+the gui, only once every 10 iterations thro the monitoring loop.
+
+However if more than 1 channel is being monitored at the same time, then as the
+program currently doesn't provide a efficient way of handling this case, it
+assumes that the channels are not high througput ones, and or the user is not
+interested in getting accurate detailed monitored info like num of disjoint
+seqNums noticied or num of times the seqNum jumped backwards etc. So it updates
+the progress of monitoring in the GUI for each iteration thro the monitoring
+loop.
+
 
 v20181202
 ============
 
 TODO1:
 
-Verify if any buffering occurs if lot of packets are recieved on a given channel. 
-Because in a given loop I read only 1 packet from a given channel and wait for 
-timeout or reception (again read only 1 packet, even if more are there) of data 
-on other channels.
+Verify if any buffering occurs if lot of packets are recieved on a given
+channel.  Because in a given loop I read only 1 packet from a given channel and
+wait for timeout or reception (again read only 1 packet, even if more are
+there) of data on other channels.
 
 And see the impact of the same practically.
 
