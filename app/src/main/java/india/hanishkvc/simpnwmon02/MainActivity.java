@@ -130,8 +130,8 @@ public class MainActivity extends AppCompatActivity {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
                                 }
+                                iSeqNum[i] = curSeq;
                             }
-                            iSeqNum[i] = curSeq;
                         } catch (Exception e) {
                             iSeqNum[i] = 987654321;
                         }
