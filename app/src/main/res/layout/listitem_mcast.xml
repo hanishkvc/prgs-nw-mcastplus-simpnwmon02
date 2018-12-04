@@ -30,6 +30,22 @@
         android:text="TVSeqNum" />
 
     <TextView
+        android:id="@+id/tvDisjointSeqs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="128dp"
+        android:layout_weight="1"
+        android:text="TVDisjointSeqs" />
+
+    <TextView
+        android:id="@+id/tvOlderSeqs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="128dp"
+        android:layout_weight="1"
+        android:text="TVOlderSeqs" />
+
+    <TextView
         android:id="@+id/tvInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

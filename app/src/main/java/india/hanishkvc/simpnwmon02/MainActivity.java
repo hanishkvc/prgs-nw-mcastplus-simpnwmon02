@@ -170,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
                     TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
                     TextView tvTempDelay = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDelay));
                     TextView tvSeqNum = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvSeqNum));
+                    TextView tvDisjointSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDisjointSeqs));
+                    TextView tvOlderSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvOlderSeqs));
                     int tColor = 0x00808080;
                     if (iMCDelay[i] > iMCRedDelay[i]) {
                         tColor = 0x80800000;
@@ -177,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
                     tvTempName.setBackgroundColor(tColor);
                     tvTempDelay.setText(Integer.toString(iMCDelay[i]));
                     tvSeqNum.setText(Integer.toString(iSeqNum[i]));
+                    tvDisjointSeqs.setText(Integer.toString(iDisjointSeqs[i]));
+                    tvOlderSeqs.setText(Integer.toString(iOlderSeqs[i]));
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.getMessage(), Toast.LENGTH_LONG).show();
                 }
