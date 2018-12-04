@@ -79,12 +79,20 @@ public class MainActivity extends AppCompatActivity {
             if (convertView == null) {
                 convertView = getLayoutInflater().inflate(R.layout.listitem_mcast, null);
             }
-            ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
-            ((TextView) convertView.findViewById(R.id.tvDelay)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("0");
-            ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
+            if (position == 0) {
+                ((TextView) convertView.findViewById(R.id.tvName)).setText("MCName");
+            } else {
+                ((TextView) convertView.findViewById(R.id.tvName)).setText(sMCName[position]);
+            }
+            ((TextView) convertView.findViewById(R.id.tvDelay)).setText("DelayCnt");
+            ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("SeqNum");
+            ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("DisjointSeqs");
+            ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("OlderSeqs");
+            if (position == 0) {
+                ((TextView) convertView.findViewById(R.id.tvInfo)).setText("MCInfo");
+            } else {
+                ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
+            }
             return convertView;
         }
     }
@@ -103,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             int iRunCnt = 0;
             try {
-                for(int i = 0; i < iNumMCastsSaved; i++) {
+                for(int i = 1; i < iNumMCastsSaved; i++) {
                     socks[i] = new MulticastSocket(iMCPort[i]);
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].setSoTimeout(MCASTTIMEOUT);
@@ -117,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             while (!isCancelled()) {
-                for(int i = 0; i < iNumMCastsSaved; i++) {
+                for(int i = 1; i < iNumMCastsSaved; i++) {
                     try {
                         //TODO: Clear the old content from pkt, as the same pkt is used across channels
                         // as well as across packets of the same channel.
@@ -146,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 iRunCnt += 1;
-                if (iNumMCasts == 1) {
+                if (iNumMCastsSaved == 2) {
                     if ((iRunCnt%10) == 0) {
                         publishProgress();
                     }
@@ -156,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                for (int i = 0; i < iNumMCastsSaved; i++) {
+                for (int i = 1; i < iNumMCastsSaved; i++) {
                     socks[i].leaveGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].close();
                 }
@@ -168,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(Void... values) {
-            for (int i = 0; i < iNumMCastsSaved; i++) {
+            for (int i = 1; i < iNumMCastsSaved; i++) {
                 try {
                     TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
                     TextView tvTempDelay = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDelay));
@@ -216,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
         lvMCasts = findViewById(R.id.lvMCasts);
         lvMCasts.setAdapter(adapterLVMCasts);
         btnMCastAdd = findViewById(R.id.btnMCastAdd);
+
+        iNumMCasts = 1; // 0th location of MCasts lv is to be treated as header and skipped, so to help with same this is done
 
         btnMCastAdd.setOnClickListener(new View.OnClickListener() {
             @Override
