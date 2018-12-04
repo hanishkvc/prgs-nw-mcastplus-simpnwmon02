@@ -93,15 +93,20 @@ public class MainActivity extends AppCompatActivity {
         int iNumMCastsSaved = iNumMCasts;
         MulticastSocket[] socks = new MulticastSocket[10];
         int[] iSeqNum = new int[10];
+        int[] iDisjointSeqs = new int[10];
+        int[] iOlderSeqs = new int[10];
 
         @Override
         protected Void doInBackground(Void... voids) {
+            int iRunCnt = 0;
             try {
                 for(int i = 0; i < iNumMCastsSaved; i++) {
                     socks[i] = new MulticastSocket(iMCPort[i]);
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].setSoTimeout(MCASTTIMEOUT);
                     iMCDelay[i] = 0;
+                    iDisjointSeqs[i] = 0;
+                    iOlderSeqs[i] = 0;
                 }
             } catch (Exception e) {
                 return null;
@@ -118,7 +123,15 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             ByteBuffer bb = ByteBuffer.wrap(pkt.getData(), iMCSeqOffset[i], 4);
                             bb.order(ByteOrder.LITTLE_ENDIAN);
-                            iSeqNum[i] = bb.getInt();
+                            int curSeq = bb.getInt();
+                            if (iSeqNum[i] >= curSeq) {
+                                iOlderSeqs[i] += 1;
+                            } else {
+                                if ((curSeq-iSeqNum[i]) != 1) {
+                                    iDisjointSeqs[i] += 1;
+                                }
+                            }
+                            iSeqNum[i] = curSeq;
                         } catch (Exception e) {
                             iSeqNum[i] = 987654321;
                         }
@@ -129,7 +142,14 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
-                publishProgress();
+                iRunCnt += 1;
+                if (iNumMCasts == 1) {
+                    if ((iRunCnt%10) == 0) {
+                        publishProgress();
+                    }
+                } else {
+                    publishProgress();
+                }
             }
 
             try {
