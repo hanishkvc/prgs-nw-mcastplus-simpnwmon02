@@ -33,6 +33,7 @@ import java.nio.ByteOrder;
 public class MainActivity extends AppCompatActivity {
 
     private static final int MCASTTIMEOUT = 50;
+    private static final int MAXMCASTS = 10;
     EditText etMCastName;
     EditText etMCastGroup;
     EditText etMCastPort;
@@ -43,12 +44,12 @@ public class MainActivity extends AppCompatActivity {
     Button btnStartMon;
 
     int iNumMCasts = 0;
-    String[] sMCName = new String[10];
-    String[] sMCGroup = new String[10];
-    int[] iMCPort = new int[10];
-    int[] iMCDelay = new int[10];
-    int[] iMCRedDelay = new int[10];
-    int[] iMCSeqOffset = new int[10];
+    String[] sMCName = new String[MAXMCASTS];
+    String[] sMCGroup = new String[MAXMCASTS];
+    int[] iMCPort = new int[MAXMCASTS];
+    int[] iMCDelay = new int[MAXMCASTS];
+    int[] iMCRedDelay = new int[MAXMCASTS];
+    int[] iMCSeqOffset = new int[MAXMCASTS];
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -93,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
     private class MCastMonitor extends AsyncTask<Void, Void, Void> {
 
         int iNumMCastsSaved = iNumMCasts;
-        MulticastSocket[] socks = new MulticastSocket[10];
-        int[] iSeqNum = new int[10];
-        int[] iDisjointSeqs = new int[10];
-        int[] iOlderSeqs = new int[10];
+        MulticastSocket[] socks = new MulticastSocket[MAXMCASTS];
+        int[] iSeqNum = new int[MAXMCASTS];
+        int[] iDisjointSeqs = new int[MAXMCASTS];
+        int[] iOlderSeqs = new int[MAXMCASTS];
 
         @Override
         protected Void doInBackground(Void... voids) {
