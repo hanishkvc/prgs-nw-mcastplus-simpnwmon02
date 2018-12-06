@@ -30,6 +30,14 @@
         android:text="TVSeqNum" />
 
     <TextView
+        android:id="@+id/tvPktCnt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="128dp"
+        android:layout_weight="1"
+        android:text="TVPktCnt" />
+
+    <TextView
         android:id="@+id/tvDisjointSeqs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

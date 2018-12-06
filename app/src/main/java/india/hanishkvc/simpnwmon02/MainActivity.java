@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02
-    v20181204IST2250
+    v20181206IST1340
     HanishKVC, GPL, 2018
  */
 
@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             }
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("DelayCnt");
             ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("SeqNum");
+            ((TextView) convertView.findViewById(R.id.tvPktCnt)).setText("PktCnt");
             ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("DisjointSeqs");
             ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("OlderSeqs");
             if (position == 0) {
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         int iNumMCastsSaved = iNumMCasts;
         MulticastSocket[] socks = new MulticastSocket[MAXMCASTS];
         int[] iSeqNum = new int[MAXMCASTS];
+        int[] iPktCnt = new int[MAXMCASTS];
         int[] iDisjointSeqs = new int[MAXMCASTS];
         int[] iOlderSeqs = new int[MAXMCASTS];
 
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].setSoTimeout(MCASTTIMEOUT);
                     iMCDelay[i] = 0;
+                    iPktCnt[i] = 0;
                     iDisjointSeqs[i] = 0;
                     iOlderSeqs[i] = 0;
                 }
@@ -131,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
                         // as well as across packets of the same channel.
                         socks[i].receive(pkt);
                         iMCDelay[i] = 0;
+                        iPktCnt[i] += 1;
                         try {
                             ByteBuffer bb = ByteBuffer.wrap(pkt.getData(), iMCSeqOffset[i], 4);
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -181,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
                     TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
                     TextView tvTempDelay = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDelay));
                     TextView tvSeqNum = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvSeqNum));
+                    TextView tvPktCnt = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvPktCnt));
                     TextView tvDisjointSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDisjointSeqs));
                     TextView tvOlderSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvOlderSeqs));
                     int tColor = 0x00808080;
@@ -190,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
                     tvTempName.setBackgroundColor(tColor);
                     tvTempDelay.setText(Integer.toString(iMCDelay[i]));
                     tvSeqNum.setText(Integer.toString(iSeqNum[i]));
+                    tvPktCnt.setText(Integer.toString(iPktCnt[i]));
                     tvDisjointSeqs.setText(Integer.toString(iDisjointSeqs[i]));
                     tvOlderSeqs.setText(Integer.toString(iOlderSeqs[i]));
                 } catch (Exception e) {
