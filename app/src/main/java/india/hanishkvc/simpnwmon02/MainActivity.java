@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
             }
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
+            long prevTime = 0;
             while (!isCancelled()) {
                 for(int i = 1; i < iNumMCastsSaved; i++) {
                     try {
@@ -164,8 +165,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 iRunCnt += 1;
                 if (iNumMCastsSaved == 2) {
-                    if ((iRunCnt%PROGRESSUPDATEMOD) == 0) {
+                    long curTime = System.currentTimeMillis();
+                    long deltaTime = curTime - prevTime;
+                    if (deltaTime > 5*1000) {
                         publishProgress();
+                        prevTime = curTime;
                     }
                 } else {
                     publishProgress();
