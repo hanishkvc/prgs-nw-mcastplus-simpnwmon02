@@ -16,6 +16,7 @@ port=1111
 N=11
 dataSize=1024
 Bps=2e6
+addr="127.0.0.1"
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
 		iArg += 1
@@ -29,10 +30,14 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--Bps"):
 		iArg += 1
 		Bps = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--addr"):
+		iArg += 1
+		addr = sys.argv[iArg]
 	iArg += 1
 
 perPktTime=1/(Bps/dataSize)
-print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(port, N, dataSize, Bps, perPktTime))
+print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+time.sleep(10)
 
 prevPktid=0
 prevTime=0.0
@@ -40,7 +45,7 @@ curTime=0.0
 prevTimeThrottle=0.0
 while True:
 	data=struct.pack("<Is", pktid, bytes(dataSize))
-	sock.sendto(data, ("127.0.0.1", port))
+	sock.sendto(data, (addr, port))
 	pktid += 1
 	if ((pktid%N) == 0):
 		curTime = time.time()
