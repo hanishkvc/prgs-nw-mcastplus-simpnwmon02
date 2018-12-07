@@ -15,6 +15,7 @@ iArg=1
 port=1111
 N=11
 dataSize=1024
+Bps=2e6
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
 		iArg += 1
@@ -25,11 +26,13 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--datasize"):
 		iArg += 1
 		dataSize = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--Bps"):
+		iArg += 1
+		Bps = int(sys.argv[iArg])
 	iArg += 1
 
-Bps=2e6
 perPktTime=1/(Bps/dataSize)
-print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n perPktTime [{}]\n".format(port, N, dataSize, perPktTime))
+print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(port, N, dataSize, Bps, perPktTime))
 
 prevPktid=0
 prevTime=0.0
