@@ -33,10 +33,18 @@ print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n perPktTime [{}]\n".format(p
 prevPktid=0
 prevTime=0.0
 curTime=0.0
+prevTimeThrottle=0.0
 while True:
 	data=struct.pack("<Is", pktid, bytes(dataSize))
 	sock.sendto(data, ("127.0.0.1", port))
 	pktid += 1
+	if ((pktid%N) == 0):
+		curTime = time.time()
+		timeAlloted = (perPktTime*N)
+		timeUsed = curTime-prevTimeThrottle
+		timeRemaining = timeAlloted - timeUsed
+		print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
+		prevTimeThrottle = time.time()
 	if ((pktid%(N*N)) == 0):
 		curTime=time.time()
 		numPkts = pktid - prevPktid
