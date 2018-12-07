@@ -46,9 +46,11 @@ while True:
 		timeRemaining = timeAlloted - timeUsed
 		print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
 		if (timeRemaining > 0):
-			select.select([0],[],[],timeRemaining)
+			(rlist, wlist, xlist) = select.select([0],[],[],timeRemaining)
+			if (len(rlist) == 1):
+				a=input()
 		prevTimeThrottle = time.time()
-	if ((pktid%(N*N)) == 0):
+	if ((pktid%(N*N*10)) == 0):
 		curTime=time.time()
 		numPkts = pktid - prevPktid
 		timeDelta = curTime - prevTime
