@@ -30,7 +30,7 @@ print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n".format(port, N, dataSize))
 
 while True:
 	data=struct.pack("<Is", pktid, bytes(dataSize))
-	sock.sendto(data, ("127.0.0.1", 9999))
+	sock.sendto(data, ("127.0.0.1", port))
 	pktid += 1
 	if ((pktid%(N*N)) == 0):
 		time.sleep(1)
