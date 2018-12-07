@@ -26,14 +26,26 @@ while iArg < len(sys.argv):
 		dataSize = int(sys.argv[iArg])
 	iArg += 1
 
-print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n".format(port, N, dataSize))
+Bps=2e6
+perPktTime=1/(Bps/dataSize)
+print(" port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n perPktTime [{}]\n".format(port, N, dataSize, perPktTime))
 
+prevPktid=0
+prevTime=0.0
+curTime=0.0
 while True:
 	data=struct.pack("<Is", pktid, bytes(dataSize))
 	sock.sendto(data, ("127.0.0.1", port))
 	pktid += 1
 	if ((pktid%(N*N)) == 0):
+		curTime=time.time()
+		numPkts = pktid - prevPktid
+		timeDelta = curTime - prevTime
+		nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
+		print("Transfer speed [{}]MBps\n".format(nwSpeed))
 		time.sleep(1)
+		prevTime = time.time()
+		prevPktid = pktid
 
 
 
