@@ -1,4 +1,29 @@
 
+v20181207IST1005
+=================
+hkvc-nw-test script arguments
+
+--Bps 2000000 will set the throughput to 2M bytes per second
+
+--datasize 1024 will set the packet size to 1K. The actual packet will be
+4bytes+1K, where the 4 bytes correspond to 32bit seqNum in little-endian
+format.
+
+--dim 17, tells as to after how many packets are sent the throttling delay if
+any should be applied.
+
+--port 1111, tells that udp packets should be sent to port 1111
+
+by default the logic is programmed to send packets to 127.0.0.1. By changing it
+to a multicast ip address, one should be able to send to multicast groups
+ideally. Have to cross-check the multicast packet sending requirements once,
+but I feel that we dont require any special settting of socket for sending
+multicast packets, while reception will require joining of the multicast group.
+If this vague remembering of multicast behaviour that I have is correct, then
+just changing the address in the program will allow using of this simple
+pythong script to test multicast transfer behaviour to some extent.
+
+
 v20181204
 ============
 
