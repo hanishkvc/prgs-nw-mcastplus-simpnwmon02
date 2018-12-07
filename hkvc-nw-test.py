@@ -5,6 +5,7 @@ import sys
 import time
 import socket
 import struct
+import select
 
 
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -44,6 +45,8 @@ while True:
 		timeUsed = curTime-prevTimeThrottle
 		timeRemaining = timeAlloted - timeUsed
 		print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
+		if (timeRemaining > 0):
+			select.select([0],[],[],timeRemaining)
 		prevTimeThrottle = time.time()
 	if ((pktid%(N*N)) == 0):
 		curTime=time.time()
