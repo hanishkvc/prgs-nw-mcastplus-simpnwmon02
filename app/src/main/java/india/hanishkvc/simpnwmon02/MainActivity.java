@@ -87,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) convertView.findViewById(R.id.tvDelay)).setText("DelayCnt");
             ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("SeqNum");
             ((TextView) convertView.findViewById(R.id.tvPktCnt)).setText("PktCnt");
-            ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("DisjointSeqs");
+            ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("Disjoint\nSeqs");
             ((TextView) convertView.findViewById(R.id.tvDisjointPktCnt)).setText("Disjoint\nPktCnt");
             ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("OlderSeqs");
             if (position == 0) {
-                ((TextView) convertView.findViewById(R.id.tvInfo)).setText("MCInfo");
+                ((TextView) convertView.findViewById(R.id.tvInfo)).setText("MCInfo                ");
             } else {
                 ((TextView) convertView.findViewById(R.id.tvInfo)).setText(sMCGroup[position]+" : "+iMCPort[position]+" , RD: "+iMCRedDelay[position]+" , SeqO: "+iMCSeqOffset[position]);
             }
@@ -265,10 +265,12 @@ public class MainActivity extends AppCompatActivity {
                     taskMon = new MCastMonitor();
                     taskMon.execute();
                     Toast.makeText(getApplicationContext(), "StartMon: "+iNumMCasts, Toast.LENGTH_SHORT).show();
+                    btnStartMon.setText("StopMon");
                 } else {
                     taskMon.cancel(true);
                     taskMon = null;
                     Toast.makeText(getApplicationContext(), "StopMon", Toast.LENGTH_SHORT).show();
+                    btnStartMon.setText("StartMon");
                 }
             }
         });
