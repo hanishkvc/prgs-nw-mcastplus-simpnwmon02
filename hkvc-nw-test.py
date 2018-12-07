@@ -9,6 +9,8 @@ import select
 
 
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+ttl_bin = struct.pack('@i', 1)
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
 
 pktid=0
 iArg=1
