@@ -44,7 +44,7 @@ while True:
 		timeAlloted = (perPktTime*N)
 		timeUsed = curTime-prevTimeThrottle
 		timeRemaining = timeAlloted - timeUsed
-		print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
+		#print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
 		if (timeRemaining > 0):
 			(rlist, wlist, xlist) = select.select([0],[],[],timeRemaining)
 			if (len(rlist) == 1):
@@ -56,7 +56,7 @@ while True:
 		timeDelta = curTime - prevTime
 		nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
 		print("Transfer speed [{}]MBps\n".format(nwSpeed))
-		time.sleep(1)
+		#time.sleep(1)
 		prevTime = time.time()
 		prevPktid = pktid
 
