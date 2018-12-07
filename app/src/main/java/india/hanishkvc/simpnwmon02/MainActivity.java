@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) convertView.findViewById(R.id.tvSeqNum)).setText("SeqNum");
             ((TextView) convertView.findViewById(R.id.tvPktCnt)).setText("PktCnt");
             ((TextView) convertView.findViewById(R.id.tvDisjointSeqs)).setText("DisjointSeqs");
+            ((TextView) convertView.findViewById(R.id.tvDisjointPktCnt)).setText("Disjoint\nPktCnt");
             ((TextView) convertView.findViewById(R.id.tvOlderSeqs)).setText("OlderSeqs");
             if (position == 0) {
                 ((TextView) convertView.findViewById(R.id.tvInfo)).setText("MCInfo");
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         int[] iSeqNum = new int[MAXMCASTS];
         int[] iPktCnt = new int[MAXMCASTS];
         int[] iDisjointSeqs = new int[MAXMCASTS];
+        int[] iDisjointPktCnt = new int[MAXMCASTS];
         int[] iOlderSeqs = new int[MAXMCASTS];
 
         @Override
@@ -120,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     iMCDelay[i] = 0;
                     iPktCnt[i] = 0;
                     iDisjointSeqs[i] = 0;
+                    iDisjointPktCnt[i] = 0;
                     iOlderSeqs[i] = 0;
                 }
             } catch (Exception e) {
@@ -144,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
+                                    iDisjointPktCnt[i] += (curSeq - iSeqNum[i]);
                                 }
                                 iSeqNum[i] = curSeq;
                             }
@@ -187,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
                     TextView tvSeqNum = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvSeqNum));
                     TextView tvPktCnt = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvPktCnt));
                     TextView tvDisjointSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDisjointSeqs));
+                    TextView tvDisjointPktCnt = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvDisjointPktCnt));
                     TextView tvOlderSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvOlderSeqs));
                     int tColor = 0x00808080;
                     if (iMCDelay[i] > iMCRedDelay[i]) {
@@ -197,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     tvSeqNum.setText(Integer.toString(iSeqNum[i]));
                     tvPktCnt.setText(Integer.toString(iPktCnt[i]));
                     tvDisjointSeqs.setText(Integer.toString(iDisjointSeqs[i]));
+                    tvDisjointPktCnt.setText(Integer.toString(iDisjointPktCnt[i]));
                     tvOlderSeqs.setText(Integer.toString(iOlderSeqs[i]));
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.getMessage(), Toast.LENGTH_LONG).show();
