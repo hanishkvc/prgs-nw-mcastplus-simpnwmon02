@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MCASTTIMEOUT = 50;
     private static final int MAXMCASTS = 10;
+    private static final int PROGRESSUPDATEMOD = (20*5);
     EditText etMCastName;
     EditText etMCastGroup;
     EditText etMCastPort;
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 iRunCnt += 1;
                 if (iNumMCastsSaved == 2) {
-                    if ((iRunCnt%10) == 0) {
+                    if ((iRunCnt%PROGRESSUPDATEMOD) == 0) {
                         publishProgress();
                     }
                 } else {
