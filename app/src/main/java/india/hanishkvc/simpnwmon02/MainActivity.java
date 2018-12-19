@@ -8,9 +8,9 @@ package india.hanishkvc.simpnwmon02;
 
 
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -19,8 +19,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -35,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MCASTTIMEOUT = 50;
     private static final int MAXMCASTS = 10;
     private static final int PROGRESSUPDATEMOD = (20*5);
+    private static final String ATAG = "SimpNwMon02";
     EditText etMCastName;
     EditText etMCastGroup;
     EditText etMCastPort;
@@ -117,16 +116,20 @@ public class MainActivity extends AppCompatActivity {
             int iRunCnt = 0;
             try {
                 for(int i = 1; i < iNumMCastsSaved; i++) {
+                    String stMode;
                     socks[i] = new MulticastSocket(iMCPort[i]);
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
+                    stMode = "MCast";
                     socks[i].setSoTimeout(MCASTTIMEOUT);
                     iMCDelay[i] = 0;
                     iPktCnt[i] = 0;
                     iDisjointSeqs[i] = 0;
                     iDisjointPktCnt[i] = 0;
                     iOlderSeqs[i] = 0;
+                    Log.i(ATAG, "Opened "+stMode+" socket for "+sMCGroup[i]+":"+iMCPort[i]);
                 }
             } catch (Exception e) {
+                Log.w(ATAG, "While SettingUp sockets: " + e.toString());
                 return null;
             }
             byte buf[] = new byte[1600];
@@ -159,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (SocketTimeoutException e) {
                         iMCDelay[i] += 1;
                     } catch (IOException e) {
+                        Log.w(ATAG, "In middle of Monitoring: " + e.toString());
                         iMCDelay[i] += 1;
                         break;
                     }
@@ -182,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
                     socks[i].close();
                 }
             } catch (Exception e) {
+                Log.w(ATAG, "While closing Sockets: " + e.toString());
                 return null;
             }
             return null;
@@ -200,7 +205,11 @@ public class MainActivity extends AppCompatActivity {
                     TextView tvOlderSeqs = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvOlderSeqs));
                     int tColor = 0x00808080;
                     if (iMCDelay[i] > iMCRedDelay[i]) {
-                        tColor = 0x80800000;
+                        tColor = 0x80C00000;
+                    } else {
+                        if (iMCDelay[i] > ((iMCRedDelay[i]*66)/100)) {
+                            tColor = 0x80C0C000;
+                        }
                     }
                     tvTempName.setBackgroundColor(tColor);
                     tvTempDelay.setText(Integer.toString(iMCDelay[i]));
@@ -210,18 +219,21 @@ public class MainActivity extends AppCompatActivity {
                     tvDisjointPktCnt.setText(Integer.toString(iDisjointPktCnt[i]));
                     tvOlderSeqs.setText(Integer.toString(iOlderSeqs[i]));
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.w(ATAG, "onProgressUpdate: "+e.toString());
+                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.toString(), Toast.LENGTH_LONG).show();
                 }
             }
         }
 
         @Override
         protected void onCancelled(Void aVoid) {
+            Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
     }
@@ -255,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
                     iMCSeqOffset[iNumMCasts] = Integer.parseInt(etMCastSeqOffset.getText().toString());
                     iNumMCasts += 1;
                 } catch (Exception e) {
+                    Log.w(ATAG, "MCastAdd: Check Values are fine: " + e.toString());
                     Toast.makeText(getApplicationContext(), "Error: Check Values are fine", Toast.LENGTH_LONG).show();
                 }
                 Toast.makeText(getApplicationContext(),"NumOfItems="+iNumMCasts, Toast.LENGTH_SHORT).show();
@@ -269,11 +282,13 @@ public class MainActivity extends AppCompatActivity {
                 if (taskMon == null) {
                     taskMon = new MCastMonitor();
                     taskMon.execute();
+                    Log.i(ATAG, "StartMon");
                     Toast.makeText(getApplicationContext(), "StartMon: "+iNumMCasts, Toast.LENGTH_SHORT).show();
                     btnStartMon.setText("StopMon");
                 } else {
                     taskMon.cancel(true);
                     taskMon = null;
+                    Log.i(ATAG, "StopMon");
                     Toast.makeText(getApplicationContext(), "StopMon", Toast.LENGTH_SHORT).show();
                     btnStartMon.setText("StartMon");
                 }
