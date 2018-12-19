@@ -19,6 +19,8 @@ N=11
 dataSize=1024
 Bps=2e6
 addr="127.0.0.1"
+sfData=None
+
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
 		iArg += 1
@@ -35,7 +37,14 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--addr"):
 		iArg += 1
 		addr = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--file"):
+		iArg += 1
+		sfData = sys.argv[iArg]
 	iArg += 1
+
+fData=None
+if (sfData != None):
+	fData = open(sfData, 'br')
 
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
@@ -46,7 +55,13 @@ prevTime=0.0
 curTime=0.0
 prevTimeThrottle=0.0
 while True:
-	data=struct.pack("<Is", pktid, bytes(dataSize))
+	if (fData != None):
+		curData = fData.read(dataSize)
+		if (curData == b''):
+			break
+	else:
+		curData = bytes(dataSize)
+	data=struct.pack("<Is", pktid, curData)
 	sock.sendto(data, (addr, port))
 	pktid += 1
 	if ((pktid%N) == 0):
@@ -71,4 +86,5 @@ while True:
 		prevPktid = pktid
 
 
+print("INFO: Done with transfer")
 
