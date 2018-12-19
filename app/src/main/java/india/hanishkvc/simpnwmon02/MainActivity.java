@@ -24,9 +24,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Enumeration;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MAXMCASTS = 10;
     private static final int PROGRESSUPDATEMOD = (20*5);
     private static final String ATAG = "SimpNwMon02";
+    EditText etNwInterface;
     EditText etMCastName;
     EditText etMCastGroup;
     EditText etMCastPort;
@@ -42,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     ListView lvMCasts;
     Button btnMCastAdd;
     Button btnStartMon;
+
+    String sNwInterface = null;
 
     int iNumMCasts = 0;
     String[] sMCName = new String[MAXMCASTS];
@@ -240,11 +246,33 @@ public class MainActivity extends AppCompatActivity {
 
     MCastMonitor taskMon = null;
 
+    private void getNwInterfaces() {
+
+        String sNIS = null;
+        try {
+            Enumeration nis = NetworkInterface.getNetworkInterfaces();
+            while (nis.hasMoreElements()) {
+                NetworkInterface ni = (NetworkInterface) nis.nextElement();
+                String curName = (ni.getName()+"; ");
+                if (sNIS == null) {
+                    sNIS = curName;
+                } else {
+                    sNIS += curName;
+                }
+            }
+        } catch (SocketException e) {
+            Log.w(ATAG, "getNwInterfaces: " + e.toString());
+        }
+        etNwInterface.setText(sNIS);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        etNwInterface = findViewById(R.id.etNwInt);
+        getNwInterfaces();
         etMCastName = findViewById(R.id.etMCastName);
         etMCastGroup = findViewById(R.id.etMCastGroup);
         etMCastPort = findViewById(R.id.etMCastPort);
@@ -279,6 +307,7 @@ public class MainActivity extends AppCompatActivity {
         btnStartMon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sNwInterface = etNwInterface.getText().toString();
                 if (taskMon == null) {
                     taskMon = new MCastMonitor();
                     taskMon.execute();

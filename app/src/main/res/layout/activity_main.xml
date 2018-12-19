@@ -25,6 +25,15 @@
                 android:layout_weight="1"
                 android:text="SimpNwMon02" />
 
+            <EditText
+                android:id="@+id/etNwInt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="Network Interface" />
+
             <Button
                 android:id="@+id/btnStartMon"
                 android:layout_width="wrap_content"
