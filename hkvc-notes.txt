@@ -1,4 +1,17 @@
 
+v20181220
+===========
+
+hkvc-nw-test script new argument
+
+--file file_to_send
+
+Target java.net.multicast logic
+
+Now it logs lost packets into lost.log file in the applications' directory on
+external storage
+
+
 v20181207IST1005
 =================
 hkvc-nw-test script arguments

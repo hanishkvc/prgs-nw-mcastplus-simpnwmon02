@@ -1,5 +1,14 @@
 package india.hanishkvc.simpnwmon02;
 
+/*
+    Simple Network Monitor 02 LogTask Queue based Runnable
+    This needs to be called from a new thread, so that the caller doesnt block.
+    However here the Caller needs to create a single Thread and Inturn also create a BlockingQueue
+    which will be used to pass data from the caller to this logic.
+    v20181220IST1530
+    HanishKVC, GPL, 2018
+ */
+
 import android.util.Log;
 
 import java.util.concurrent.BlockingQueue;
