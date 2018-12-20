@@ -33,7 +33,7 @@ public class DataHandler {
         }
     }
 
-    public void LogLostPackets(int StartSeq, int EndSeq) {
+    public void LogLostPacketsEx(int StartSeq, int EndSeq) {
         for (int i = StartSeq; i <= EndSeq; i++) {
             try {
                 logFile.write(i+"\n");
@@ -43,6 +43,12 @@ public class DataHandler {
         }
     }
 
-
+    public void LogLostPackets(int StartSeq, int EndSeq) {
+        try {
+            logFile.write(StartSeq + "-" + EndSeq + "\n");
+        } catch (IOException e) {
+            Log.e(ATAG, "While Logging: " + e.toString());
+        }
+    }
 
 }
