@@ -164,21 +164,7 @@ public class MainActivity extends AppCompatActivity {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
-                                    class LogTask implements Runnable {
-                                        int startSeq;
-                                        int endSeq;
-
-                                        @Override
-                                        public void run() {
-                                            myDH.LogLostPackets(startSeq, endSeq);
-                                        }
-
-                                        public LogTask(int iStartSeq, int iEndSeq) {
-                                            startSeq = iStartSeq;
-                                            endSeq = iEndSeq;
-                                        }
-                                    }
-                                    new Thread(new LogTask(iSeqNum[i]+1, curSeq-1)).start();
+                                    new Thread(new LogTask(myDH, iSeqNum[i]+1, curSeq-1)).start();
                                 }
                                 iSeqNum[i] = curSeq;
                             }
