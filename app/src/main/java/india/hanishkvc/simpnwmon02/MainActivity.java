@@ -32,7 +32,6 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MainActivity extends AppCompatActivity {
@@ -124,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         int[] iDisjointPktCnt = new int[MAXMCASTS];
         int[] iOlderSeqs = new int[MAXMCASTS];
         LinkedBlockingQueue theLogQueue = new LinkedBlockingQueue(128);
-        Thread theLogTask = new Thread( new LogTaskQ(myDH, theLogQueue));
+        Thread theLogTaskThread = new Thread( new LogTaskQ(myDH, theLogQueue));
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
-            theLogTask.start();
+            theLogTaskThread.start();
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             long prevTime = 0;
@@ -170,10 +169,7 @@ public class MainActivity extends AppCompatActivity {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
-                                    int[] seqs = new int[2];
-                                    seqs[0] = iSeqNum[i]+1;
-                                    seqs[1] = curSeq-1;
-                                    theLogQueue.put(seqs);
+                                    log_lostpackets(iSeqNum[i]+1, curSeq-1);
                                 }
                                 iSeqNum[i] = curSeq;
                             }
@@ -213,6 +209,17 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        private void log_lostpackets(int iStartSeq, int iEndSeq) {
+            int[] seqs = new int[2];
+            seqs[0] = iStartSeq;
+            seqs[1] = iEndSeq;
+            try {
+                theLogQueue.put(seqs);
+            } catch (InterruptedException e) {
+                Log.w(ATAG, "Queueing lost packets info Interrupted: "+e.toString());
+            }
+        }
+
         @Override
         protected void onProgressUpdate(Void... values) {
             for (int i = 1; i < iNumMCastsSaved; i++) {
@@ -249,12 +256,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onCancelled(Void aVoid) {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
+            log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
+            log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
     }
