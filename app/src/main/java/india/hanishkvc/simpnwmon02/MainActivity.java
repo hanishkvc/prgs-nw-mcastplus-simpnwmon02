@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02
-    v20181206IST1340
+    v20181220IST1040
     HanishKVC, GPL, 2018
  */
 
@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MCASTTIMEOUT = 50;
     private static final int MAXMCASTS = 10;
     private static final int PROGRESSUPDATEMOD = (20*5);
-    private static final String ATAG = "SimpNwMon02";
+    static final String ATAG = "SimpNwMon02";
     EditText etNwInterface;
     EditText etMCastName;
     EditText etMCastGroup;
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     int[] iMCDelay = new int[MAXMCASTS];
     int[] iMCRedDelay = new int[MAXMCASTS];
     int[] iMCSeqOffset = new int[MAXMCASTS];
+
+    DataHandler myDH = null;
+    private String sExternalBasePath = null;
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -270,6 +274,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        try {
+            sExternalBasePath = getExternalFilesDir(null).getCanonicalPath();
+            Log.i(ATAG, "AppSpecificExternalDir: " + sExternalBasePath);
+        } catch (IOException e) {
+            Log.e(ATAG, "No AppSpecificExternalDir or ???: " + e.toString());
+        }
+
+        try {
+            myDH = new DataHandler(sExternalBasePath + File.pathSeparatorChar + "data.bin",
+                    sExternalBasePath + File.pathSeparatorChar + "lost.log");
+            Log.i(ATAG, "DH Setup");
+        } catch (IOException e) {
+            Log.e(ATAG, "DH Setup Failed: " + e.toString());
+        }
 
         etNwInterface = findViewById(R.id.etNwInt);
         getNwInterfaces();
