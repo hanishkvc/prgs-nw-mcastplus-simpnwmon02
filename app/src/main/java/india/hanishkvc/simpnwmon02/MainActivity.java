@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
-                                    iDisjointPktCnt[i] += (curSeq - iSeqNum[i]);
+                                    iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
                                 }
                                 iSeqNum[i] = curSeq;
                             }
