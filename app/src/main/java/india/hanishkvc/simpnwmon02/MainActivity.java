@@ -32,6 +32,8 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -121,6 +123,8 @@ public class MainActivity extends AppCompatActivity {
         int[] iDisjointSeqs = new int[MAXMCASTS];
         int[] iDisjointPktCnt = new int[MAXMCASTS];
         int[] iOlderSeqs = new int[MAXMCASTS];
+        LinkedBlockingQueue theLogQueue = new LinkedBlockingQueue(128);
+        Thread theLogTask = new Thread( new LogTaskQ(myDH, theLogQueue));
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -143,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.w(ATAG, "While SettingUp sockets: " + e.toString());
                 return null;
             }
+
+            theLogTask.start();
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             long prevTime = 0;
@@ -164,7 +170,10 @@ public class MainActivity extends AppCompatActivity {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
-                                    new Thread(new LogTask(myDH, iSeqNum[i]+1, curSeq-1)).start();
+                                    int[] seqs = new int[2];
+                                    seqs[0] = iSeqNum[i]+1;
+                                    seqs[1] = curSeq-1;
+                                    theLogQueue.put(seqs);
                                 }
                                 iSeqNum[i] = curSeq;
                             }
