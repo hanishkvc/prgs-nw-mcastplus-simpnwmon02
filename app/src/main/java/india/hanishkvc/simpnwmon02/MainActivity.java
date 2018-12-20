@@ -283,11 +283,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            myDH = new DataHandler(sExternalBasePath + File.pathSeparatorChar + "data.bin",
-                    sExternalBasePath + File.pathSeparatorChar + "lost.log");
-            Log.i(ATAG, "DH Setup");
+            myDH = new DataHandler(sExternalBasePath + File.separatorChar + "data.bin",
+                    sExternalBasePath + File.separatorChar + "lost.log");
+            Log.i(ATAG, "DataHandler is setup");
         } catch (IOException e) {
-            Log.e(ATAG, "DH Setup Failed: " + e.toString());
+            Log.e(ATAG, "DataHandler setup failed: " + e.toString());
         }
 
         etNwInterface = findViewById(R.id.etNwInt);

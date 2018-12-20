@@ -29,7 +29,7 @@ public class DataHandler {
             logFile = new FileWriter(logFileName);
         } catch (Exception e) {
             Log.e(ATAG, "While Opening Files: " + e.toString());
-            throw new IOException("Failed to open files");
+            throw new IOException("Failed to open DataHandler files: " + e.toString());
         }
     }
 
