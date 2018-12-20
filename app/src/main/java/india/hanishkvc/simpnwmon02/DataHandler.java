@@ -34,18 +34,22 @@ public class DataHandler {
     }
 
     public void LogLostPacketsEx(int StartSeq, int EndSeq) {
-        for (int i = StartSeq; i <= EndSeq; i++) {
-            try {
-                logFile.write(i+"\n");
-            } catch (IOException e) {
-                Log.e(ATAG, "While Logging: " + e.toString());
+        synchronized (logFile) {
+            for (int i = StartSeq; i <= EndSeq; i++) {
+                try {
+                    logFile.write(i+"\n");
+                } catch (IOException e) {
+                    Log.e(ATAG, "While Logging: " + e.toString());
+                }
             }
         }
     }
 
     public void LogLostPackets(int StartSeq, int EndSeq) {
         try {
-            logFile.write(StartSeq + "-" + EndSeq + "\n");
+            synchronized (logFile) {
+                logFile.write(StartSeq + "-" + EndSeq + "\n");
+            }
         } catch (IOException e) {
             Log.e(ATAG, "While Logging: " + e.toString());
         }
