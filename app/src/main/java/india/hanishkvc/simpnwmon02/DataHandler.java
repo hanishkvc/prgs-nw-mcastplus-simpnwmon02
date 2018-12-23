@@ -13,9 +13,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 
 public class DataHandler {
+    static final int STOP_SAVEDATABUFS = 9999;
     private String dataFileName = null;
     private String logFileName = null;
     private FileOutputStream dataFile = null;
@@ -27,11 +27,10 @@ public class DataHandler {
     private byte [] dataBuf = new byte[NUMOFDATABUFS*DATABUFSIZE];
     private int [] blockId = new int[NUMOFDATABUFS];
     public int dataSize = 1024;
-    private Semaphore sem = new Semaphore(NUMOFDATABUFS-BUF2LOCKDELTA,true);
+    //private Semaphore sem = new Semaphore(NUMOFDATABUFS-BUF2LOCKDELTA,true);
     private int iWrite2Buf = 0;
     private int iSaveBuf = 0;
     private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS);
-    public boolean bSaveDataBufs = false;
 
     public DataHandler(String sDataFile, String sLogFile) throws IOException {
         dataFileName = sDataFile;
@@ -71,6 +70,10 @@ public class DataHandler {
     public void Write2DataBuf(int theBlockId, byte[] theData) {
         try {
             Log.i(ATAG, "Writing2DataBuf: " + iWrite2Buf);
+            if (theData == null) {
+                dataQueue.put(STOP_SAVEDATABUFS);
+                return;
+            }
             System.arraycopy(theData, 0, dataBuf, iWrite2Buf*DATABUFSIZE, dataSize);
             blockId[iWrite2Buf] = theBlockId;
             dataQueue.put(iWrite2Buf);
@@ -78,7 +81,6 @@ public class DataHandler {
             if (iWrite2Buf >= NUMOFDATABUFS) {
                 iWrite2Buf = 0;
             }
-            sem.acquire();
         } catch (InterruptedException e) {
             Log.e(ATAG, "Write2DataBuf: Interrupted trying to acquire sem: " + e.toString());
         }
@@ -98,9 +100,12 @@ public class DataHandler {
 
     public void SaveDataBufs() {
         Log.i(ATAG, "SaveDataBufs: logic started");
-        while (bSaveDataBufs) {
+        while (true) {
             try {
                 int iTemp = (int) dataQueue.take();
+                if (iTemp == STOP_SAVEDATABUFS) {
+                    break;
+                }
                 if (iTemp != iSaveBuf) {
                     Log.d(ATAG, "SaveDataBufs: Mismatch wrt DataBuf index between Producer "+iTemp+" and Consumer "+iSaveBuf);
                 }
@@ -109,7 +114,6 @@ public class DataHandler {
                 if (iSaveBuf >= NUMOFDATABUFS) {
                     iSaveBuf = 0;
                 }
-                sem.release();
             } catch (InterruptedException e) {
                 Log.e(ATAG, "SaveDataBufs: Interrupted: " + e.toString());
             }
