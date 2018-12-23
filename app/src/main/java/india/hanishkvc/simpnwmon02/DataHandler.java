@@ -33,16 +33,36 @@ public class DataHandler {
     private int iSaveBuf = 0;
     private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS);
 
-    public DataHandler(String sDataFile, String sLogFile) throws IOException {
+    public DataHandler(String sDataFile, String sLogFile) {
         dataFileName = sDataFile;
         logFileName = sLogFile;
+    }
 
+    public void OpenFiles() throws IOException {
         try {
             dataFile = new FileOutputStream(dataFileName);
             logFile = new FileWriter(logFileName);
+            Log.i(ATAG, "Opened Data & Log Files");
         } catch (Exception e) {
             Log.e(ATAG, "While Opening Files: " + e.toString());
             throw new IOException("Failed to open DataHandler files: " + e.toString());
+        }
+    }
+
+    public void CloseFiles() {
+        try {
+            if (dataFile != null) {
+                dataFile.close();
+                dataFile = null;
+                Log.i(ATAG, "Closed Data File");
+            }
+            if (logFile != null) {
+                logFile.close();
+                logFile = null;
+                Log.i(ATAG, "Closed Log File");
+            }
+        } catch (IOException e) {
+            Log.e(ATAG, "While Closing Files: " + e.toString());
         }
     }
 

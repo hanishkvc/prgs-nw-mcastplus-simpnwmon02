@@ -331,14 +331,10 @@ public class MainActivity extends AppCompatActivity {
             Log.e(ATAG, "No AppSpecificExternalDir or ???: " + e.toString());
         }
 
-        try {
-            myDH = new DataHandler(sExternalBasePath + File.separatorChar + "data.bin",
-                    sExternalBasePath + File.separatorChar + "lost.log");
-            myDH.dataSize = 1024; // todo: hardcoded for now
-            Log.i(ATAG, "DataHandler is setup");
-        } catch (IOException e) {
-            Log.e(ATAG, "DataHandler setup failed: " + e.toString());
-        }
+        myDH = new DataHandler(sExternalBasePath + File.separatorChar + "data.bin",
+                sExternalBasePath + File.separatorChar + "lost.log");
+        myDH.dataSize = 1024; // todo: hardcoded for now
+        Log.i(ATAG, "DataHandler is setup");
 
         etNwInterface = findViewById(R.id.etNwInt);
         getNwInterfaces();
@@ -378,6 +374,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 sNwInterface = etNwInterface.getText().toString();
                 if (taskMon == null) {
+                    myDH.CloseFiles();
+                    try {
+                        myDH.OpenFiles();
+                    } catch (IOException e) {
+                        Toast.makeText(getApplicationContext(), "StartMon: DataHandler OpenFiles FAILED", Toast.LENGTH_LONG).show();
+                    }
                     taskMon = new MCastMonitor();
                     taskMon.execute();
                     Log.i(ATAG, "StartMon");
@@ -392,5 +394,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        myDH.CloseFiles();
+        super.onDestroy();
     }
 }
