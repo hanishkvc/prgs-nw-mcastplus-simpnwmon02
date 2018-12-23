@@ -306,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             myDH = new DataHandler(sExternalBasePath + File.separatorChar + "data.bin",
                     sExternalBasePath + File.separatorChar + "lost.log");
+            myDH.dataSize = 1024; // todo: hardcoded for now
             Log.i(ATAG, "DataHandler is setup");
         } catch (IOException e) {
             Log.e(ATAG, "DataHandler setup failed: " + e.toString());

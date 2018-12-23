@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
 
 public class DataHandler {
     private String dataFileName = null;
@@ -19,6 +20,15 @@ public class DataHandler {
     private FileOutputStream dataFile = null;
     private FileWriter logFile = null;
     private static String ATAG = MainActivity.ATAG+"_DH";
+    public static final int NUMOFDATABUFS = 64;
+    public static final int BUF2LOCKDELTA=3;
+    public static final int DATABUFSIZE = 2048;
+    private byte [] dataBuf = new byte[NUMOFDATABUFS*DATABUFSIZE];
+    private int [] blockId = new int[NUMOFDATABUFS];
+    public int dataSize = 1024;
+    private Semaphore sem = new Semaphore(NUMOFDATABUFS-BUF2LOCKDELTA,true);
+    private int iWrite2Buf = 0;
+    private int iSaveBuf = 0;
 
     public DataHandler(String sDataFile, String sLogFile) throws IOException {
         dataFileName = sDataFile;
@@ -52,6 +62,44 @@ public class DataHandler {
             }
         } catch (IOException e) {
             Log.e(ATAG, "While Logging: " + e.toString());
+        }
+    }
+
+    public void Write2DataBuf(int theBlockId, byte[] theData) {
+        try {
+            Log.i(ATAG, "Writing2DataBuf: " + iWrite2Buf);
+            System.arraycopy(theData, 0, dataBuf, iWrite2Buf*DATABUFSIZE, dataSize);
+            blockId[iWrite2Buf] = theBlockId;
+            iWrite2Buf += 1;
+            if (iWrite2Buf >= NUMOFDATABUFS) {
+                iWrite2Buf = 0;
+            }
+            sem.acquire();
+        } catch (InterruptedException e) {
+            Log.e(ATAG, "Write2DataBuf: Interrupted trying to acquire sem: " + e.toString());
+        }
+    }
+
+    public void SaveDataBuf(int iData) {
+        try {
+            Log.i(ATAG, "Saving DataBuf: " + iData);
+            synchronized (dataFile) {
+                dataFile.getChannel().position(blockId[iData]*dataSize);
+                dataFile.write(dataBuf, iData*DATABUFSIZE, dataSize);
+            }
+        } catch (IOException e) {
+            Log.e(ATAG, "While writing Data[" + iData + "]: " + e.toString());
+        }
+    }
+
+    public void SaveDataBufs() {
+        while (true) {
+            sem.release();
+            SaveDataBuf(iSaveBuf);
+            iSaveBuf += 1;
+            if (iSaveBuf >= NUMOFDATABUFS) {
+                iSaveBuf = 0;
+            }
         }
     }
 
