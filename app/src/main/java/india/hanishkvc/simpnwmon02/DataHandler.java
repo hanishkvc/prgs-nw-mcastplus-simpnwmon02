@@ -107,6 +107,7 @@ public class DataHandler {
         try {
             Log.i(ATAG, "Writing2DataBuf: " + iWrite2Buf);
             if (theData == null) {
+                Log.i(ATAG, "Writing2DataBuf: Its A STOP");
                 dataQueue.put(STOP_SAVEDATABUFS);
                 return;
             }

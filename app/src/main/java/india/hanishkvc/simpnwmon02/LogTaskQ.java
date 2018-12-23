@@ -23,7 +23,7 @@ public class LogTaskQ implements Runnable {
     @Override
     public void run() {
         int[] seqs;
-        Log.w(ATAG, "LogTaskQueue logic started");
+        Log.i(ATAG, "LogTaskQueue logic started");
         while (true) {
             try {
                 seqs = (int[]) queue.take();
@@ -35,7 +35,7 @@ public class LogTaskQ implements Runnable {
                 Log.w(ATAG, "LogTaskQueue interrupted: " + e.toString());
             }
         }
-        Log.w(ATAG, "LogTaskQueue logic stopping");
+        Log.i(ATAG, "LogTaskQueue logic stopping");
     }
 
     public LogTaskQ(DataHandler oDH, BlockingQueue oQueue) {

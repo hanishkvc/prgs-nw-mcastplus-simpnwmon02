@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     socks[i].joinGroup(InetAddress.getByName(sMCGroup[i]));
                     stMode = "MCast";
                     socks[i].setSoTimeout(MCASTTIMEOUT);
+                    iSeqNum[i] = -1;
                     iMCDelay[i] = 0;
                     iPktCnt[i] = 0;
                     iDisjointSeqs[i] = 0;
