@@ -211,12 +211,14 @@ public class MainActivity extends AppCompatActivity {
                     publishProgress();
                 }
             }
+            publishProgress();
 
             try {
                 for (int i = 1; i < iNumMCastsSaved; i++) {
                     socks[i].leaveGroup(InetAddress.getByName(sMCGroup[i]));
                     socks[i].close();
                 }
+                Log.i(ATAG, "Closing sockets");
             } catch (Exception e) {
                 Log.w(ATAG, "While closing Sockets: " + e.toString());
                 return null;

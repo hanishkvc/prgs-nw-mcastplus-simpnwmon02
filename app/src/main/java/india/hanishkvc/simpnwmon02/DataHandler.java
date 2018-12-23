@@ -101,6 +101,7 @@ public class DataHandler {
 
     public void LogStrLn(String str) {
         LogStr(str+LINETERM);
+        Log.i(ATAG,str);
     }
 
     public void Write2DataBuf(int theBlockId, byte[] theData) {
