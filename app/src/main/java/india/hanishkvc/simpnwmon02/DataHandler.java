@@ -118,7 +118,7 @@ public class DataHandler {
                 iWrite2Buf = 0;
             }
         } catch (InterruptedException e) {
-            Log.e(ATAG, "Write2DataBuf: Interrupted trying to acquire sem: " + e.toString());
+            Log.e(ATAG, "Write2DataBuf: Interrupted queueing data index: " + e.toString());
         }
     }
 
@@ -130,7 +130,7 @@ public class DataHandler {
                 dataFile.write(dataBuf, iData*DATABUFSIZE, dataSize);
             }
         } catch (IOException e) {
-            Log.e(ATAG, "While writing Data[" + iData + "]: " + e.toString());
+            Log.e(ATAG, "While saving Data[" + iData + "]: " + e.toString());
         }
     }
 
