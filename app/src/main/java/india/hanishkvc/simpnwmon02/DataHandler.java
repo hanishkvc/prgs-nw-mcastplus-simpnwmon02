@@ -16,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class DataHandler {
     static final int STOP_SAVEDATABUFS = 9999;
+    private static final String LINETERM = "\n";
     private String dataFileName = null;
     private String logFileName = null;
     private FileOutputStream dataFile = null;
@@ -49,7 +50,7 @@ public class DataHandler {
         synchronized (logFile) {
             for (int i = StartSeq; i <= EndSeq; i++) {
                 try {
-                    logFile.write(i+"\n");
+                    logFile.write(i+LINETERM);
                 } catch (IOException e) {
                     Log.e(ATAG, "While Logging: " + e.toString());
                 }
@@ -60,7 +61,7 @@ public class DataHandler {
     public void LogLostPackets(int StartSeq, int EndSeq) {
         try {
             synchronized (logFile) {
-                logFile.write(StartSeq + "-" + EndSeq + "\n");
+                logFile.write(StartSeq + "-" + EndSeq + LINETERM);
             }
         } catch (IOException e) {
             Log.e(ATAG, "While Logging: " + e.toString());
@@ -71,10 +72,15 @@ public class DataHandler {
         try {
             synchronized (logFile) {
                 logFile.write(str);
+                logFile.flush();
             }
         } catch (IOException e) {
             Log.e(ATAG, "While Logging: " + e.toString());
         }
+    }
+
+    public void LogStrLn(String str) {
+        LogStr(str+LINETERM);
     }
 
     public void Write2DataBuf(int theBlockId, byte[] theData) {

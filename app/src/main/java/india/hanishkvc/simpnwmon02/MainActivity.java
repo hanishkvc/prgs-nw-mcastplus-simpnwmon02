@@ -236,10 +236,10 @@ public class MainActivity extends AppCompatActivity {
 
         private void log_stop(int i) {
             log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
-            myDH.LogStr("SUMMARY:SeqNum:"+iSeqNum[i]);
-            myDH.LogStr("SUMMARY:PktCnt:"+iPktCnt[i]);
-            myDH.LogStr("SUMMARY:DisjointPktCnt:"+iDisjointPktCnt[i]);
-            myDH.LogStr("SUMMARY:OlderSeqs:"+iOlderSeqs[i]);
+            myDH.LogStrLn("SUMMARY:SeqNum:"+iSeqNum[i]);
+            myDH.LogStrLn("SUMMARY:PktCnt:"+iPktCnt[i]);
+            myDH.LogStrLn("SUMMARY:DisjointPktCnt:"+iDisjointPktCnt[i]);
+            myDH.LogStrLn("SUMMARY:OlderSeqs:"+iOlderSeqs[i]);
         }
 
         private void data_stop() {
