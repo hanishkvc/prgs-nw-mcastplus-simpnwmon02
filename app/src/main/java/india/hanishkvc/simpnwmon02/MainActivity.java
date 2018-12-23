@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MAXMCASTS = 10;
     private static final int PROGRESSUPDATEMOD = (20*5);
     static final String ATAG = "SimpNwMon02";
+    private static final int CHANNEL2SAVE = 1;
     EditText etNwInterface;
     EditText etMCastName;
     EditText etMCastGroup;
@@ -176,9 +177,13 @@ public class MainActivity extends AppCompatActivity {
                                 if ((curSeq-iSeqNum[i]) != 1) {
                                     iDisjointSeqs[i] += 1;
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
-                                    log_lostpackets(iSeqNum[i]+1, curSeq-1);
+                                    if (i == CHANNEL2SAVE) {
+                                        log_lostpackets(iSeqNum[i]+1, curSeq-1);
+                                    }
                                 } else {
-                                    myDH.Write2DataBuf(curSeq, pkt.getData());
+                                    if (i == CHANNEL2SAVE) {
+                                        myDH.Write2DataBuf(curSeq, pkt.getData());
+                                    }
                                 }
                                 iSeqNum[i] = curSeq;
                             }
@@ -229,6 +234,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        private void log_stop(int i) {
+            log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
+            myDH.LogStr("SUMMARY:SeqNum:"+iSeqNum[i]);
+            myDH.LogStr("SUMMARY:PktCnt:"+iPktCnt[i]);
+            myDH.LogStr("SUMMARY:DisjointPktCnt:"+iDisjointPktCnt[i]);
+            myDH.LogStr("SUMMARY:OlderSeqs:"+iOlderSeqs[i]);
+        }
+
         private void data_stop() {
             myDH.Write2DataBuf(0,null);
         }
@@ -269,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onCancelled(Void aVoid) {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
-            log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
+            log_stop(CHANNEL2SAVE);
             data_stop();
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
@@ -277,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
-            log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
+            log_stop(CHANNEL2SAVE);
             data_stop();
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }

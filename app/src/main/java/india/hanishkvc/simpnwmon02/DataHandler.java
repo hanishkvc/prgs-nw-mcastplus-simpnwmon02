@@ -67,6 +67,16 @@ public class DataHandler {
         }
     }
 
+    public void LogStr(String str) {
+        try {
+            synchronized (logFile) {
+                logFile.write(str);
+            }
+        } catch (IOException e) {
+            Log.e(ATAG, "While Logging: " + e.toString());
+        }
+    }
+
     public void Write2DataBuf(int theBlockId, byte[] theData) {
         try {
             Log.i(ATAG, "Writing2DataBuf: " + iWrite2Buf);

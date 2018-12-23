@@ -1,6 +1,9 @@
 v20181223
 ===========
 
+Data Thread synchronisation
+------------------------------
+
 * Failure - UseData before FillData
 Producer->Acquire->FillData->Loop
 Consumer->UseData->Release->Loop
@@ -26,6 +29,26 @@ L0-B0,L0-B0,L1-B1
 
 But will require dummy producing to flush out data in deltaOf(buf-lock) buffers
 at the end, when actual producing is done.
+
+TODO
+-------
+
+01) Currently Data is copied from a fixed buffer in AsyncTask to the data
+buffer in DataHandler, avoid this and use the data buffer in DataHandler
+directly.
+
+02) Currently only a predefined (set to 1 currently) monitored channel is
+logged as well as its data saved.
+
+However if required Update the Logging and Data saving logic to work across
+multiple channels.  i.e Each channels log and data should be saved to seperate
+log and data files.
+
+03) There is a issue with the 1st packet with seq number 0 being considred as a
+olderSeqs, fix this corner case.
+
+04) Add logic to use unicast to recover the packets lost during multicast.
+
 
 v20181220
 ===========
