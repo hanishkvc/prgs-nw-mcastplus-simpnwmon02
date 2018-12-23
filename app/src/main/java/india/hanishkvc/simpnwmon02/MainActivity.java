@@ -124,6 +124,12 @@ public class MainActivity extends AppCompatActivity {
         int[] iOlderSeqs = new int[MAXMCASTS];
         LinkedBlockingQueue theLogQueue = new LinkedBlockingQueue(128);
         Thread theLogTaskThread = new Thread( new LogTaskQ(myDH, theLogQueue));
+        Thread theDataThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                myDH.SaveDataBufs();
+            }
+        });
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -148,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             theLogTaskThread.start();
+            theDataThread.start();
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             long prevTime = 0;
@@ -170,6 +177,8 @@ public class MainActivity extends AppCompatActivity {
                                     iDisjointSeqs[i] += 1;
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
                                     log_lostpackets(iSeqNum[i]+1, curSeq-1);
+                                } else {
+                                    myDH.Write2DataBuf(curSeq, pkt.getData());
                                 }
                                 iSeqNum[i] = curSeq;
                             }

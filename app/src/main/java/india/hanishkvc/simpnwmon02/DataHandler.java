@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class DataHandler {
@@ -29,6 +30,7 @@ public class DataHandler {
     private Semaphore sem = new Semaphore(NUMOFDATABUFS-BUF2LOCKDELTA,true);
     private int iWrite2Buf = 0;
     private int iSaveBuf = 0;
+    private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS);
 
     public DataHandler(String sDataFile, String sLogFile) throws IOException {
         dataFileName = sDataFile;
@@ -70,6 +72,7 @@ public class DataHandler {
             Log.i(ATAG, "Writing2DataBuf: " + iWrite2Buf);
             System.arraycopy(theData, 0, dataBuf, iWrite2Buf*DATABUFSIZE, dataSize);
             blockId[iWrite2Buf] = theBlockId;
+            dataQueue.put(iWrite2Buf);
             iWrite2Buf += 1;
             if (iWrite2Buf >= NUMOFDATABUFS) {
                 iWrite2Buf = 0;
@@ -94,11 +97,19 @@ public class DataHandler {
 
     public void SaveDataBufs() {
         while (true) {
-            sem.release();
-            SaveDataBuf(iSaveBuf);
-            iSaveBuf += 1;
-            if (iSaveBuf >= NUMOFDATABUFS) {
-                iSaveBuf = 0;
+            try {
+                int iTemp = (int) dataQueue.take();
+                if (iTemp != iSaveBuf) {
+                    Log.d(ATAG, "SaveDataBufs: Mismatch wrt DataBuf index between Producer "+iTemp+" and Consumer "+iSaveBuf);
+                }
+                SaveDataBuf(iSaveBuf);
+                iSaveBuf += 1;
+                if (iSaveBuf >= NUMOFDATABUFS) {
+                    iSaveBuf = 0;
+                }
+                sem.release();
+            } catch (InterruptedException e) {
+                Log.e(ATAG, "SaveDataBufs: Interrupted: " + e.toString());
             }
         }
     }
