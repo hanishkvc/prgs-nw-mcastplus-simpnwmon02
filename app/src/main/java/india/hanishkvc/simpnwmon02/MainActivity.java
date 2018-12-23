@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         Thread theDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                myDH.bSaveDataBufs = true;
                 myDH.SaveDataBufs();
             }
         });
@@ -266,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onCancelled(Void aVoid) {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
             log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
+            myDH.bSaveDataBufs = false;
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
 
@@ -273,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
             log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
+            myDH.bSaveDataBufs = false;
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
     }

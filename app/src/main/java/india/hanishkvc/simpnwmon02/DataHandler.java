@@ -31,6 +31,7 @@ public class DataHandler {
     private int iWrite2Buf = 0;
     private int iSaveBuf = 0;
     private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS);
+    public boolean bSaveDataBufs = false;
 
     public DataHandler(String sDataFile, String sLogFile) throws IOException {
         dataFileName = sDataFile;
@@ -96,7 +97,8 @@ public class DataHandler {
     }
 
     public void SaveDataBufs() {
-        while (true) {
+        Log.i(ATAG, "SaveDataBufs: logic started");
+        while (bSaveDataBufs) {
             try {
                 int iTemp = (int) dataQueue.take();
                 if (iTemp != iSaveBuf) {
@@ -112,6 +114,7 @@ public class DataHandler {
                 Log.e(ATAG, "SaveDataBufs: Interrupted: " + e.toString());
             }
         }
+        Log.i(ATAG, "SaveDataBufs: logic stopping");
     }
 
 }
