@@ -211,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
                     publishProgress();
                 }
             }
-            publishProgress();
 
             try {
                 for (int i = 1; i < iNumMCastsSaved; i++) {
@@ -249,8 +248,7 @@ public class MainActivity extends AppCompatActivity {
             myDH.Write2DataBuf(0,null);
         }
 
-        @Override
-        protected void onProgressUpdate(Void... values) {
+        private void update_ui() {
             for (int i = 1; i < iNumMCastsSaved; i++) {
                 try {
                     TextView tvTempName = ((TextView)lvMCasts.getChildAt(i).findViewById(R.id.tvName));
@@ -276,10 +274,15 @@ public class MainActivity extends AppCompatActivity {
                     tvDisjointPktCnt.setText(Integer.toString(iDisjointPktCnt[i]));
                     tvOlderSeqs.setText(Integer.toString(iOlderSeqs[i]));
                 } catch (Exception e) {
-                    Log.w(ATAG, "onProgressUpdate: "+e.toString());
-                    Toast.makeText(getApplicationContext(), "WARN: onProgressUpdate: "+e.toString(), Toast.LENGTH_LONG).show();
+                    Log.w(ATAG, "async-update_ui: "+e.toString());
+                    Toast.makeText(getApplicationContext(), "WARN: async-update_ui: "+e.toString(), Toast.LENGTH_LONG).show();
                 }
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            update_ui();
         }
 
         @Override
@@ -287,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
             log_stop(CHANNEL2SAVE);
             data_stop();
+            update_ui();
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
 
@@ -295,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
             log_stop(CHANNEL2SAVE);
             data_stop();
+            update_ui();
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
     }
