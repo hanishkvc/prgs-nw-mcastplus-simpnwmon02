@@ -20,6 +20,7 @@ public class DataRecovery {
     static  public String sID = "AD44";
     private DatagramSocket socket = null;
     public InetAddress peer = null;
+    public String sPeerInitAddr = "255.255.255.255";
 
     public void init() {
         try {
@@ -43,7 +44,8 @@ public class DataRecovery {
         }
         DatagramPacket pktS = null;
         try {
-            pktS = new DatagramPacket(bbS.array(),16, InetAddress.getByName("255.255.255.255"), portSrvr );
+            pktS = new DatagramPacket(bbS.array(),16, InetAddress.getByName(sPeerInitAddr), portSrvr );
+            Log.i(ATAG, "PeerInitSearchAddr: "+sPeerInitAddr+":"+portSrvr);
         } catch (UnknownHostException e) {
             Log.d(ATAG, "Failed to create broadcast pkt:"+e.toString());
         }
@@ -60,7 +62,7 @@ public class DataRecovery {
             }
         }
         if (peer == null) {
-            throw(new ConnectException("Didnt find peer using PI"));
+            throw new ConnectException("Didnt find peer using PI");
         }
     }
 }

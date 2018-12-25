@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     Button btnMCastAdd;
     Button btnStartMon;
     Button btnUCast;
+    EditText etUCast1;
 
     String sNwInterface = null;
 
@@ -408,18 +409,22 @@ public class MainActivity extends AppCompatActivity {
 
         final DataRecovery dr = new DataRecovery();
         dr.init();
+
+        etUCast1 = findViewById(R.id.etUnicast1);
         btnUCast = findViewById(R.id.btnUnicastStart);
         btnUCast.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dr.sPeerInitAddr = etUCast1.getText().toString();
+                Log.d(ATAG, "PeerInitAddr:"+dr.sPeerInitAddr);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             dr.presence_info();
-                            Toast.makeText(getApplicationContext(), "PI Success:"+dr.peer.toString(), Toast.LENGTH_LONG);
-                        } catch (ConnectException e) {
-                            Toast.makeText(getApplicationContext(), "PI Failed", Toast.LENGTH_LONG);
+                            Log.i(ATAG, "PI Success:"+dr.peer.toString());
+                        } catch (ConnectException ce) {
+                            Log.e(ATAG, "PI Failed");
                         }
                     }
                 }).start();

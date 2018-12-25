@@ -49,6 +49,7 @@ if (sfData != None):
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 
+socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
@@ -57,20 +58,38 @@ print("Will start in 10 secs...")
 time.sleep(10)
 
 
+clients = []
 def presence_info():
-        global sock
-	sock.bind(("0.0.0.0", portServer)
+	global sock
+	addr = "0.0.0.0"
+	print("PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
+	sock.bind((addr, portServer))
 	startTime = time.time()
 	deltaTime = 0
-	while(deltaTime < 5000):
-                d = sock.recvfrom(128)
-                print(d)
-                curTime = time.time()
-                deltaTime = curTime - startTime
+	iCnt = 0
+	while(deltaTime < 600):
+		print("PI:{}_{}".format(iCnt,deltaTime))
+		try:
+			d = sock.recvfrom(128)
+			peer = d[1][0]
+			try:
+				i = clients.index(peer)
+				print("Rcvd from known client: {}".format(peer))
+			except ValueError as e:
+				print("Rcvd from new client: {}".format(peer))
+				clients.append(peer)
+			data=struct.pack("<Is", 0xffffffff, bytes("Hello", 'utf8'))
+			sock.sendto(data, (peer, portClient))
+		except socket.timeout as e:
+			d = None
+			print(".")
+		curTime = time.time()
+		deltaTime = int(curTime - startTime)
+		iCnt += 1
 
 
 presence_info()
-exit
+exit()
                 
 
 prevPktid=0
