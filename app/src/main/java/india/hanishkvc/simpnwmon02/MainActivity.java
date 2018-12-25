@@ -240,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
             log_lostpackets(LogTaskQ.STOP_STARTSEQ, LogTaskQ.STOP_ENDSEQ);
             myDH.LogStrLn("SUMMARY:SeqNum:"+iSeqNum[i]);
             myDH.LogStrLn("SUMMARY:PktCnt:"+iPktCnt[i]);
+            myDH.LogStrLn("SUMMARY:DisjointSeqs:"+iDisjointSeqs[i]);
             myDH.LogStrLn("SUMMARY:DisjointPktCnt:"+iDisjointPktCnt[i]);
             myDH.LogStrLn("SUMMARY:OlderSeqs:"+iOlderSeqs[i]);
         }
