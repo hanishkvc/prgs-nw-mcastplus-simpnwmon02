@@ -11,6 +11,10 @@ import select
 portServer = 1112
 portClient = 1113
 
+PITotalTimeSecs = 10*60
+PIReqSeqNum = 0xffffff00
+PIAckSeqNum = 0xffffff01
+
 
 pktid=0
 port=1111
@@ -67,18 +71,19 @@ def presence_info():
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
-	while(deltaTime < 600):
+	while(deltaTime < PITotalTimeSecs):
 		print("PI:{}_{}".format(iCnt,deltaTime))
 		try:
 			d = sock.recvfrom(128)
+			dataC = d[0]
 			peer = d[1][0]
 			try:
 				i = clients.index(peer)
-				print("Rcvd from known client: {}".format(peer))
+				print("Rcvd from known client:{}:{}".format(peer, dataC))
 			except ValueError as e:
-				print("Rcvd from new client: {}".format(peer))
+				print("Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
-			data=struct.pack("<Is", 0xffffffff, bytes("Hello", 'utf8'))
+			data=struct.pack("<Is", PIAckSeqNum, bytes("Hello", 'utf8'))
 			sock.sendto(data, (peer, portClient))
 		except socket.timeout as e:
 			d = None
@@ -86,11 +91,14 @@ def presence_info():
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
+	print("PI identified following clients:")
+	for r in clients:
+		print(r)
 
 
 presence_info()
 exit()
-                
+
 
 prevPktid=0
 prevTime=0.0

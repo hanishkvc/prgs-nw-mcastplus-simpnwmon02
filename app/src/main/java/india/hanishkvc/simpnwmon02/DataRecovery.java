@@ -16,7 +16,7 @@ public class DataRecovery {
     static private final int portSrvr = 1112;
     static private final int portClient = 1113;
     private static final int SOCKTIMEOUT = 500;
-    private static final int SSN_META = 0xffffffff;
+    private static final int PIReqSeqNum = 0xffffff00;
     static  public String sID = "AD44";
     private DatagramSocket socket = null;
     public InetAddress peer = null;
@@ -38,13 +38,17 @@ public class DataRecovery {
         DatagramPacket pktR = new DatagramPacket(dataR, dataR.length);
         byte [] dataS = new byte[32];
         ByteBuffer bbS = ByteBuffer.wrap(dataS);
-        bbS.putInt(0,SSN_META);
+        bbS.putInt(0, PIReqSeqNum);
         for (int i = 0; i < sID.length(); i++) {
-            bbS.putChar(4+i, sID.charAt(i));
+            try {
+                bbS.putChar(4+i*2, sID.charAt(i));
+            } catch (IndexOutOfBoundsException e) {
+                bbS.putChar(4+i*2, ' ');
+            }
         }
         DatagramPacket pktS = null;
         try {
-            pktS = new DatagramPacket(bbS.array(),16, InetAddress.getByName(sPeerInitAddr), portSrvr );
+            pktS = new DatagramPacket(bbS.array(),(4+8*2), InetAddress.getByName(sPeerInitAddr), portSrvr );
             Log.i(ATAG, "PeerInitSearchAddr: "+sPeerInitAddr+":"+portSrvr);
         } catch (UnknownHostException e) {
             Log.d(ATAG, "Failed to create broadcast pkt:"+e.toString());
