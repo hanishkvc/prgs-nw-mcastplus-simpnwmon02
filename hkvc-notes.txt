@@ -1,3 +1,29 @@
+
+v20181225+
+==========
+
+The nw port usage is as follows
+
+a) 1111 - Multicast Server to Clients data push
+b) 1112 - Nw Broadcast PIReq from Client to Any listening Server
+c) 1113 - Unicast PIAck from Server to Client
+
+
+So if using Android AVD for testing remember to redir both 1111 as well as 1113
+
+i.e telnet localhost 5554
+NOTE: assuming it is the 1st avd started
+auth value_required_to_authenticate
+NOTE: got from .emulator.... file in the users home dir
+redir add udp:1111:1111
+redir add udp:1113:1113
+redir list
+
+Also if using AVD, then in GUI remember to set the PIInitialAddr to 10.0.2.255
+in the given unicast related edittext.
+
+
+
 v20181223
 ===========
 

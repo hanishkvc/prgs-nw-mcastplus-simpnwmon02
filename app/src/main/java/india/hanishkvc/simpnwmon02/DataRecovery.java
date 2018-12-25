@@ -1,5 +1,11 @@
 package india.hanishkvc.simpnwmon02;
 
+/*
+    Simple Network Monitor 02 Data Recovery Logic
+    v20181226IST0231
+    HanishKVC, GPL, 2018
+ */
+
 import android.util.Log;
 
 import java.io.IOException;
