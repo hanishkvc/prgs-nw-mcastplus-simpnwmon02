@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lvMCasts;
     Button btnMCastAdd;
     Button btnStartMon;
+    Button btnUCast;
 
     String sNwInterface = null;
 
@@ -401,6 +403,26 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "StopMon", Toast.LENGTH_SHORT).show();
                     btnStartMon.setText("StartMon");
                 }
+            }
+        });
+
+        final DataRecovery dr = new DataRecovery();
+        dr.init();
+        btnUCast = findViewById(R.id.btnUnicastStart);
+        btnUCast.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            dr.presence_info();
+                            Toast.makeText(getApplicationContext(), "PI Success:"+dr.peer.toString(), Toast.LENGTH_LONG);
+                        } catch (ConnectException e) {
+                            Toast.makeText(getApplicationContext(), "PI Failed", Toast.LENGTH_LONG);
+                        }
+                    }
+                }).start();
             }
         });
     }
