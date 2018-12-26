@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02
-    v20181226IST0232
+    v20181226IST1523
     HanishKVC, GPL, 2018
  */
 
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PROGRESSUPDATEMOD = (20*5);
     static final String ATAG = "SimpNwMon02";
     private static final int CHANNEL2SAVE = 1;
+    private boolean bMCastData = true;
     EditText etNwInterface;
     EditText etMCastName;
     EditText etMCastGroup;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lvMCasts;
     Button btnMCastAdd;
     Button btnStartMon;
+    Button btnMCastData;
     Button btnUCast;
     EditText etUCast1;
 
@@ -119,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class MCastMonitor extends AsyncTask<Void, Void, Void> {
 
+        boolean bMCastDataSaved = bMCastData;
         int iNumMCastsSaved = iNumMCasts;
         MulticastSocket[] socks = new MulticastSocket[MAXMCASTS];
         int[] iSeqNum = new int[MAXMCASTS];
@@ -159,7 +162,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             theLogTaskThread.start();
-            theDataThread.start();
+            if (bMCastDataSaved) {
+                theDataThread.start();
+            }
             byte buf[] = new byte[1600];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             long prevTime = 0;
@@ -185,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                                         log_lostpackets(iSeqNum[i]+1, curSeq-1);
                                     }
                                 } else {
-                                    if (i == CHANNEL2SAVE) {
+                                    if ((i == CHANNEL2SAVE) && (bMCastDataSaved)){
                                         myDH.Write2DataBuf(curSeq, pkt.getData());
                                     }
                                 }
@@ -293,7 +298,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onCancelled(Void aVoid) {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
             log_stop(CHANNEL2SAVE);
-            data_stop();
+            if (bMCastDataSaved) {
+                data_stop();
+            }
             update_ui();
             Toast.makeText(getApplicationContext(),"MonLogic successfully stopped", Toast.LENGTH_SHORT).show();
         }
@@ -302,7 +309,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
             log_stop(CHANNEL2SAVE);
-            data_stop();
+            if (bMCastDataSaved) {
+                data_stop();
+            }
             update_ui();
             Toast.makeText(getApplicationContext(),"MonLogic failure???", Toast.LENGTH_SHORT).show();
         }
@@ -403,6 +412,20 @@ public class MainActivity extends AppCompatActivity {
                     Log.i(ATAG, "StopMon");
                     Toast.makeText(getApplicationContext(), "StopMon", Toast.LENGTH_SHORT).show();
                     btnStartMon.setText("StartMon");
+                }
+            }
+        });
+
+        btnMCastData = findViewById(R.id.btnMCastData);
+        btnMCastData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (bMCastData) {
+                    bMCastData = false;
+                    btnMCastData.setText("MCastDataOFF");
+                } else {
+                    bMCastData = true;
+                    btnMCastData.setText("MCastDataON");
                 }
             }
         });
