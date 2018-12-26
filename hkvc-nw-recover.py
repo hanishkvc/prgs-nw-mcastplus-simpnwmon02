@@ -14,6 +14,9 @@ portClient = 1113
 PITotalTimeSecs = 10*60
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
+URDeltaTimeSecs = 2*60
+URReqSeqNum = 0xffffff02
+URAckSeqNum = 0xffffff03
 
 
 pktid=0
@@ -57,6 +60,9 @@ socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
+addr = "0.0.0.0"
+print("Listening on [{}:{}]".format(addr, portServer))
+sock.bind((addr, portServer))
 
 print("Will start in 10 secs...")
 time.sleep(10)
@@ -65,9 +71,7 @@ time.sleep(10)
 clients = []
 def presence_info():
 	global sock
-	addr = "0.0.0.0"
 	print("PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
-	sock.bind((addr, portServer))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
@@ -96,7 +100,53 @@ def presence_info():
 		print(r)
 
 
+def ur_send_packets(lostPackets):
+	print("LostPackets:[{}]".format(lostPackets))
+
+
+def ur_client(client):
+	global sock
+	print("UnicastRecovery: Listening on [{}:{}] for client [{}]".format(addr, portServer, client))
+	startTime = time.time()
+	deltaTime = 0
+	iCnt = 0
+	while(deltaTime < URDeltaTimeSecs):
+		print("UR:{}_{}".format(iCnt,deltaTime))
+		data=struct.pack("<Is", URReqSeqNum, bytes("Hello", 'utf8'))
+		sock.sendto(data, (client, portClient))
+		try:
+			d = sock.recvfrom(1024)
+			dataC = d[0]
+			peer = d[1][0]
+			if client != peer:
+				print("UR:WARN: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
+				continue
+			data = struct.unpack("<Is", dataC)
+			if data[0] != URAckSeqNum:
+				print("UR:WARN: Peer has sent wrong data, skipping the same...")
+				continue
+			startTime = time.time()
+			ur_send_packets(data[1])
+		except socket.timeout as e:
+			d = None
+			print(".")
+		curTime = time.time()
+		deltaTime = int(curTime - startTime)
+		iCnt += 1
+
+
+def unicast_recovery():
+	global clients
+
+	for client in clients:
+		ur_client(client)
+	print("Remaining clients:")
+	for r in clients:
+		print(r)
+
+
 presence_info()
+unicast_recovery()
 exit()
 
 
