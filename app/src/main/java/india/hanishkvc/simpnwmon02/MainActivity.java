@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     DataHandler myDH = null;
     private String sExternalBasePath = null;
-    RangeList lostPackets = null;
+    public static RangeList lostPackets = null;
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             if (bMCastDataSaved) {
                 theDataThread.start();
             }
-            byte buf[] = new byte[1600];
+            byte buf[] = new byte[DataRecovery.NWDATA_MAXSIZE];
             DatagramPacket pkt = new DatagramPacket(buf, buf.length);
             long prevTime = 0;
             while (!isCancelled()) {

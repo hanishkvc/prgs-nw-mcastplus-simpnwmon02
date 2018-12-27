@@ -14,15 +14,20 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 public class DataRecovery {
+    public static final int NWDATA_MAXSIZE = 1600;
     static private final String ATAG = MainActivity.ATAG + "_DR";
     static private final int portSrvr = 1112;
     static private final int portClient = 1113;
     private static final int SOCKTIMEOUT = 500;
+    private static final int NWCMDCOMMON = 0xffffff00;
     private static final int PIReqSeqNum = 0xffffff00;
+    private static final int URReqSeqNum = 0xffffff02;
+    private static final int URAckSeqNum = 0xffffff03;
     static  public String sID = "AD44";
     private DatagramSocket socket = null;
     public InetAddress peer = null;
@@ -75,4 +80,57 @@ public class DataRecovery {
             throw new ConnectException("Didnt find peer using PI");
         }
     }
+
+    public void unicast_recovery() throws ConnectException {
+        byte [] dataR = new byte[NWDATA_MAXSIZE];
+        ByteBuffer bbR = ByteBuffer.wrap(dataR);
+        DatagramPacket pktR = new DatagramPacket(dataR, dataR.length);
+        byte [] dataS = new byte[NWDATA_MAXSIZE];
+        ByteBuffer bbS = ByteBuffer.wrap(dataS);
+
+        while (true) {
+            try {
+                socket.receive(pktR);
+            } catch (SocketTimeoutException e) {
+                Log.w(ATAG, "Nw is silent :-(");
+                continue;
+            } catch (IOException e) {
+                Log.e(ATAG, "Waiting for Nw comm:"+e.toString());
+                continue;
+            }
+            InetAddress tPeer = pktR.getAddress();
+            if (tPeer != peer) {
+                Log.w(ATAG, "Got packet for ["+tPeer+"] but peer is ["+peer+"], so ignoring");
+                continue;
+            }
+            int cmd = bbR.getInt(0);
+            if ((cmd & NWCMDCOMMON) == NWCMDCOMMON) {
+                if (cmd == URReqSeqNum) {
+                    Log.i(ATAG, "Got URReqSeqNum");
+                    bbS.putInt(0, URAckSeqNum);
+                    int numOfRanges = 10;
+                    if (MainActivity.lostPackets.list.size() < numOfRanges) {
+                        numOfRanges = MainActivity.lostPackets.list.size();
+                    }
+                    for (int i = 0; i < numOfRanges; i++) {
+                        String tData = MainActivity.lostPackets.getStart(i)+"-"+MainActivity.lostPackets.getEnd(i)+"\n";
+                        bbS.put(tData.getBytes());
+                    }
+                    DatagramPacket pktS = null;
+                    pktS = new DatagramPacket(bbS.array(),(4+8*2), peer, portSrvr );
+                    try {
+                        socket.send(pktS);
+                        Log.i(ATAG, "URAckSeqNum Sent to " + peer.toString());
+                    } catch (IOException e) {
+                        Log.d(ATAG, "URAckSeqNum send Failed:"+e.toString());
+                    }
+                } else {
+                    Log.w(ATAG, "Got UnExpected Nw Command");
+                }
+                continue;
+            }
+            Log.d(ATAG, "Ignoring Data packets for now");
+        }
+    }
+
 }

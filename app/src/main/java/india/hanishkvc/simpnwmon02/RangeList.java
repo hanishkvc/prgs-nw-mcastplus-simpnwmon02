@@ -114,4 +114,12 @@ public class RangeList {
         }
     }
 
+    public int getStart(int index) {
+        return list.get(index).start;
+    }
+
+    public int getEnd(int index) {
+        return list.get(index).end;
+    }
+
 }
