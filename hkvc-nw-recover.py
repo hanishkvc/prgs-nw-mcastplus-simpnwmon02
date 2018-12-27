@@ -12,7 +12,6 @@ portServer = 1112
 portClient = 1113
 
 PITotalTimeSecs = 10*60
-PITotalTimeSecs = 3*60
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
 URDeltaTimeSecs = 3*60
@@ -27,6 +26,7 @@ dataSize=1024
 Bps=2e6
 addr="127.0.0.1"
 sfData=None
+sMode="NORMAL"
 
 iArg=1
 while iArg < len(sys.argv):
@@ -48,6 +48,8 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--fast"):
+		sMode="FAST"
 	iArg += 1
 
 fData=None
@@ -56,6 +58,10 @@ if (sfData != None):
 
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+
+if (sMode == "FAST"):
+	PITotalTimeSecs=1*60
+print(" sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
 
 socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -122,9 +128,10 @@ def ur_client(client):
 			if client != peer:
 				print("UR:WARN:WrongPeer: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
 				continue
-			cmd = struct.unpack("<I", dataC[0:4])
+			print(dataC)
+			cmd = struct.unpack("<I", dataC[0:4])[0]
 			if cmd != URAckSeqNum:
-				print("UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(cmd))
+				print("UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(hex(cmd)))
 				continue
 			data = dataC[4:]
 			ur_send_packets(data)

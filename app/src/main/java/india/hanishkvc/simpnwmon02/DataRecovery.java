@@ -24,7 +24,7 @@ public class DataRecovery {
     static private final String ATAG = MainActivity.ATAG + "_DR";
     static private final int portSrvr = 1112;
     static private final int portClient = 1113;
-    private static final int SOCKTIMEOUT = 500;
+    private static final int SOCKTIMEOUT = 2000;
     private static final int NWCMDCOMMON = 0xffffff00;
     private static final int PIReqSeqNum = 0xffffff00;
     private static final int URReqSeqNum = 0xffffff02;
@@ -66,7 +66,7 @@ public class DataRecovery {
         } catch (UnknownHostException e) {
             Log.d(ATAG, "Failed to create broadcast pkt:"+e.toString());
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 120; i++) {
             Log.i(ATAG, "PI find peer: try "+i);
             try {
                 socket.send(pktS);
@@ -90,6 +90,7 @@ public class DataRecovery {
         DatagramPacket pktR = new DatagramPacket(dataR, dataR.length);
         byte [] dataS = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbS = ByteBuffer.wrap(dataS);
+        bbS.order(ByteOrder.LITTLE_ENDIAN);
 
         while (!bExit) {
             try {
@@ -110,7 +111,8 @@ public class DataRecovery {
             if ((cmd & NWCMDCOMMON) == NWCMDCOMMON) {
                 if (cmd == URReqSeqNum) {
                     Log.i(ATAG, "Got URReqSeqNum");
-                    bbS.putInt(0, URAckSeqNum);
+                    bbS.rewind();
+                    bbS.putInt(URAckSeqNum);
                     int numOfRanges = 10;
                     if (MainActivity.lostPackets.list.size() < numOfRanges) {
                         numOfRanges = MainActivity.lostPackets.list.size();
