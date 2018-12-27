@@ -48,21 +48,17 @@ public class RangeList {
     }
 
     public void addRange(int start, int end) {
-        if (list.size() == 0) {
-            list.add(new Range(start, end));
-            return;
-        }
         for(int i = 0; i < list.size(); i++) {
             if (list.get(i).start > start) {
                 if (list.get(i).start > end) {
                     list.add(i, new Range(start, end));
-                    break;
+                    return;
                 } else {
                     list.get(i).start = start;
                     if (list.get(i).end < end) {
                         list.get(i).end = end;
                     } // else { list.get(i).end = list.get(i).end}
-                    break;
+                    return;
                 }
                 //break
             } else  {
@@ -70,21 +66,20 @@ public class RangeList {
                     if (list.get(i).end < end) {
                         list.get(i).end = end;
                     }
-                    break;
+                    return;
                 } else {
                     if (list.get(i).end >= end) {
-                        break;
+                        return;
                     } else {
-                        if (list.get(i).end < start) {
-                            list.add(i+1, new Range(start, end));
-                        } else {
+                        if (list.get(i).end >= start) {
                             list.get(i).end = end;
+                            return;
                         }
-                        break;
                     }
                 }
             }
         }
+        list.add(new Range(start, end));
     }
 
     public void remove(int val) {
