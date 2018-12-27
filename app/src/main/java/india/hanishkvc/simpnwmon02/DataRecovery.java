@@ -17,6 +17,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class DataRecovery {
     public static final int NWDATA_MAXSIZE = 1600;
@@ -85,6 +86,7 @@ public class DataRecovery {
     public void unicast_recovery() {
         byte [] dataR = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbR = ByteBuffer.wrap(dataR);
+        bbR.order(ByteOrder.LITTLE_ENDIAN);
         DatagramPacket pktR = new DatagramPacket(dataR, dataR.length);
         byte [] dataS = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbS = ByteBuffer.wrap(dataS);
@@ -130,7 +132,7 @@ public class DataRecovery {
                 }
                 continue;
             }
-            Log.d(ATAG, "Ignoring Data packet saving for now");
+            Log.d(ATAG, "Ignoring Data packet ["+ Integer.toHexString(cmd)+"]saving for now");
             MainActivity.lostPackets.remove(cmd);
         }
         Log.w(ATAG, "Quiting UnicastRecovery");

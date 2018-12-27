@@ -120,13 +120,14 @@ def ur_client(client):
 			dataC = d[0]
 			peer = d[1][0]
 			if client != peer:
-				print("UR:WARN: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
+				print("UR:WARN:WrongPeer: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
 				continue
-			data = struct.unpack("<Is", dataC)
-			if data[0] != URAckSeqNum:
-				print("UR:WARN: Peer has sent wrong data, skipping the same...")
+			cmd = struct.unpack("<I", dataC[0:4])
+			if cmd != URAckSeqNum:
+				print("UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(cmd))
 				continue
-			ur_send_packets(data[1])
+			data = dataC[4:]
+			ur_send_packets(data)
 			startTime = time.time()
 		except socket.timeout as e:
 			d = None
