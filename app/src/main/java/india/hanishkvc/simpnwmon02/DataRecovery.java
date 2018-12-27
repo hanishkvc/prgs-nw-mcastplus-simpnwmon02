@@ -81,7 +81,7 @@ public class DataRecovery {
         }
     }
 
-    public void unicast_recovery() throws ConnectException {
+    public void unicast_recovery() {
         byte [] dataR = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbR = ByteBuffer.wrap(dataR);
         DatagramPacket pktR = new DatagramPacket(dataR, dataR.length);
@@ -129,7 +129,8 @@ public class DataRecovery {
                 }
                 continue;
             }
-            Log.d(ATAG, "Ignoring Data packets for now");
+            Log.d(ATAG, "Ignoring Data packet saving for now");
+            MainActivity.lostPackets.remove(cmd);
         }
     }
 

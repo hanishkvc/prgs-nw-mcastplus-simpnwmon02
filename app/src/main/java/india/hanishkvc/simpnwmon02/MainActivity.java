@@ -456,6 +456,9 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             dr.presence_info();
                             Log.i(ATAG, "PI Success:"+dr.peer.toString());
+                            dr.unicast_recovery();
+                            // May not reach here currently
+                            Log.i(ATAG, "UR Done");
                         } catch (ConnectException ce) {
                             Log.e(ATAG, "PI Failed");
                         }

@@ -125,8 +125,8 @@ def ur_client(client):
 			if data[0] != URAckSeqNum:
 				print("UR:WARN: Peer has sent wrong data, skipping the same...")
 				continue
-			startTime = time.time()
 			ur_send_packets(data[1])
+			startTime = time.time()
 		except socket.timeout as e:
 			d = None
 			print(".")
