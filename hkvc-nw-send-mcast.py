@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-# v20181228IST0209
+# v20181228IST0447
 # HanishKVC, GPL, 19XY
 #
 
@@ -70,8 +70,9 @@ while True:
 			break
 	else:
 		tmpData = bytes(dataSize-4)
-		curData = struct.pack("<Is", pktid, tmpData)
-	data=struct.pack("<Is", pktid, curData)
+		curData = struct.pack("<I{}s".format(dataSize-4), pktid, tmpData)
+		#print(curData, len(curData))
+	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
 	sock.sendto(data, (addr, port))
 	pktid += 1
 	if ((pktid%N) == 0):

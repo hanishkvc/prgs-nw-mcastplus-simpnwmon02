@@ -5,7 +5,7 @@
 # A test script which collates all available active clients in the network
 # which talk the same language. In turn it tries to help recover lost packets
 # wrt each of the client using unicast tranfers.
-# v20181228IST0209
+# v20181228IST0447
 # HanishKVC, GPL, 19XY
 #
 
@@ -199,8 +199,8 @@ def send_file_data(peer, indexList):
 				break
 		else:
 			tmpData = bytes(dataSize-4)
-			curData = struct.pack("<Is", i, tmpData)
-		data=struct.pack("<Is", i, curData)
+			curData = struct.pack("<I{}s".format(dataSize-4), i, tmpData)
+		data=struct.pack("<I{}s".format(dataSize), i, curData)
 		sock.sendto(data, (peer, portClient))
 		pktid += 1
 		if ((pktid%N) == 0):
