@@ -99,7 +99,7 @@ public class DataRecovery {
                 continue;
             }
             InetAddress tPeer = pktR.getAddress();
-            if (tPeer != peer) {
+            if (!tPeer.equals(peer)) {
                 Log.w(ATAG, "Got packet for ["+tPeer+"] but peer is ["+peer+"], so ignoring");
                 continue;
             }

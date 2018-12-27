@@ -12,9 +12,10 @@ portServer = 1112
 portClient = 1113
 
 PITotalTimeSecs = 10*60
+PITotalTimeSecs = 3*60
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
-URDeltaTimeSecs = 2*60
+URDeltaTimeSecs = 3*60
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
 

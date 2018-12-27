@@ -223,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            log_stop(CHANNEL2SAVE);
+
             try {
                 for (int i = 1; i < iNumMCastsSaved; i++) {
                     socks[i].leaveGroup(InetAddress.getByName(sMCGroup[i]));
@@ -257,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
             if (lostPackets != null) {
                 try {
                     lostPackets.saveToFile(myDH.getLogFileName()+".txt");
+                    Log.i(ATAG, "LostPackets savedToFile");
                 } catch (IOException e) {
                     Log.e(ATAG, "LostPacketsSaveToFile:"+e.toString());
                 }
@@ -307,7 +310,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onCancelled(Void aVoid) {
             Log.i(ATAG, "AsyncTask onCancelled, MonLogic successfully stopped!!!");
-            log_stop(CHANNEL2SAVE);
             if (bMCastDataSaved) {
                 data_stop();
             }
@@ -318,7 +320,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             Log.w(ATAG, "AsyncTask onPostExecute, MonLogic failure???");
-            log_stop(CHANNEL2SAVE);
             if (bMCastDataSaved) {
                 data_stop();
             }
