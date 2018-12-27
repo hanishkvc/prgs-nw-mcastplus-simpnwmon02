@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02
-    v20181226IST1523
+    v20181227IST20XY
     HanishKVC, GPL, 2018
  */
 
