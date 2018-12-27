@@ -48,12 +48,13 @@ if (sfData != None):
 
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+print("Will start in 10 secs...")
 time.sleep(10)
 
 prevPktid=0
-prevTime=0.0
+prevTime=time.time()
 curTime=0.0
-prevTimeThrottle=0.0
+prevTimeThrottle=time.time()
 while True:
 	if (fData != None):
 		curData = fData.read(dataSize)

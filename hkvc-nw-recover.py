@@ -111,6 +111,8 @@ def gen_lostpackets_array(lostPackets):
 	lp = lp.split(b'\n')
 	lpa = []
 	for r in lp:
+		if (r == b''):
+			continue
 		r = r.split(b'-')
 		s = int(r[0])
 		e = int(r[1])
@@ -149,6 +151,9 @@ def ur_client(client):
 				print("UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(hex(cmd)))
 				continue
 			data = dataC[4:]
+			if (data == b''):
+				print("UR:INFO: No MORE lost packets for [{}]".format(client))
+				return
 			ur_send_packets(client, data)
 			startTime = time.time()
 		except socket.timeout as e:
@@ -169,11 +174,6 @@ def unicast_recovery():
 		print(r)
 
 
-presence_info()
-unicast_recovery()
-exit()
-
-
 def send_file_data(peer, indexList):
 	prevPktid=0
 	prevTime=time.time()
@@ -181,6 +181,7 @@ def send_file_data(peer, indexList):
 	prevTimeThrottle=time.time()
 	pktid = 0
 	for i in indexList:
+		print("send_file_data: sending data for index [{}]\n".format(i))
 		if (fData != None):
 			fData.seek(i*dataSize)
 			curData = fData.read(dataSize)
@@ -189,7 +190,7 @@ def send_file_data(peer, indexList):
 		else:
 			curData = bytes(dataSize)
 		data=struct.pack("<Is", i, curData)
-		sock.sendto(data, (peer, port))
+		sock.sendto(data, (peer, portClient))
 		pktid += 1
 		if ((pktid%N) == 0):
 			curTime = time.time()
@@ -213,5 +214,9 @@ def send_file_data(peer, indexList):
 			prevPktid = pktid
 
 
+
+
+presence_info()
+unicast_recovery()
 print("INFO: Done with transfer")
 
