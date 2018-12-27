@@ -5,7 +5,7 @@ package india.hanishkvc.simpnwmon02;
     This needs to be called from a new thread, so that the caller doesnt block.
     The caller will have to call it with a new thread runnable each time.
     v20181220IST1530
-    HanishKVC, GPL, 2018
+    HanishKVC, GPL, 19XY
  */
 
 public class LogTask implements Runnable {

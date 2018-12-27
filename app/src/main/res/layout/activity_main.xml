@@ -185,6 +185,7 @@
                 android:id="@+id/etUnicast1"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:inputType="text|number"
                 android:text="255.255.255.255"/>
 
         </LinearLayout>

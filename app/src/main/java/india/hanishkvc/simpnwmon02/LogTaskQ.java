@@ -6,7 +6,7 @@ package india.hanishkvc.simpnwmon02;
     However here the Caller needs to create a single Thread and Inturn also create a BlockingQueue
     which will be used to pass data from the caller to this logic.
     v20181220IST1530
-    HanishKVC, GPL, 2018
+    HanishKVC, GPL, 19XY
  */
 
 import android.util.Log;

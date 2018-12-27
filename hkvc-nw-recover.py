@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#
+# hkvc-nw-recover.py
+# A test script which collates all available active clients in the network
+# which talk the same language. In turn it tries to help recover lost packets
+# wrt each of the client using unicast tranfers.
+# v20181228IST0209
+# HanishKVC, GPL, 19XY
+#
+
 import os
 import sys
 import time
@@ -60,6 +69,7 @@ print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPkt
 
 if (sMode == "FAST"):
 	PITotalTimeSecs=1*60
+print(" portServer [{}], portClient [{}]".format(portServer, portClient))
 print(" sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
 
 socket.setdefaulttimeout(1)

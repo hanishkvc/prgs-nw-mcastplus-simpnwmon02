@@ -2,8 +2,8 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02 Data Recovery Logic
-    v20181227IST20XY
-    HanishKVC, GPL, 2018
+    v20181228IST0213
+    HanishKVC, GPL, 19XY
  */
 
 import android.util.Log;
