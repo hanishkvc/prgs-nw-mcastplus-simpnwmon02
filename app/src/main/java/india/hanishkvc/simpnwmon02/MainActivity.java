@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     DataHandler myDH = null;
     private String sExternalBasePath = null;
     public static RangeList lostPackets = null;
+    private DataRecovery dr = null;
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -441,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final DataRecovery dr = new DataRecovery();
+        dr = new DataRecovery();
         dr.init();
 
         etUCast1 = findViewById(R.id.etUnicast1);
@@ -471,6 +472,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (dr != null) {
+            dr.bExit = true;
+        }
         myDH.CloseFiles();
         super.onDestroy();
     }

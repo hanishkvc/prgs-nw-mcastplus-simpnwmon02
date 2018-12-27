@@ -29,6 +29,7 @@ public class DataRecovery {
     private static final int URReqSeqNum = 0xffffff02;
     private static final int URAckSeqNum = 0xffffff03;
     static  public String sID = "AD44";
+    public boolean bExit = false;
     private DatagramSocket socket = null;
     public InetAddress peer = null;
     public String sPeerInitAddr = "255.255.255.255";
@@ -88,7 +89,7 @@ public class DataRecovery {
         byte [] dataS = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbS = ByteBuffer.wrap(dataS);
 
-        while (true) {
+        while (!bExit) {
             try {
                 socket.receive(pktR);
             } catch (SocketTimeoutException e) {
@@ -132,6 +133,7 @@ public class DataRecovery {
             Log.d(ATAG, "Ignoring Data packet saving for now");
             MainActivity.lostPackets.remove(cmd);
         }
+        Log.w(ATAG, "Quiting UnicastRecovery");
     }
 
 }
