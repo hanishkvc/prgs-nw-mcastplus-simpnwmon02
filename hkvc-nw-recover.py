@@ -198,7 +198,8 @@ def send_file_data(peer, indexList):
 			if (curData == b''):
 				break
 		else:
-			curData = bytes(dataSize)
+			tmpData = bytes(dataSize-4)
+			curData = struct.pack("<Is", i, tmpData)
 		data=struct.pack("<Is", i, curData)
 		sock.sendto(data, (peer, portClient))
 		pktid += 1

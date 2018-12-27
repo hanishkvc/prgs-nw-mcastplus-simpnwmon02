@@ -69,7 +69,8 @@ while True:
 		if (curData == b''):
 			break
 	else:
-		curData = bytes(dataSize)
+		tmpData = bytes(dataSize-4)
+		curData = struct.pack("<Is", pktid, tmpData)
 	data=struct.pack("<Is", pktid, curData)
 	sock.sendto(data, (addr, port))
 	pktid += 1
