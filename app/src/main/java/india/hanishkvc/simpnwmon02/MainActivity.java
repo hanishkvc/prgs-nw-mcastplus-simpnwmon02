@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     DataHandler myDH = null;
     private String sExternalBasePath = null;
+    RangeList lostPackets = null;
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -137,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
                 myDH.SaveDataBufs();
             }
         });
-        RangeList lostPackets = null;
 
         @Override
         protected Void doInBackground(Void... voids) {
