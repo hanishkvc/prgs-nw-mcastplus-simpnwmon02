@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PROGRESSUPDATEMOD = (20*5);
     static final String ATAG = "SimpNwMon02";
     private static final int CHANNEL2SAVE = 1;
-    private boolean bMCastData = true;
+    static boolean bMCastData = true;
     EditText etNwInterface;
     EditText etMCastName;
     EditText etMCastGroup;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     int[] iMCRedDelay = new int[MAXMCASTS];
     int[] iMCSeqOffset = new int[MAXMCASTS];
 
-    DataHandler myDH = null;
+    static DataHandler myDH = null;
     private String sExternalBasePath = null;
     public static RangeList lostPackets = null;
     private DataRecovery dr = null;

@@ -84,6 +84,7 @@ public class DataRecovery {
     }
 
     public void unicast_recovery() {
+        boolean bMCastDataSaved = MainActivity.bMCastData;
         byte [] dataR = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbR = ByteBuffer.wrap(dataR);
         bbR.order(ByteOrder.LITTLE_ENDIAN);
@@ -91,6 +92,16 @@ public class DataRecovery {
         byte [] dataS = new byte[NWDATA_MAXSIZE];
         ByteBuffer bbS = ByteBuffer.wrap(dataS);
         bbS.order(ByteOrder.LITTLE_ENDIAN);
+
+        Thread theDataThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.myDH.SaveDataBufs();
+            }
+        });
+        if (bMCastDataSaved) {
+            theDataThread.start();
+        }
 
         while (!bExit) {
             try {
@@ -134,10 +145,14 @@ public class DataRecovery {
                 }
                 continue;
             }
-            Log.d(ATAG, "Ignoring Data packet ["+ Integer.toHexString(cmd)+"]saving for now");
+            Log.d(ATAG, "Saving Data packet ["+cmd+"] "+bMCastDataSaved);
+            if (bMCastDataSaved){
+                MainActivity.myDH.Write2DataBuf(cmd, pktR.getData());
+            }
             MainActivity.lostPackets.remove(cmd);
         }
         Log.w(ATAG, "Quiting UnicastRecovery");
+        MainActivity.myDH.Write2DataBuf(0,null);
     }
 
 }
