@@ -124,7 +124,7 @@ public class DataRecovery {
                     Log.i(ATAG, "Got URReqSeqNum");
                     bbS.rewind();
                     bbS.putInt(URAckSeqNum);
-                    int numOfRanges = 10;
+                    int numOfRanges = 30;
                     if (MainActivity.lostPackets.list.size() < numOfRanges) {
                         numOfRanges = MainActivity.lostPackets.list.size();
                     }

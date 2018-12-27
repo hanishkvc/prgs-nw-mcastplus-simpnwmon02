@@ -179,7 +179,7 @@ def unicast_recovery():
 
 	for client in clients:
 		ur_client(client)
-	print("Remaining clients:")
+	print("Remaining clients:") # TODO: Need to update the clients list
 	for r in clients:
 		print(r)
 
@@ -191,7 +191,7 @@ def send_file_data(peer, indexList):
 	prevTimeThrottle=time.time()
 	pktid = 0
 	for i in indexList:
-		print("send_file_data: sending data for index [{}]\n".format(i))
+		#print("send_file_data: sending data for index [{}]\n".format(i))
 		if (fData != None):
 			fData.seek(i*dataSize)
 			curData = fData.read(dataSize)
@@ -214,7 +214,7 @@ def send_file_data(peer, indexList):
 				if (len(rlist) == 1):
 					a=input()
 			prevTimeThrottle = time.time()
-		if ((pktid%(N*N*10)) == 0):
+		if ((pktid%(N*N*2)) == 0):
 			curTime=time.time()
 			numPkts = pktid - prevPktid
 			timeDelta = curTime - prevTime
