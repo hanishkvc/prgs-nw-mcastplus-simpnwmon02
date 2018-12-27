@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02 Data Handler
-    v20181227IST18XY
+    v20181228IST0358
     HanishKVC, GPL, 19XY
  */
 
@@ -116,7 +116,7 @@ public class DataHandler {
                 dataQueue.put(STOP_SAVEDATABUFS);
                 return;
             }
-            System.arraycopy(theData, 0, dataBuf, iWrite2Buf*DATABUFSIZE, dataSize);
+            System.arraycopy(theData, 4, dataBuf, iWrite2Buf*DATABUFSIZE, dataSize);
             blockId[iWrite2Buf] = theBlockId;
             dataQueue.put(iWrite2Buf);
             iWrite2Buf += 1;
