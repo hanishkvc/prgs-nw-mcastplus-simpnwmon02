@@ -137,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
                 myDH.SaveDataBufs();
             }
         });
+        RangeList lostPackets = null;
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -161,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
+            lostPackets = new RangeList();
             theLogTaskThread.start();
             if (bMCastDataSaved) {
                 theDataThread.start();
@@ -188,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                                     iDisjointPktCnt[i] += (curSeq - iSeqNum[i] - 1);
                                     if (i == CHANNEL2SAVE) {
                                         log_lostpackets(iSeqNum[i]+1, curSeq-1);
+                                        lostPackets.addRange(iSeqNum[i]+1, curSeq-1);
                                     }
                                 } else {
                                     if ((i == CHANNEL2SAVE) && (bMCastDataSaved)){
@@ -251,6 +254,13 @@ public class MainActivity extends AppCompatActivity {
             myDH.LogStrLn("SUMMARY:DisjointSeqs:"+iDisjointSeqs[i]);
             myDH.LogStrLn("SUMMARY:DisjointPktCnt:"+iDisjointPktCnt[i]);
             myDH.LogStrLn("SUMMARY:OlderSeqs:"+iOlderSeqs[i]);
+            if (lostPackets != null) {
+                try {
+                    lostPackets.saveToFile(myDH.getLogFileName()+".txt");
+                } catch (IOException e) {
+                    Log.e(ATAG, "LostPacketsSaveToFile:"+e.toString());
+                }
+            }
         }
 
         private void data_stop() {

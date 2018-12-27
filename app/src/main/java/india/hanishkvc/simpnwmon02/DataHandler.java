@@ -66,6 +66,10 @@ public class DataHandler {
         }
     }
 
+    public String getLogFileName() {
+        return logFileName;
+    }
+
     public void LogLostPacketsEx(int StartSeq, int EndSeq) {
         synchronized (logFile) {
             for (int i = StartSeq; i <= EndSeq; i++) {
