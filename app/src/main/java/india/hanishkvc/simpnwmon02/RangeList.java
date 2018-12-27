@@ -75,7 +75,11 @@ public class RangeList {
                     if (list.get(i).end >= end) {
                         break;
                     } else {
-                        list.get(i).end = end;
+                        if (list.get(i).end < start) {
+                            list.add(i+1, new Range(start, end));
+                        } else {
+                            list.get(i).end = end;
+                        }
                         break;
                     }
                 }

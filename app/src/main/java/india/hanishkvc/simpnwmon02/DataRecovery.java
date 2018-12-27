@@ -122,7 +122,7 @@ public class DataRecovery {
                         bbS.put(tData.getBytes());
                     }
                     DatagramPacket pktS = null;
-                    pktS = new DatagramPacket(bbS.array(),(4+8*2), peer, portSrvr );
+                    pktS = new DatagramPacket(bbS.array(),bbS.position(), peer, portSrvr );
                     try {
                         socket.send(pktS);
                         Log.i(ATAG, "URAckSeqNum Sent to " + peer.toString());
