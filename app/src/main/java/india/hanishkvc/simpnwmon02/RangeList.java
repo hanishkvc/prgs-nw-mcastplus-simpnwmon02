@@ -6,6 +6,8 @@ package india.hanishkvc.simpnwmon02;
     HanishKVC, GPL, 2018
  */
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.TreeSet;
 
@@ -32,7 +34,24 @@ public class RangeList {
 
     }
 
+    public void saveToFile(String sFile) throws IOException {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(sFile);
+            for (int i = 0; i < list.size(); i++) {
+                fw.write(list.get(i).start+"-"+list.get(i).end+"\n");
+            }
+            fw.close();
+        } catch (IOException e) {
+            throw new IOException("RL:saveToFile:IOException:"+e.toString());
+        }
+    }
+
     public void addRange(int start, int end) {
+        if (list.size() == 0) {
+            list.add(new Range(start, end));
+            return;
+        }
         for(int i = 0; i < list.size(); i++) {
             if (list.get(i).start > start) {
                 if (list.get(i).start > end) {
