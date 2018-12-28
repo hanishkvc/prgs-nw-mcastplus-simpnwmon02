@@ -1,3 +1,19 @@
+v20181228
+===========
+
+There is some odd holes seen in the data file after both mcast and ucast are
+finished successfully. Need to cross-check this later.
+
+Tried changing from FileOutputStream to RandomAccessFile in-case if its that
+FileOutputStream doesn't allow selective writing into a existing file, but that
+doesnt seem to have solved it, need to test the RandomAccessFile after removing
+the data.bin file on the target and see how a fresh transfer with
+RandomAccessFile works out.
+
+Also on testing on a actual physical android target, found that if the packet
+data size is at something like 8 bytes or so, the Android Java based GUI is
+picking up the packets, but if I increase the data size to 32 or above, it
+doesn't seem to be recieving the packets.
 
 v20181225+
 ==========

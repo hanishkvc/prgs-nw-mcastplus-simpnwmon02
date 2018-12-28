@@ -9,9 +9,9 @@ package india.hanishkvc.simpnwmon02;
 
 import android.util.Log;
 
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class DataHandler {
@@ -19,7 +19,7 @@ public class DataHandler {
     private static final String LINETERM = "\n";
     private String dataFileName = null;
     private String logFileName = null;
-    private FileOutputStream dataFile = null;
+    private RandomAccessFile dataFile = null;
     private FileWriter logFile = null;
     private static String ATAG = MainActivity.ATAG+"_DH";
     public static final int NUMOFDATABUFS = 64;
@@ -40,7 +40,7 @@ public class DataHandler {
 
     public void OpenFiles() throws IOException {
         try {
-            dataFile = new FileOutputStream(dataFileName);
+            dataFile = new RandomAccessFile(dataFileName, "rw");
             logFile = new FileWriter(logFileName);
             Log.i(ATAG, "Opened Data & Log Files");
         } catch (Exception e) {
@@ -132,7 +132,7 @@ public class DataHandler {
         try {
             Log.i(ATAG, "Saving DataBuf: " + iData);
             synchronized (dataFile) {
-                dataFile.getChannel().position(blockId[iData]*dataSize);
+                dataFile.seek(blockId[iData]*dataSize);
                 dataFile.write(dataBuf, iData*DATABUFSIZE, dataSize);
             }
         } catch (IOException e) {
