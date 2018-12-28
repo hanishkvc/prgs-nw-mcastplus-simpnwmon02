@@ -7,6 +7,7 @@ package india.hanishkvc.simpnwmon02;
  */
 
 
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -70,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
     private String sExternalBasePath = null;
     public static RangeList lostPackets = null;
     private DataRecovery dr = null;
+    private WifiManager wifiManager = null;
+    private WifiManager.MulticastLock wifiMulticastLock = null;
+    private WifiManager.WifiLock wifiLock = null;
 
     private class AdapterLVMCasts extends BaseAdapter {
 
@@ -369,6 +373,13 @@ public class MainActivity extends AppCompatActivity {
         myDH.dataSize = 1024; // todo: hardcoded for now
         Log.i(ATAG, "DataHandler is setup");
 
+        // Manage Wifi based connection properties
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, ATAG);
+        wifiLock.acquire();
+        wifiMulticastLock = wifiManager.createMulticastLock(ATAG);
+        wifiMulticastLock.acquire();
+
         etNwInterface = findViewById(R.id.etNwInt);
         getNwInterfaces();
         etMCastName = findViewById(R.id.etMCastName);
@@ -475,6 +486,8 @@ public class MainActivity extends AppCompatActivity {
         if (dr != null) {
             dr.bExit = true;
         }
+        wifiMulticastLock.release();
+        wifiLock.release();
         myDH.CloseFiles();
         super.onDestroy();
     }
