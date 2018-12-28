@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02 Data Handler
-    v20181228IST0358
+    v20181229IST0156
     HanishKVC, GPL, 19XY
  */
 
@@ -31,7 +31,7 @@ public class DataHandler {
     //private Semaphore sem = new Semaphore(NUMOFDATABUFS-BUF2LOCKDELTA,true);
     private int iWrite2Buf = 0;
     private int iSaveBuf = 0;
-    private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS);
+    private LinkedBlockingQueue dataQueue = new LinkedBlockingQueue(NUMOFDATABUFS-BUF2LOCKDELTA);
 
     public DataHandler(String sDataFile, String sLogFile) {
         dataFileName = sDataFile;
