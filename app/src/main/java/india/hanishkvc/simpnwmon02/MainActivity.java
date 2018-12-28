@@ -197,10 +197,9 @@ public class MainActivity extends AppCompatActivity {
                                         log_lostpackets(iSeqNum[i]+1, curSeq-1);
                                         lostPackets.addRange(iSeqNum[i]+1, curSeq-1);
                                     }
-                                } else {
-                                    if ((i == CHANNEL2SAVE) && (bMCastDataSaved)){
-                                        myDH.Write2DataBuf(curSeq, pkt.getData());
-                                    }
+                                }
+                                if ((i == CHANNEL2SAVE) && (bMCastDataSaved)){
+                                    myDH.Write2DataBuf(curSeq, pkt.getData());
                                 }
                                 iSeqNum[i] = curSeq;
                             }
