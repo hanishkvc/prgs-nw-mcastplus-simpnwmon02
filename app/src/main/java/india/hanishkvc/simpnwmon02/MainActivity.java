@@ -2,7 +2,7 @@ package india.hanishkvc.simpnwmon02;
 
 /*
     Simple Network Monitor 02
-    v20181228IST0212
+    v20181228IST2312
     HanishKVC, GPL, 19XY
  */
 
@@ -375,10 +375,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Manage Wifi based connection properties
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, ATAG);
-        wifiLock.acquire();
-        wifiMulticastLock = wifiManager.createMulticastLock(ATAG);
-        wifiMulticastLock.acquire();
+        if (wifiManager != null) {
+            wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, ATAG);
+            wifiLock.acquire();
+            wifiMulticastLock = wifiManager.createMulticastLock(ATAG);
+            wifiMulticastLock.acquire();
+            Log.i(ATAG, "Acquired Wifi and WifiMulticast Locks");
+        } else {
+            Log.w(ATAG, "No WiFiManager");
+        }
 
         etNwInterface = findViewById(R.id.etNwInt);
         getNwInterfaces();
@@ -483,11 +488,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        int iWifiUnLockCnt = 0;
         if (dr != null) {
             dr.bExit = true;
         }
-        wifiMulticastLock.release();
-        wifiLock.release();
+        if (wifiMulticastLock != null) {
+            wifiMulticastLock.release();
+            iWifiUnLockCnt = 0x08;
+            Log.i(ATAG, "Released WifiMulticast Lock");
+        }
+        if (wifiLock != null) {
+            wifiLock.release();
+            iWifiUnLockCnt = iWifiUnLockCnt | 0x80;
+            Log.i(ATAG, "Released Wifi Lock");
+        }
+        Log.i(ATAG, "iWifiUnLockCnt is "+Integer.toHexString(iWifiUnLockCnt));
         myDH.CloseFiles();
         super.onDestroy();
     }
