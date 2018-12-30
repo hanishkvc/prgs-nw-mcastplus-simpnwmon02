@@ -55,11 +55,26 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
+	int iRet;
+
 	if (len != giDataSize) {
 		fprintf(stderr, "WARN:%s:giDataSize[%d] != pktDataLen[%d]\n", __func__, giDataSize, len);
 	}
-	lseek(fileData, iBlockOffset*giDataSize, SEEK_SET);
-	write(fileData, buf, len);
+	iRet = lseek(fileData, iBlockOffset*giDataSize, SEEK_SET);
+	if (iRet == -1) {
+		perror("WARN:filedata_save:lseek failed:");
+		return -1;
+	}
+	iRet = write(fileData, buf, len);
+	if (iRet == -1) {
+		perror("WARN:filedata_save:write failed:");
+		return -1;
+	}
+	if (iRet != len) {
+		fprintf(stderr, "WARN:%s:wrote less: block[%d] got[%d] wrote[%d]\n", __func__, iBlockOffset, len, iRet);
+		return -1;
+	}
+	return 0;
 }
 
 int mcast_recv(int sockMCast, int fileData) {
@@ -99,21 +114,26 @@ int mcast_recv(int sockMCast, int fileData) {
 
 	}
 
+	return 0;
 }
 
 int main(int argc, char **argv) {
 
 	int sockMCast = -1;
 
-	if (argc < 3) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr>\n", argv[0]);
+	if (argc < 4) {
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <filedata_filenum>\n", argv[0]);
 		exit(-1);
 	}
 
 	int ifIndex = strtol(argv[1], NULL, 0);
 	char *sMCastAddr = argv[2];
+	int fileData = strtol(argv[3], NULL, 0);
+
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr);
 	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, ifIndex);
+	mcast_recv(sockMCast, fileData);
 
+	return 0;
 }
 
