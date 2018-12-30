@@ -7,8 +7,10 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <errno.h>
+#include <time.h>
 
-const int MCAST_USLEEP=500;
+const int STATS_TIMEDELTA=20;
+const int MCAST_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 
@@ -87,10 +89,20 @@ int mcast_recv(int sockMCast, int fileData) {
 	int iDisjointSeqs = 0;
 	int iDisjointPktCnt = 0;
 	int iSeqDelta;
+	time_t prevSTime, curSTime;
+	time_t prevDTime, curDTime;
 
+	prevSTime = time(NULL);
+	prevDTime = prevSTime;
 	while (gbDoMCast) {
 
 		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
+		curSTime = time(NULL);
+		if ((curSTime-prevSTime) > STATS_TIMEDELTA) {
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d]\n",
+				__func__, iPktCnt, iSeq, (curSTime-prevDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
+			prevSTime = curSTime;
+		}
 		if (iRet == -1) {
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 				usleep(MCAST_USLEEP);
@@ -99,6 +111,7 @@ int mcast_recv(int sockMCast, int fileData) {
 			}
 			continue;
 		}
+		prevDTime = time(NULL);
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
 		iSeqDelta = iSeq - iPrevSeq;
