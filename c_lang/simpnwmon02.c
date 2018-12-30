@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+
 int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
@@ -12,7 +13,7 @@ int portClient=1113;
 char *sLocalAddr="0.0.0.0";
 char *sPIInitAddr="255.255.255.255";
 
-int sock_mcast_init_ex(char *sMCastAddr)
+int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 {
 	int iRet;
 	int sockMCast = -1;
@@ -30,10 +31,10 @@ int sock_mcast_init_ex(char *sMCastAddr)
 		fprintf(stderr, "ERROR:%s: Failed to set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
 		exit(-1);
 	}
-	mreqn.imr_ifindex = 0;
+	mreqn.imr_ifindex = ifIndex;
 	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreqn, sizeof(mreqn));
 	if (iRet != 0) {
-		fprintf(stderr, "ERROR:%s: Failed joining group, ret=[%d]\n", __func__, iRet);
+		fprintf(stderr, "ERROR:%s: Failed joining group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sMCastAddr, sLocalAddr, ifIndex, iRet);
 		perror("Failed joining group:");
 		exit(-1);
 	}
@@ -41,19 +42,19 @@ int sock_mcast_init_ex(char *sMCastAddr)
 }
 
 
-
-
 int main(int argc, char **argv) {
 
 	int sockMCast = -1;
 
-	if (argc < 2) {
-		fprintf(stderr, "usage: %s <mcast_addr>\n", argv[0]);
+	if (argc < 3) {
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr>\n", argv[0]);
 		exit(-1);
 	}
-	char *sMCastAddr = argv[1];
-	sockMCast = sock_mcast_init_ex(sMCastAddr);
-	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s]\n", __func__, sockMCast, sMCastAddr);
+
+	int ifIndex = strtol(argv[1], NULL, 0);
+	char *sMCastAddr = argv[2];
+	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr);
+	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, ifIndex);
 
 }
 
