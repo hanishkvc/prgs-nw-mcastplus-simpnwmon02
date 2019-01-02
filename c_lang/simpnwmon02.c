@@ -133,12 +133,14 @@ int mcast_recv(int sockMCast, int fileData) {
 			continue;
 		}
 		if (iSeqDelta > 1) {
+			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
 			iDisjointSeqs += 1;
 			iDisjointPktCnt += (iSeqDelta-1);
 		}
 		if (fileData != -1) {
 			filedata_save(fileData, &gcBuf[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
 		}
+		iPrevSeq = iSeq;
 
 	}
 
