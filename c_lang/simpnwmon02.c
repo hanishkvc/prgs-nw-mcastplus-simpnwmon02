@@ -95,8 +95,8 @@ int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 int mcast_recv(int sockMCast, int fileData) {
 
 	int iRet;
-	uint32_t iPrevSeq = 0;
-	uint32_t iSeq = 0;
+	int iPrevSeq = -1;
+	int iSeq = 0;
 	int iPktCnt = 0;
 	int iOldSeqs = 0;
 	int iDisjointSeqs = 0;
