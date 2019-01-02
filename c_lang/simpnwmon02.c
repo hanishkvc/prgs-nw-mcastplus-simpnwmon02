@@ -118,6 +118,7 @@ int mcast_recv(int sockMCast, int fileData) {
 		if ((curSTime-prevSTime) > STATS_TIMEDELTA) {
 			int iDeltaPkts = iPktCnt - iPrevPktCnt;
 			int iDeltaTimeSecs = curDTime - prevDTime;
+			if (iDeltaTimeSecs == 0) iDeltaTimeSecs = 1;
 			iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
 			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBytesPerSec[%d]\n",
 				__func__, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
