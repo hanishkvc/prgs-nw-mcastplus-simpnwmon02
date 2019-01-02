@@ -1,3 +1,9 @@
+/*
+    Simple Network Monitor 02 - C version
+    v20190102IST1403
+    HanishKVC, GPL, 19XY
+ */
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
