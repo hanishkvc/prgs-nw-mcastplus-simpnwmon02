@@ -29,7 +29,7 @@ char gcBuf[BUF_MAXSIZE];
 
 int gbDoMCast = 1;
 
-int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
+int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port)
 {
 	int iRet;
 	int sockMCast = -1;
@@ -57,13 +57,15 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 	}
 
 	myAddr.sin_family=AF_INET;
-	myAddr.sin_port=htons(portMCast);
+	myAddr.sin_port=htons(port);
 	myAddr.sin_addr.s_addr=htonl(INADDR_ANY);
 	iRet = bind(sockMCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
 	if (iRet < 0) {
-		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, portMCast, iRet);
+		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, port, iRet);
 		perror("Failed bind:");
+		exit(-1);
 	}
+	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s:%d] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, portMCast, ifIndex);
 	return sockMCast;
 }
 
@@ -164,8 +166,7 @@ int main(int argc, char **argv) {
 		perror("Failed datafile open");
 	}
 
-	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr);
-	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, ifIndex);
+	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast);
 	mcast_recv(sockMCast, fileData);
 
 	return 0;
