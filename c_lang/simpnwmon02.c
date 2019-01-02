@@ -32,6 +32,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 	int iRet;
 	int sockMCast = -1;
 	struct ip_mreqn mreqn;
+	struct sockaddr_in myAddr;
 
 	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
 	
@@ -51,6 +52,15 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 		fprintf(stderr, "ERROR:%s: Failed joining group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sMCastAddr, sLocalAddr, ifIndex, iRet);
 		perror("Failed joining group:");
 		exit(-1);
+	}
+
+	myAddr.sin_family=AF_INET;
+	myAddr.sin_port=htons(portMCast);
+	myAddr.sin_addr.s_addr=htonl(INADDR_ANY);
+	iRet = bind(sockMCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
+	if (iRet < 0) {
+		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, portMCast, iRet);
+		perror("Failed bind:");
 	}
 	return sockMCast;
 }
