@@ -106,6 +106,8 @@ int mcast_recv(int sockMCast, int fileData) {
 	int iSeqDelta;
 	time_t prevSTime, curSTime;
 	time_t prevDTime, curDTime;
+	int iDataBytesPerSec = 0;
+	int iPrevPktCnt = 0;
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
@@ -114,9 +116,14 @@ int mcast_recv(int sockMCast, int fileData) {
 		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
 		curSTime = time(NULL);
 		if ((curSTime-prevSTime) > STATS_TIMEDELTA) {
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d]\n",
-				__func__, iPktCnt, iSeq, (curSTime-prevDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
+			int iDeltaPkts = iPktCnt - iPrevPktCnt;
+			int iDeltaTimeSecs = curDTime - prevDTime;
+			iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBytesPerSec[%d]\n",
+				__func__, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
 			prevSTime = curSTime;
+			iPrevPktCnt = iPktCnt;
+			prevDTime = curDTime;
 		}
 		if (iRet == -1) {
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
@@ -126,7 +133,7 @@ int mcast_recv(int sockMCast, int fileData) {
 			}
 			continue;
 		}
-		prevDTime = time(NULL);
+		curDTime = time(NULL);
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
 		iSeqDelta = iSeq - iPrevSeq;
