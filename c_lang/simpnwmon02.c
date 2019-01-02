@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 const int STATS_TIMEDELTA=20;
 const int MCAST_USLEEP=1000;
@@ -68,9 +70,10 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr)
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	int iRet;
+	int iExpectedDataLen = giDataSize-PKT_DATA_OFFSET;
 
-	if (len != giDataSize) {
-		fprintf(stderr, "WARN:%s:giDataSize[%d] != pktDataLen[%d]\n", __func__, giDataSize, len);
+	if (len != iExpectedDataLen) {
+		fprintf(stderr, "WARN:%s:ExpectedDataSize[%d] != pktDataLen[%d]\n", __func__, iExpectedDataLen, len);
 	}
 	iRet = lseek(fileData, iBlockOffset*giDataSize, SEEK_SET);
 	if (iRet == -1) {
@@ -133,7 +136,9 @@ int mcast_recv(int sockMCast, int fileData) {
 			iDisjointSeqs += 1;
 			iDisjointPktCnt += (iSeqDelta-1);
 		}
-		filedata_save(fileData, &gcBuf[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
+		if (fileData != -1) {
+			filedata_save(fileData, &gcBuf[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
+		}
 
 	}
 
@@ -145,13 +150,17 @@ int main(int argc, char **argv) {
 	int sockMCast = -1;
 
 	if (argc < 4) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <filedata_filenum>\n", argv[0]);
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <datafile>\n", argv[0]);
 		exit(-1);
 	}
 
 	int ifIndex = strtol(argv[1], NULL, 0);
 	char *sMCastAddr = argv[2];
-	int fileData = strtol(argv[3], NULL, 0);
+	int fileData = open(argv[3], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
+	if (fileData == -1) {
+		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, argv[3]);
+		perror("Failed datafile open");
+	}
 
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr);
 	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, ifIndex);
