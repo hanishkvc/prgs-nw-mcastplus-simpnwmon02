@@ -125,12 +125,16 @@ int ll_delete(struct LLR *me, int val) {
 			int iEnd = llNext->rEnd;
 			llNext->rEnd = val-1;
 			llTemp = _ll_alloc(val+1, iEnd);
+#ifdef LL_EXPLICIT_INSERT_THE_OLD
 			llTemp->prev = llNext;
 			llTemp->next = llNext->next;
 			llNext->next = llTemp;
 			if (llTemp->next != NULL) {
 				llTemp->next->prev = llTemp;
 			}
+#else
+			_ll_add(me, llNext, llTemp);
+#endif
 			return 0;
 		}
 		llNext = llNext->next;
