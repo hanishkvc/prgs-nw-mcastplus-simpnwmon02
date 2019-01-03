@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190102IST1403
+    v20190103IST1715
     HanishKVC, GPL, 19XY
  */
 
@@ -16,6 +16,8 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include <LinkedListRange.h>
 
 const int STATS_TIMEDELTA=20;
 const int MCAST_USLEEP=1000;
@@ -115,7 +117,7 @@ int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	return 0;
 }
 
-int mcast_recv(int sockMCast, int fileData) {
+int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 
 	int iRet;
 	int iPrevSeq = -1;
@@ -165,6 +167,7 @@ int mcast_recv(int sockMCast, int fileData) {
 		}
 		if (iSeqDelta > 1) {
 			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
+			ll_add_sorted(llLostPkts, iPrevSeq+1, iSeq-1);
 			iDisjointSeqs += 1;
 			iDisjointPktCnt += (iSeqDelta-1);
 		}
@@ -188,6 +191,7 @@ int mcast_recv(int sockMCast, int fileData) {
 int main(int argc, char **argv) {
 
 	int sockMCast = -1;
+	struct LLR llLostPkts;
 
 	if (argc < ARG_COUNT) {
 		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile>\n", argv[0]);
@@ -205,8 +209,11 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, argv[ARG_DATAFILE]);
 	}
 
+	ll_init(&llLostPkts);
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
-	mcast_recv(sockMCast, fileData);
+	mcast_recv(sockMCast, fileData, &llLostPkts);
+	ll_print(&llLostPkts);
+	ll_free(&llLostPkts);
 
 	return 0;
 }
