@@ -1,22 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
+/*
+    LinkedList implementation which stores a Range as the content of each node in the list
+    v20190103IST1703
+    HanishKVC, GPL, 19XY
+ */
 
-struct _ll{
-	struct _ll *prev, *next;
-	int rStart, rEnd;
-};
-
-struct LLR{
-	struct _ll *llStart;
-};
+#include <LinkedListRange.h>
 
 
 void ll_init(struct LLR *me) {
 	me->llStart = NULL;
 }
 
-struct _ll *_ll_alloc(int start, int end)
-{
+struct _ll *_ll_alloc(int start, int end) {
 	struct _ll *llTemp;
 	llTemp = malloc(sizeof(struct _ll));
 	if (llTemp == NULL) {
