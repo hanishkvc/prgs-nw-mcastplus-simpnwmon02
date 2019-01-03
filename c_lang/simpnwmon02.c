@@ -22,7 +22,7 @@
 
 const int STATS_TIMEDELTA=20;
 const int MCAST_USLEEP=1000;
-const int UCAST_PI_USLEEP=1000;
+const int UCAST_PI_USLEEP=1000000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 
@@ -118,7 +118,7 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 	}
 
 #ifdef ENABLE_BROADCAST
-	uint8_t iEnable = 1;
+	int iEnable = 1;
 	iRet = setsockopt(sockUCast, SOL_SOCKET, SO_BROADCAST, &iEnable, sizeof(iEnable));
 	if (iRet != 0) {
 		fprintf(stderr, "ERROR:%s: Failed Enabling Broadcast, ret=[%d]\n", __func__, iRet);
