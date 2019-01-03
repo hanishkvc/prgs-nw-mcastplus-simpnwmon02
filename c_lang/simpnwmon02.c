@@ -16,17 +16,24 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <LinkedListRange.h>
 
 const int STATS_TIMEDELTA=20;
 const int MCAST_USLEEP=1000;
+const int UCAST_PI_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 
 int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
+
+const int PIReqSeqNum = 0xffffff00;
+const int PIAckSeqNum = 0xffffff01;
+const int URReqSeqNum = 0xffffff02;
+const int URAckSeqNum = 0xffffff03;
 
 //char *sLocalAddr="0.0.0.0";
 char *sPIInitAddr="255.255.255.255";
@@ -46,7 +53,12 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	struct sockaddr_in myAddr;
 
 	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
-	
+	if (sockMCast == -1) {
+		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockMCast);
+		perror("Failed socket");
+		exit(-1);
+	}
+
 	iRet = inet_aton(sMCastAddr, &mreqn.imr_multiaddr);
 	if (iRet == 0) {
 		fprintf(stderr, "ERROR:%s:4JoinMCast: Failed to set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
@@ -92,6 +104,30 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	return sockMCast;
 }
 
+int sock_ucast_init(char *sLocalAddr, int port) {
+	int iRet;
+	int sockUCast = -1;
+	struct sockaddr_in myAddr;
+
+	sockUCast = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockUCast == -1) {
+		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockUCast);
+		perror("Failed socket");
+		exit(-1);
+	}
+
+	myAddr.sin_family=AF_INET;
+	myAddr.sin_port=htons(port);
+	myAddr.sin_addr.s_addr=htonl(INADDR_ANY);
+	iRet = bind(sockUCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
+	if (iRet < 0) {
+		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, port, iRet);
+		perror("Failed bind:");
+		exit(-1);
+	}
+	fprintf(stderr, "INFO:%s: sockUCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockUCast, INADDR_ANY, port, iRet);
+	return sockUCast;
+}
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	int iRet;
@@ -190,26 +226,67 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	return 0;
 }
 
+void ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
+	int iRet;
+	char bufS[32], bufR[32];
+	struct sockaddr_in addrS, addrR;
+
+	addrS.sin_family=AF_INET;
+	addrS.sin_port=htons(portServer);
+	iRet = inet_aton(sPINwBCast, &addrS.sin_addr);
+	if (iRet == 0) {
+		fprintf(stderr, "ERROR:%s: Failed to convert [%s] to nw addr, ret=[%d]\n", __func__, sPINwBCast, iRet);
+		perror("sPINwBCast aton failed");
+		exit(-1);
+	}
+	*(uint32_t *)bufS = PIReqSeqNum;
+	strncpy(&bufS[4], "c_lang seat", 16);
+
+	for(int i = 0; i < 120; i++) {
+		fprintf(stderr, "INFO:%s: PI find peer srvr: try %d\n", __func__, i);
+		iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
+		if (iRet == -1) {
+			perror("Failed sending PIReq");
+			exit(-1);
+		}
+		unsigned int iAddrLen = sizeof(addrR);
+		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
+		if (iRet == -1) {
+			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+				usleep(UCAST_PI_USLEEP);
+			} else {
+				perror("WARN:ucast_pi:revfrom failed:");
+			}
+			continue;
+		}
+		fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
+		break;
+	}
+
+}
 
 #define ARG_IFINDEX 1
 #define ARG_MCASTADDR 2
 #define ARG_LOCALADDR 3
 #define ARG_DATAFILE 4
-#define ARG_COUNT (4+1)
+#define ARG_PINWBCAST 5
+#define ARG_COUNT (5+1)
 
 int main(int argc, char **argv) {
 
 	int sockMCast = -1;
+	int sockUCast = -1;
 	struct LLR llLostPkts;
 
 	if (argc < ARG_COUNT) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile>\n", argv[0]);
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile> <pi_nw_bcast_addr>\n", argv[0]);
 		exit(-1);
 	}
 
 	int ifIndex = strtol(argv[ARG_IFINDEX], NULL, 0);
 	char *sMCastAddr = argv[ARG_MCASTADDR];
 	char *sLocalAddr = argv[ARG_LOCALADDR];
+	char *sPINwBCast = argv[ARG_PINWBCAST];
 	int fileData = open(argv[ARG_DATAFILE], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
 	if (fileData == -1) {
 		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, argv[ARG_DATAFILE]);
@@ -222,8 +299,11 @@ int main(int argc, char **argv) {
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
 	mcast_recv(sockMCast, fileData, &llLostPkts);
 	ll_print(&llLostPkts);
-	ll_free(&llLostPkts);
 
+	sockUCast = sock_ucast_init(sLocalAddr, portClient);
+	ucast_pi(sockUCast, sPINwBCast, portServer);
+
+	ll_free(&llLostPkts);
 	return 0;
 }
 
