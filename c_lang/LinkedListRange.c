@@ -173,7 +173,18 @@ int main(int argc, char **argv) {
 	int iStart = 0;
 
 	ll_init(&theLLR);
-	for(int iCnt = 0; iCnt < 1024; iCnt++) {
+	iStart = 1000;
+	for(int iCnt = 0; iCnt < (1024-10); iCnt++) {
+		iStart += 100;
+		ll_add_sorted(&theLLR, iStart, iStart+20);
+	}
+	iStart = 0;
+	for(int iCnt = 0; iCnt < 10; iCnt++) {
+		iStart += 100;
+		ll_add_sorted(&theLLR, iStart, iStart+20);
+	}
+	iStart = 2050;
+	for(int iCnt = 0; iCnt < 10; iCnt++) {
 		iStart += 100;
 		ll_add_sorted(&theLLR, iStart, iStart+20);
 	}
