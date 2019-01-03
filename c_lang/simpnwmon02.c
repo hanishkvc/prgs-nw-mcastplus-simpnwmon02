@@ -104,6 +104,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	return sockMCast;
 }
 
+#define ENABLE_BROADCAST 1
 int sock_ucast_init(char *sLocalAddr, int port) {
 	int iRet;
 	int sockUCast = -1;
@@ -115,6 +116,17 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 		perror("Failed socket");
 		exit(-1);
 	}
+
+#ifdef ENABLE_BROADCAST
+	uint8_t iEnable = 1;
+	iRet = setsockopt(sockUCast, SOL_SOCKET, SO_BROADCAST, &iEnable, sizeof(iEnable));
+	if (iRet != 0) {
+		fprintf(stderr, "ERROR:%s: Failed Enabling Broadcast, ret=[%d]\n", __func__, iRet);
+		perror("Failed enabling Broadcast:");
+		exit(-1);
+	}
+	fprintf(stderr, "INFO:%s: Enabled Broadcast, ret=[%d]\n", __func__, iRet);
+#endif
 
 	myAddr.sin_family=AF_INET;
 	myAddr.sin_port=htons(port);
