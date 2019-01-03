@@ -26,7 +26,7 @@ int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
 
-char *sLocalAddr="0.0.0.0";
+//char *sLocalAddr="0.0.0.0";
 char *sPIInitAddr="255.255.255.255";
 
 #define BUF_MAXSIZE 1600
@@ -35,7 +35,8 @@ char gcBuf[BUF_MAXSIZE];
 
 int gbDoMCast = 1;
 
-int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port)
+#define ENABLE_MULTICAST_ALL 1
+int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
 {
 	int iRet;
 	int sockMCast = -1;
@@ -46,14 +47,16 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port)
 	
 	iRet = inet_aton(sMCastAddr, &mreqn.imr_multiaddr);
 	if (iRet == 0) {
-		fprintf(stderr, "ERROR:%s: Failed to set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
+		fprintf(stderr, "ERROR:%s:4JoinMCast: Failed to set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
 		exit(-1);
 	}
+	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
 	iRet = inet_aton(sLocalAddr, &mreqn.imr_address);
 	if (iRet == 0) {
-		fprintf(stderr, "ERROR:%s: Failed to set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
+		fprintf(stderr, "ERROR:%s:4JoinMCast: Failed to set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
 		exit(-1);
 	}
+	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
 	mreqn.imr_ifindex = ifIndex;
 	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreqn, sizeof(mreqn));
 	if (iRet != 0) {
@@ -61,6 +64,18 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port)
 		perror("Failed joining group:");
 		exit(-1);
 	}
+	fprintf(stderr, "INFO:%s: sockMCast [%d] joined [%s] on (LocalAddr [%s] & ifIndex [%d]), ret=[%d]\n", __func__, sockMCast, sMCastAddr, sLocalAddr, ifIndex, iRet);
+
+#ifdef ENABLE_MULTICAST_ALL
+	uint8_t iEnable = 1;
+	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_MULTICAST_ALL, &iEnable, sizeof(iEnable));
+	if (iRet != 0) {
+		fprintf(stderr, "ERROR:%s: Failed Enabling MulticastALL, ret=[%d]\n", __func__, iRet);
+		perror("Failed MulticastALL:");
+		exit(-1);
+	}
+	fprintf(stderr, "INFO:%s: Enabled MulticastALL, ret=[%d]\n", __func__, iRet);
+#endif
 
 	myAddr.sin_family=AF_INET;
 	myAddr.sin_port=htons(port);
@@ -71,7 +86,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port)
 		perror("Failed bind:");
 		exit(-1);
 	}
-	fprintf(stderr, "INFO:%s: sockMCast [%d] setup for [%s:%d] on ifIndex [%d]\n", __func__, sockMCast, sMCastAddr, portMCast, ifIndex);
+	fprintf(stderr, "INFO:%s: sockMCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockMCast, INADDR_ANY, port, iRet);
 	return sockMCast;
 }
 
@@ -126,7 +141,7 @@ int mcast_recv(int sockMCast, int fileData) {
 			int iDeltaTimeSecs = curDTime - prevDTime;
 			if (iDeltaTimeSecs == 0) iDeltaTimeSecs = 1;
 			iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBytesPerSec[%d]\n",
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBPS[%d]\n",
 				__func__, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
@@ -163,24 +178,34 @@ int mcast_recv(int sockMCast, int fileData) {
 	return 0;
 }
 
+
+#define ARG_IFINDEX 1
+#define ARG_MCASTADDR 2
+#define ARG_LOCALADDR 3
+#define ARG_DATAFILE 4
+#define ARG_COUNT (4+1)
+
 int main(int argc, char **argv) {
 
 	int sockMCast = -1;
 
-	if (argc < 4) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <datafile>\n", argv[0]);
+	if (argc < ARG_COUNT) {
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile>\n", argv[0]);
 		exit(-1);
 	}
 
-	int ifIndex = strtol(argv[1], NULL, 0);
-	char *sMCastAddr = argv[2];
-	int fileData = open(argv[3], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
+	int ifIndex = strtol(argv[ARG_IFINDEX], NULL, 0);
+	char *sMCastAddr = argv[ARG_MCASTADDR];
+	char *sLocalAddr = argv[ARG_LOCALADDR];
+	int fileData = open(argv[ARG_DATAFILE], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
 	if (fileData == -1) {
-		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, argv[3]);
+		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, argv[ARG_DATAFILE]);
 		perror("Failed datafile open");
+	} else {
+		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, argv[ARG_DATAFILE]);
 	}
 
-	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast);
+	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
 	mcast_recv(sockMCast, fileData);
 
 	return 0;
