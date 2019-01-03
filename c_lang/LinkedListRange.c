@@ -6,9 +6,16 @@ struct _ll{
 	int rStart, rEnd;
 };
 
-struct _ll *llStart = NULL;
+struct LLR{
+	struct _ll *llStart;
+};
 
-int ll_add_sorted(int start, int end) {
+
+void ll_init(struct LLR *me) {
+	me->llStart = NULL;
+}
+
+int ll_add_sorted(struct LLR *me, int start, int end) {
 	struct _ll *llTemp;
 	struct _ll *llNext, *llPrev;
 
@@ -20,7 +27,7 @@ int ll_add_sorted(int start, int end) {
 	llTemp->rStart = start;
 	llTemp->rEnd = end;
 	llPrev = NULL;
-	llNext = llStart;
+	llNext = me->llStart;
 	while (llNext != NULL) {
 		if (llNext->rStart > end) {
 			break;
@@ -29,9 +36,9 @@ int ll_add_sorted(int start, int end) {
 		llNext = llNext->next;
 	}
 	if (llPrev == NULL) {
-		llStart = llTemp;
-		llStart->prev = NULL;
-		llStart->next = llPrev;
+		me->llStart = llTemp;
+		me->llStart->prev = NULL;
+		me->llStart->next = llPrev;
 	} else {
 		llTemp->prev = llPrev;
 		llTemp->next = llPrev->next;
@@ -44,17 +51,17 @@ int ll_add_sorted(int start, int end) {
 	return 0;
 }
 
-int ll_free() {
+int ll_free(struct LLR *me) {
 	struct _ll *llNext;
 	struct _ll *llTemp;
 
-	llNext = llStart;
+	llNext = me->llStart;
 	while(llNext != NULL) {
 		llTemp = llNext;
 		llNext = llNext->next;
 		free(llTemp);
 		// The below logic is just to keep the structure always consistant. But technically this is not required, as this will be freeing up the full ll.
-		llStart = llNext;
+		me->llStart = llNext;
 		if (llNext != NULL) {
 			llNext->prev = NULL;
 		}
@@ -62,21 +69,29 @@ int ll_free() {
 	return 0;
 }
 
+void ll_print(struct LLR *me) {
 
-#ifdef MODE_PROGRAM_LL
-
-int main(int argc, char **argv) {
-	int iStart = 0;
-	for(int iCnt = 0; iCnt < 1024; iCnt++) {
-		iStart += 100;
-		ll_add_sorted(iStart, iStart+20);
-	}
-	struct _ll *llNext = llStart;
+	struct _ll *llNext = me->llStart;
 	while(llNext != NULL) {
 		printf("%d-%d\n", llNext->rStart, llNext->rEnd);
 		llNext = llNext->next;
 	}
-	ll_free();
+}
+
+
+#ifdef MODE_PROGRAM_LL
+
+int main(int argc, char **argv) {
+	struct LLR theLLR;
+	int iStart = 0;
+
+	ll_init(&theLLR);
+	for(int iCnt = 0; iCnt < 1024; iCnt++) {
+		iStart += 100;
+		ll_add_sorted(&theLLR, iStart, iStart+20);
+	}
+	ll_print(&theLLR);
+	ll_free(&theLLR);
 	return 0;
 }
 
