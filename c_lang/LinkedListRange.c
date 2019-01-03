@@ -30,6 +30,35 @@ struct _ll *_ll_alloc(int start, int end)
 	return llTemp;
 }
 
+void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
+
+	if (llNewNext == NULL) {
+		fprintf(stderr, "WARN:%s: A NULL node given for adding, returning\n", __func__);
+		return;
+	}
+	if (llCur == NULL) {
+		if (me->llStart != NULL) {
+			fprintf(stderr, "DEBUG:%s: Adding entry to begin of LL, [%d-%d]\n", __func__, llNewNext->rStart, llNewNext->rEnd);
+			me->llStart->prev = llNewNext;
+			llNewNext->next = me->llStart;
+			llNewNext->prev = NULL;
+			me->llStart = llNewNext;
+		} else {
+			fprintf(stderr, "DEBUG:%s: Adding first entry for this LL, [%d-%d]\n", __func__, llNewNext->rStart, llNewNext->rEnd);
+			me->llStart = llNewNext;
+			llNewNext->prev = NULL;
+			llNewNext->next = NULL;
+		}
+		return;
+	}
+	llNewNext->prev = llCur;
+	llNewNext->next = llCur->next;
+	llCur->next = llNewNext;
+	if (llNewNext->next != NULL) {
+		llNewNext->next->prev = llNewNext;
+	}
+}
+
 int ll_add_sorted(struct LLR *me, int start, int end) {
 	struct _ll *llTemp;
 	struct _ll *llNext, *llPrev;
@@ -44,18 +73,7 @@ int ll_add_sorted(struct LLR *me, int start, int end) {
 		llPrev = llNext;
 		llNext = llNext->next;
 	}
-	if (llPrev == NULL) {
-		me->llStart = llTemp;
-		me->llStart->prev = NULL;
-		me->llStart->next = llPrev;
-	} else {
-		llTemp->prev = llPrev;
-		llTemp->next = llPrev->next;
-		llPrev->next = llTemp;
-		if (llTemp->next != NULL) {
-			llTemp->next->prev = llTemp;
-		}
-	}
+	_ll_add(me, llPrev, llTemp);
 	fprintf(stderr, "INFO:%s: Added [%d-%d]\n", __func__, start, end);
 	return 0;
 }
