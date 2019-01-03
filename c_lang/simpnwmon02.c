@@ -117,6 +117,15 @@ int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	return 0;
 }
 
+void print_stat(const char *sTag, int iPktCnt, int iPrevPktCnt, int iSeq, time_t curSTime, time_t curDTime, time_t prevDTime, int iDisjointSeqs, int iDisjointPktCnt, int iOldSeqs) {
+	int iDeltaPkts = iPktCnt - iPrevPktCnt;
+	int iDeltaTimeSecs = curDTime - prevDTime;
+	if (iDeltaTimeSecs == 0) iDeltaTimeSecs = 1;
+	int iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
+	fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBPS[%d]\n",
+			sTag, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
+}
+
 int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 
 	int iRet;
@@ -129,22 +138,17 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	int iSeqDelta;
 	time_t prevSTime, curSTime;
 	time_t prevDTime, curDTime;
-	int iDataBytesPerSec = 0;
 	int iPrevPktCnt = 0;
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
+	gbDoMCast = 1;
 	while (gbDoMCast) {
 
 		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
 		curSTime = time(NULL);
 		if ((curSTime-prevSTime) > STATS_TIMEDELTA) {
-			int iDeltaPkts = iPktCnt - iPrevPktCnt;
-			int iDeltaTimeSecs = curDTime - prevDTime;
-			if (iDeltaTimeSecs == 0) iDeltaTimeSecs = 1;
-			iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iSeqNum[%d] DataDelay[%ld] iDisjointSeqs[%d] iDisjointPktCnt[%d] iOldSeqs[%d] DataBPS[%d]\n",
-				__func__, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
+			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
 			prevDTime = curDTime;
@@ -160,6 +164,11 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		curDTime = time(NULL);
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
+		if (iSeq == 0xffffffff) {
+			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
+			gbDoMCast = 0;
+			continue;
+		}
 		iSeqDelta = iSeq - iPrevSeq;
 		if (iSeqDelta <= 0) {
 			iOldSeqs += 1;

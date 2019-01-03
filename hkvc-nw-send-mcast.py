@@ -99,3 +99,12 @@ while True:
 
 print("INFO: Done with transfer")
 
+for i in range(120):
+	tmpData = bytes(dataSize-4)
+	curData = struct.pack("<I{}s".format(dataSize-4), 0xf5a55a5f, tmpData)
+	data=struct.pack("<I{}s".format(dataSize), 0xffffffff, curData)
+	sock.sendto(data, (addr, port))
+	time.sleep(1)
+
+print("INFO: Done sending stops, quiting...")
+
