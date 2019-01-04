@@ -21,9 +21,10 @@
 #include <LinkedListRange.h>
 
 const int STATS_TIMEDELTA=20;
-const int MCASTSLOWEXIT_CNT=3; //20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
+const int MCASTSLOWEXIT_CNT=3;		// 20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
 const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
+const int PI_RETRYCNT = 300;		// 300*1e6uSecs = Client will try PI for atleast 300 seconds
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 
@@ -267,7 +268,7 @@ void ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
 	*(uint32_t *)bufS = PIReqSeqNum;
 	strncpy(&bufS[4], "c_lang seat", 16);
 
-	for(int i = 0; i < 120; i++) {
+	for(int i = 0; i < PI_RETRYCNT; i++) {
 		fprintf(stderr, "INFO:%s: PI find peer srvr: try %d\n", __func__, i);
 		iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 		if (iRet == -1) {
@@ -284,8 +285,13 @@ void ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
 			}
 			continue;
 		}
-		fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
-		break;
+		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
+		if (iSeq == PIAckSeqNum) {
+			fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
+			break;
+		} else {
+			fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
+		}
 	}
 
 }
