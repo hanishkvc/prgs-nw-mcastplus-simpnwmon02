@@ -207,11 +207,15 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 			iPrevPktCnt = iPktCnt;
 			prevDTime = curDTime;
 			if (iRecvdStop > 0) {
+				fprintf(stderr, "INFO:%s: In MCastStop phase...", __func__);
 				if (iRecvdStop == iPrevRecvdStop) {
+					fprintf(stderr, ": No New MCastStop Packets\n");
 					iMCastSlowExit += 1;
 					if (iMCastSlowExit > MCASTSLOWEXIT_CNT) {
 						gbDoMCast = 0;
 					}
+				} else {
+					fprintf(stderr, ": Still MCastStop Packets coming\n");
 				}
 				iPrevRecvdStop = iRecvdStop;
 			}
