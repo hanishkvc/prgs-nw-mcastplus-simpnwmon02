@@ -164,6 +164,23 @@ void ll_print(struct LLR *me) {
 	}
 }
 
+int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
+	char tBuf[128];
+
+	int iCnt = 0;
+	memset(buf, 0, bufLen);
+	struct _ll *llNext = me->llStart;
+	while(llNext != NULL) {
+		iCnt += 1;
+		snprintf(tBuf, 128, "%d-%d\n", llNext->rStart, llNext->rEnd);
+		strncat(buf, tBuf, bufLen);
+		llNext = llNext->next;
+		if (iCnt >= MaxCnt) {
+			break;
+		}
+	}
+	return iCnt;
+}
 
 #ifdef MODE_PROGRAM_LL
 

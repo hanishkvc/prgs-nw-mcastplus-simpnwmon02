@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct _ll{
 	struct _ll *prev, *next;
@@ -27,6 +28,7 @@ void _ll_delete(struct LLR *me, struct _ll *llDel);
 int ll_delete(struct LLR *me, int val);
 int ll_free(struct LLR *me);
 void ll_print(struct LLR *me);
+int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt);
 
 #endif
 

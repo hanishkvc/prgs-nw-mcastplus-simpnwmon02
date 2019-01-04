@@ -303,9 +303,11 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 	return -1;
 }
 
+#define UR_BUFS_LEN 512
+#define UR_BUFR_LEN 1500
 int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts) {
 	int iRet;
-	char bufS[32], bufR[32];
+	char bufS[UR_BUFS_LEN], bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrS, addrR;
 
 	addrS.sin_family=AF_INET;
@@ -331,13 +333,13 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				fprintf(stderr, "WARN:%s: Found peer srvr[0x%X] cmdGot from[0x%X], Ignoring\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
 				continue;
 			}
-			//ll_getdata(llLostPkts, &bufS[4], 512, 10);
+			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 10);
 			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 			if (iRet == -1) {
 				perror("Failed sending URAck");
 				exit(-1);
 			} else {
-				fprintf(stderr, "INFO:%s: Sent URAck\n", __func__);
+				fprintf(stderr, "INFO:%s: Sent URAck with [%d] records\n", __func__, iRecords);
 			}
 		} else {
 			if (iSeq > CmdsSeqNum) {
@@ -393,7 +395,7 @@ int main(int argc, char **argv) {
 	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
 		fprintf(stderr, "WARN:%s: No Server found during PI Phase, quiting...\n", __func__);
 	} else {
-		// Add UCastRecovery logic
+		ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
 	}
 
 	ll_free(&llLostPkts);
