@@ -123,6 +123,8 @@ def gen_lostpackets_array(lostPackets):
 	for r in lp:
 		if (r == b''):
 			continue
+		if (r[0] == 0):
+			continue
 		r = r.split(b'-')
 		s = int(r[0])
 		e = int(r[1])

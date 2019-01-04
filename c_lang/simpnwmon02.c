@@ -33,7 +33,7 @@ int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
 
-const int CmdsSeqNum      = 0xffffff00;
+const int SeqNumCmdsCmn   = 0xffffff00;
 const int PIReqSeqNum     = 0xffffff00;
 const int PIAckSeqNum     = 0xffffff01;
 const int URReqSeqNum     = 0xffffff02;
@@ -342,7 +342,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				fprintf(stderr, "INFO:%s: Sent URAck with [%d] records\n", __func__, iRecords);
 			}
 		} else {
-			if (iSeq >= CmdsSeqNum) {
+			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
 				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
 				continue;
 			}
