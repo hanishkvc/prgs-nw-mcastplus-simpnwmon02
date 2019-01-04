@@ -137,7 +137,9 @@ def ur_send_packets(client, lostPackets):
 	print("ur_send_packets: client[{}] LostPackets:[{}]".format(client, lostPackets))
 	lpa = gen_lostpackets_array(lostPackets)
 	print("ur_send_packets: lostPackets count [{}]".format(len(lpa)))
+	iPkts = len(lpa)
 	send_file_data(client, lpa)
+	return iPkts
 
 
 def ur_client(client):
@@ -166,7 +168,9 @@ def ur_client(client):
 			if (data == b''):
 				print("UR:INFO: No MORE lost packets for [{}]".format(client))
 				return
-			ur_send_packets(client, data)
+			if (ur_send_packets(client, data) == 0):
+				print("UR:INFO: No MORE lost packets for [{}]".format(client))
+				return
 			startTime = time.time()
 		except socket.timeout as e:
 			d = None
