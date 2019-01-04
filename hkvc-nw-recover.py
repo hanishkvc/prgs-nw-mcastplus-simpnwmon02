@@ -174,27 +174,29 @@ def ur_client(client):
 			data = dataC[4:]
 			if (data == b''):
 				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
-				return
+				return 0
 			if (ur_send_packets(client, data) == 0):
 				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
-				return
-			startTime = time.time() # Have to change the loop exit logic, based around this
+				return 0
+			startTime = time.time() # This ensures that if the client doesn't respond for the specified amount of time, it will skip to the next client
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
+	return -1
 
 
-def unicast_recovery():
-	global clients
-
+def unicast_recovery(clients):
+	remainingClients = []
 	for client in clients:
-		ur_client(client)
-	dprint(9, "Remaining clients:") # TODO: Need to update the clients list
-	for r in clients:
+		if (ur_client(client) != 0):
+			remainingClients.append(client)
+	dprint(9, "Remaining clients:")
+	for r in remainingClients:
 		dprint(9, r)
+	return remainingClients
 
 
 def send_file_data(peer, indexList):
@@ -241,6 +243,13 @@ def send_file_data(peer, indexList):
 
 
 presence_info()
-unicast_recovery()
-dprint(9, "INFO: Done with transfer")
+for i in range(3):
+	clients = unicast_recovery(clients)
+	if(len(clients) == 0):
+		break
+
+if (len(cleints) == 0):
+	dprint(9, "INFO: Done with transfer")
+else:
+	dprint(9, "INFO: Giving up, clients still with lost packets [{}]".format(clients))
 
