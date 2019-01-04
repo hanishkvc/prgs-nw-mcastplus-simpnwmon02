@@ -5,7 +5,7 @@
 # A test script which collates all available active clients in the network
 # which talk the same language. In turn it tries to help recover lost packets
 # wrt each of the client using unicast tranfers.
-# v20181228IST0447
+# v20190104IST2239
 # HanishKVC, GPL, 19XY
 #
 
@@ -168,7 +168,7 @@ def ur_client(client):
 			if client != peer:
 				dprint(8, "UR:WARN:WrongPeer: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
 				continue
-			print(dataC)
+			dprint(2, dataC)
 			cmd = struct.unpack("<I", dataC[0:4])[0]
 			if cmd != URAckSeqNum:
 				dprint(8, "UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(hex(cmd)))
@@ -254,7 +254,7 @@ for i in range(3):
 	if(len(clients) == 0):
 		break
 
-if (len(cleints) == 0):
+if (len(clients) == 0):
 	dprint(9, "INFO: Done with transfer")
 else:
 	dprint(9, "INFO: Giving up, clients still with lost packets [{}]".format(clients))
