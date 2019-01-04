@@ -1,3 +1,109 @@
+##################################
+Nw Testing/Data transfer logic
+v20190104IST1656
+HanishKVC, 19XY
+##################################
+
+
+Overview
+#############
+
+This set of programs helps verify network performance as well as if required
+transfer a file from server to multiple clients.
+
+It consits of
+
+Multicast based transfer logic
+
+Multicast based stop logic
+
+Unicast based Presence Info logic - to help clients and server come to know
+about one another.
+
+Unicast based data / lost packet recovery logic - The server communicates with
+the clients one by one and gets their list of lost packets and helps them
+recover those by resending it thro unicast.
+
+
+NOTE: If a client fails in the middle of unicast error recovery, the server
+side logic may or may not handle this gracefully. In a graceful handling
+scenario, the server should ignore that client and go to the remaining clients.
+
+
+Client
+==========
+
+The client side logic is implemented in a single program.
+
+The client side simpnwmon02 program has the following command line arguments
+
+./simpnwmon02 local_nwif_index mcast_ip local_nwif_ip data_file nw_bcast_ip
+
+the local_nwif means the ethernet or wifi interface which connects to the
+network on which we want to run the test/data transfer logic.
+
+the local_nwif_index is the index assigned by linux kernel for the used network
+interface. It can be got by using ip addr and looking at the index number
+specified by it. i.e if it is the 1st nw interface or .... Nth network
+interface for which address details are provided by ip addr command.
+
+the local_nwif_ip is the ip address assigned to the network interface which we
+want to use.
+
+The local_nwif_index and local_nwif_ip are used as part of the multicast join
+using setsockoption. Ideally one is required to provide only one of these two
+values.
+
+If local_nwif_index is not being explicitly specified, then pass 0 for it.
+
+If local_nwif_ip is not explicitly specified, then pass 0.0.0.0 for it.
+
+
+Server
+========
+
+The server side logic is implemented as part of two different programs.
+
+The first takes care of the multicast phases.
+
+The second takes care of the unicast phases.
+
+
+Examples
+==========
+
+
+Example for actual testing
+----------------------------
+
+Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255
+
+Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --file /path/to/file_to_send
+Server> ./hkvc-nw-recover.py --file /path/to/file_to_send
+
+
+
+Example for testing using VM
+------------------------------
+
+On Client run
+
+Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /dev/null 10.0.2.255
+
+On Server run, these two commands one after the other
+
+Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --testblocks 50000 --simloss
+Server> ./hkvc-nw-recover.py --fast
+
+
+
+
+
+
+Notes / Thoughts during some of the releases
+#############################################
+
+
 v20181228
 ===========
 
