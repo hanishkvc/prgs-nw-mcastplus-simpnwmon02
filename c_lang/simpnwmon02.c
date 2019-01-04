@@ -21,6 +21,7 @@
 #include <LinkedListRange.h>
 
 const int STATS_TIMEDELTA=20;
+const int MCASTSLOWEXIT_CNT=3; //20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
 const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
 const int PKT_SEQNUM_OFFSET=0;
@@ -30,10 +31,11 @@ int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
 
-const int PIReqSeqNum = 0xffffff00;
-const int PIAckSeqNum = 0xffffff01;
-const int URReqSeqNum = 0xffffff02;
-const int URAckSeqNum = 0xffffff03;
+const int PIReqSeqNum     = 0xffffff00;
+const int PIAckSeqNum     = 0xffffff01;
+const int URReqSeqNum     = 0xffffff02;
+const int URAckSeqNum     = 0xffffff03;
+const int MCASTSTOPSeqNum = 0xffffffff;
 
 //char *sLocalAddr="0.0.0.0";
 char *sPIInitAddr="255.255.255.255";
@@ -187,6 +189,9 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	time_t prevSTime, curSTime;
 	time_t prevDTime, curDTime;
 	int iPrevPktCnt = 0;
+	int iRecvdStop = 0;
+	int iPrevRecvdStop = -1;
+	int iMCastSlowExit = 0;
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
@@ -200,6 +205,15 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
 			prevDTime = curDTime;
+			if (iRecvdStop > 0) {
+				if (iRecvdStop == iPrevRecvdStop) {
+					iMCastSlowExit += 1;
+					if (iMCastSlowExit > MCASTSLOWEXIT_CNT) {
+						gbDoMCast = 0;
+					}
+				}
+				iPrevRecvdStop = iRecvdStop;
+			}
 		}
 		if (iRet == -1) {
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
@@ -212,9 +226,8 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		curDTime = time(NULL);
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
-		if (iSeq == 0xffffffff) {
-			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
-			gbDoMCast = 0;
+		if (iSeq == MCASTSTOPSeqNum) {
+			iRecvdStop += 1;
 			continue;
 		}
 		iSeqDelta = iSeq - iPrevSeq;
