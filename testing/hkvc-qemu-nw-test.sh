@@ -45,13 +45,28 @@ function vm_base_update()
 	qemu-system-x86_64 $GENRARG $NETWARG -hda u1604.hda $DISPARG
 }
 
-function vm_run_temp()
+function vm_childs_run_temp()
 {
 	qemu-system-x86_64 $GENRARG $NETARG1 -hda u1604m10.hda -snapshot &
 	qemu-system-x86_64 $GENRARG $NETARG2 -hda u1604m11.hda -snapshot &
 }
 
-function vm_run()
+function vm_childs_update()
+{
+	echo "If using tftp to comm with vm, in vm RUN tftp THEN connect 10.0.2.2 THEN bin THEN get file THEN quit"
+	echo "If using ssh to comm with vm1, in host RUN ssh test@localhost -p 1110"
+	echo "If using ssh to comm with vm2, in host RUN ssh test@localhost -p 1111"
+	NETARGCUPD1="$NETWARG,tftp=/tmp/share,hostfwd=tcp::1110-:22"
+	NETARGCUPD2="$NETWARG,tftp=/tmp/share,hostfwd=tcp::1111-:22"
+
+	echo "This provides access to host machine (mapped to 10.0.2.2 in host) and internet"
+	echo "On 1st run remember to set ens3 to have static ip 10.0.2.10/24 gw 10.0.2.2 /etc/network/interfaces"
+	qemu-system-x86_64 $GENRARG $NETARGCUPD1 -hda u1604m10.hda &
+	echo "On 1st run remember to set ens3 to have static ip 10.0.2.11/24 gw 10.0.2.2 /etc/network/interfaces"
+	qemu-system-x86_64 $GENRARG $NETARGCUPD2 -hda u1604m11.hda &
+}
+
+function vm_childs_run()
 {
 	echo "remember to run sudo mount -t 9p -o trans=virtio host100 /mnt, in the vm after linux boots"
 	FSARG="-virtfs local,path=/home/hanishkvc/AndroidStudioProjects,readonly,mount_tag=host100,security_model=mapped-file"
