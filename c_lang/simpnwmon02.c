@@ -342,8 +342,8 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				fprintf(stderr, "INFO:%s: Sent URAck with [%d] records\n", __func__, iRecords);
 			}
 		} else {
-			if (iSeq > CmdsSeqNum) {
-				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
+			if (iSeq >= CmdsSeqNum) {
+				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
 				continue;
 			}
 			ll_delete(llLostPkts, iSeq);
