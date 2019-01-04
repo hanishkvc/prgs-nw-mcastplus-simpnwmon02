@@ -55,6 +55,9 @@ function vm_run()
 {
 	echo "remember to run sudo mount -t 9p -o trans=virtio host100 /mnt, in the vm after linux boots"
 	FSARG="-virtfs local,path=/home/hanishkvc/AndroidStudioProjects,readonly,mount_tag=host100,security_model=mapped-file"
+	# As I noticied corruption in my host filesystem, after I used this virtfs logic of qemu, so I am avoiding use of the same now
+	# All changes I had done to the shared folder on the host system and inturn accessed on the vm, got magically reverted, after I restarted the host. So avoiding
+	FSARG=""
 
 	# First time edit /etc/network/interfaces wrt ens3 to set the ip addr to 192.168.66.10 statically
 	qemu-system-x86_64 $GENRARG $NETARG1 -hda u1604m10.hda $FSARG &
