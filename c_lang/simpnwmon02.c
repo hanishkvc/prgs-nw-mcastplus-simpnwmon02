@@ -25,6 +25,7 @@ const int MCASTSLOWEXIT_CNT=3;		// 20*3 = atleast 60secs of No MCast stop comman
 const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
 const int PI_RETRYCNT = 300;		// 300*1e6uSecs = Client will try PI for atleast 300 seconds
+const int UCAST_UR_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 
@@ -32,6 +33,7 @@ int portMCast=1111;
 int portServer=1112;
 int portClient=1113;
 
+const int CmdsSeqNum      = 0xffffff00;
 const int PIReqSeqNum     = 0xffffff00;
 const int PIAckSeqNum     = 0xffffff01;
 const int URReqSeqNum     = 0xffffff02;
@@ -256,7 +258,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	return 0;
 }
 
-int ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
+int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer) {
 	int iRet;
 	char bufS[32], bufR[32];
 	struct sockaddr_in addrS, addrR;
@@ -291,10 +293,61 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
 		}
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		if (iSeq == PIAckSeqNum) {
+			*theSrvrPeer = addrR.sin_addr.s_addr;
 			fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
 			return 0;
 		} else {
 			fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
+		}
+	}
+	return -1;
+}
+
+int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts) {
+	int iRet;
+	char bufS[32], bufR[32];
+	struct sockaddr_in addrS, addrR;
+
+	addrS.sin_family=AF_INET;
+	addrS.sin_port=htons(portServer);
+	addrS.sin_addr.s_addr = theSrvrPeer;
+	*(uint32_t *)bufS = URAckSeqNum;
+
+	int bUCastRecover = 1;
+	while(bUCastRecover) {
+		unsigned int iAddrLen = sizeof(addrR);
+		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
+		if (iRet == -1) {
+			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+				usleep(UCAST_UR_USLEEP);
+			} else {
+				perror("WARN:ucast_recover:revfrom failed:");
+			}
+			continue;
+		}
+		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
+		if (iSeq == URReqSeqNum) {
+			if (theSrvrPeer != addrR.sin_addr.s_addr) {
+				fprintf(stderr, "WARN:%s: Found peer srvr[0x%X] cmdGot from[0x%X], Ignoring\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
+				continue;
+			}
+			//ll_getdata(llLostPkts, &bufS[4], 512, 10);
+			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
+			if (iRet == -1) {
+				perror("Failed sending URAck");
+				exit(-1);
+			} else {
+				fprintf(stderr, "INFO:%s: Sent URAck\n", __func__);
+			}
+		} else {
+			if (iSeq > CmdsSeqNum) {
+				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
+				continue;
+			}
+			ll_delete(llLostPkts, iSeq);
+			if (fileData != -1) {
+				filedata_save(fileData, &bufR[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
+			}
 		}
 	}
 	return -1;
@@ -312,6 +365,7 @@ int main(int argc, char **argv) {
 	int sockMCast = -1;
 	int sockUCast = -1;
 	struct LLR llLostPkts;
+	uint32_t theSrvrPeer = 0;
 
 	if (argc < ARG_COUNT) {
 		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile> <pi_nw_bcast_addr>\n", argv[0]);
@@ -336,7 +390,7 @@ int main(int argc, char **argv) {
 	ll_print(&llLostPkts);
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
-	if (ucast_pi(sockUCast, sPINwBCast, portServer) < 0) {
+	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
 		fprintf(stderr, "WARN:%s: No Server found during PI Phase, quiting...\n", __func__);
 	} else {
 		// Add UCastRecovery logic
