@@ -28,6 +28,7 @@ dataSize=1024
 Bps=2e6
 addr="127.0.0.1"
 sfData=None
+iTestBlocks=1e6
 
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
@@ -48,11 +49,17 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--testblocks"):
+		iArg += 1
+		iTestBlocks = int(sys.argv[iArg])
 	iArg += 1
 
 fData=None
 if (sfData != None):
+	print("MODE:FileTransfer:{}".format(sfData))
 	fData = open(sfData, 'br')
+else:
+	print("MODE:TestBlocks:{}".format(iTestBlocks))
 
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
@@ -69,6 +76,8 @@ while True:
 		if (curData == b''):
 			break
 	else:
+		if (pktid >= iTestBlocks):
+			break
 		tmpData = bytes(dataSize-4)
 		curData = struct.pack("<I{}s".format(dataSize-4), pktid, tmpData)
 		#print(curData, len(curData))
