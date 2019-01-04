@@ -252,7 +252,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	return 0;
 }
 
-void ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
+int ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
 	int iRet;
 	char bufS[32], bufR[32];
 	struct sockaddr_in addrS, addrR;
@@ -288,12 +288,12 @@ void ucast_pi(int sockUCast, char *sPINwBCast, int portServer) {
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		if (iSeq == PIAckSeqNum) {
 			fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
-			break;
+			return 0;
 		} else {
 			fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
 		}
 	}
-
+	return -1;
 }
 
 #define ARG_IFINDEX 1
@@ -332,7 +332,11 @@ int main(int argc, char **argv) {
 	ll_print(&llLostPkts);
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
-	ucast_pi(sockUCast, sPINwBCast, portServer);
+	if (ucast_pi(sockUCast, sPINwBCast, portServer) < 0) {
+		fprintf(stderr, "WARN:%s: No Server found during PI Phase, quiting...\n", __func__);
+	} else {
+		// Add UCastRecovery logic
+	}
 
 	ll_free(&llLostPkts);
 	return 0;
