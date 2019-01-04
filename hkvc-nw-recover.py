@@ -28,6 +28,12 @@ URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
 
 
+DBGLVL = 7
+def dprint(lvl, msg):
+	if (lvl > DBGLVL):
+		print(msg)
+
+
 port=1111
 N=11
 dataSize=1024
@@ -65,55 +71,55 @@ if (sfData != None):
 	fData = open(sfData, 'br')
 
 perPktTime=1/(Bps/dataSize)
-print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 
 if (sMode == "FAST"):
 	PITotalTimeSecs=1*60
-print(" portServer [{}], portClient [{}]".format(portServer, portClient))
-print(" sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
+dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
+dprint(9, " sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
 
 socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
 addr = "0.0.0.0"
-print("Listening on [{}:{}]".format(addr, portServer))
+dprint(9, "Listening on [{}:{}]".format(addr, portServer))
 sock.bind((addr, portServer))
 
-print("Will start in 10 secs...")
+dprint(9, "Will start in 10 secs...")
 time.sleep(10)
 
 
 clients = []
 def presence_info():
 	global sock
-	print("PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
+	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
 	while(deltaTime < PITotalTimeSecs):
-		print("PI:{}_{}".format(iCnt,deltaTime))
+		dprint(8, "PI:{}_{}".format(iCnt,deltaTime))
 		try:
 			d = sock.recvfrom(128)
 			dataC = d[0]
 			peer = d[1][0]
 			try:
 				i = clients.index(peer)
-				print("Rcvd from known client:{}:{}".format(peer, dataC))
+				dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
 			except ValueError as e:
-				print("Rcvd from new client:{}:{}".format(peer, dataC))
+				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
 			data=struct.pack("<Is", PIAckSeqNum, bytes("Hello", 'utf8'))
 			sock.sendto(data, (peer, portClient))
 		except socket.timeout as e:
 			d = None
-			print(".")
+			dprint(7, ".")
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
-	print("PI identified following clients:")
+	dprint(9, "PI identified following clients:")
 	for r in clients:
-		print(r)
+		dprint(9, r)
 
 
 def gen_lostpackets_array(lostPackets):
@@ -134,22 +140,23 @@ def gen_lostpackets_array(lostPackets):
 
 
 def ur_send_packets(client, lostPackets):
-	print("ur_send_packets: client[{}] LostPackets:[{}]".format(client, lostPackets))
+	dprint(2, "ur_send_packets: client[{}] LostPackets:[{}]".format(client, lostPackets))
 	lpa = gen_lostpackets_array(lostPackets)
-	print("ur_send_packets: lostPackets count [{}]".format(len(lpa)))
+	dprint(9, "ur_send_packets: client[{}] lostPackets count [{}]".format(client, len(lpa)))
 	iPkts = len(lpa)
-	send_file_data(client, lpa)
+	if (iPkts != 0):
+		send_file_data(client, lpa)
 	return iPkts
 
 
 def ur_client(client):
 	global sock
-	print("UnicastRecovery: Listening on [{}:{}] for client [{}:{}]".format(addr, portServer, client, portClient))
+	dprint(9, "UnicastRecovery: Listening on [{}:{}] for client [{}:{}]".format(addr, portServer, client, portClient))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
 	while(deltaTime < URDeltaTimeSecs):
-		print("UR:{}_{}".format(iCnt,deltaTime))
+		dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
 		data=struct.pack("<Is", URReqSeqNum, bytes("Hello", 'utf8'))
 		sock.sendto(data, (client, portClient))
 		try:
@@ -157,24 +164,24 @@ def ur_client(client):
 			dataC = d[0]
 			peer = d[1][0]
 			if client != peer:
-				print("UR:WARN:WrongPeer: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
+				dprint(8, "UR:WARN:WrongPeer: Expected from Peer [{}], Got from Peer [{}]".format(client, peer))
 				continue
 			print(dataC)
 			cmd = struct.unpack("<I", dataC[0:4])[0]
 			if cmd != URAckSeqNum:
-				print("UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(hex(cmd)))
+				dprint(8, "UR:WARN: Peer has sent wrong resp[{}], skipping the same...".format(hex(cmd)))
 				continue
 			data = dataC[4:]
 			if (data == b''):
-				print("UR:INFO: No MORE lost packets for [{}]".format(client))
+				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
 				return
 			if (ur_send_packets(client, data) == 0):
-				print("UR:INFO: No MORE lost packets for [{}]".format(client))
+				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
 				return
-			startTime = time.time()
+			startTime = time.time() # Have to change the loop exit logic, based around this
 		except socket.timeout as e:
 			d = None
-			print(".")
+			dprint(7, ".")
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
@@ -185,9 +192,9 @@ def unicast_recovery():
 
 	for client in clients:
 		ur_client(client)
-	print("Remaining clients:") # TODO: Need to update the clients list
+	dprint(9, "Remaining clients:") # TODO: Need to update the clients list
 	for r in clients:
-		print(r)
+		dprint(9, r)
 
 
 def send_file_data(peer, indexList):
@@ -197,7 +204,7 @@ def send_file_data(peer, indexList):
 	prevTimeThrottle=time.time()
 	pktid = 0
 	for i in indexList:
-		#print("send_file_data: sending data for index [{}]\n".format(i))
+		dprint(2, "send_file_data: sending data for index [{}]\n".format(i))
 		if (fData != None):
 			fData.seek(i*dataSize)
 			curData = fData.read(dataSize)
@@ -214,7 +221,7 @@ def send_file_data(peer, indexList):
 			timeAlloted = (perPktTime*N)
 			timeUsed = curTime-prevTimeThrottle
 			timeRemaining = timeAlloted - timeUsed
-			#print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
+			dprint(0, "timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
 			if (timeRemaining > 0):
 				(rlist, wlist, xlist) = select.select([0],[],[],timeRemaining)
 				if (len(rlist) == 1):
@@ -225,7 +232,7 @@ def send_file_data(peer, indexList):
 			numPkts = pktid - prevPktid
 			timeDelta = curTime - prevTime
 			nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-			print("Transfer speed [{}]MBps\n".format(nwSpeed))
+			dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
 			#time.sleep(1)
 			prevTime = time.time()
 			prevPktid = pktid
@@ -235,5 +242,5 @@ def send_file_data(peer, indexList):
 
 presence_info()
 unicast_recovery()
-print("INFO: Done with transfer")
+dprint(9, "INFO: Done with transfer")
 
