@@ -26,6 +26,7 @@ PIAckSeqNum = 0xffffff01
 URDeltaTimeSecs = 3*60
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
+URCLIENT_MAXCHANCES_PERATTEMPT = 512
 
 
 DBGLVL = 7
@@ -155,6 +156,7 @@ def ur_client(client):
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
+	giveupReason = "No Response"
 	while(deltaTime < URDeltaTimeSecs):
 		dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
 		data=struct.pack("<Is", URReqSeqNum, bytes("Hello", 'utf8'))
@@ -185,6 +187,10 @@ def ur_client(client):
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
+		if (iCnt > URCLIENT_MAXCHANCES_PERATTEMPT):
+			giveupReason = "TooMany LostPackets???"
+			break
+	dprint(9, "UR:WARN: Giving up on [{}] temporarily bcas [{}]".format(client, giveupReason))
 	return -1
 
 
