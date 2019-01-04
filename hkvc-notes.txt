@@ -5,11 +5,17 @@ HanishKVC, 19XY
 ##################################
 
 
+Logic and Usage
+#################
+
 Overview
-#############
+==========
 
 This set of programs helps verify network performance as well as if required
 transfer a file from server to multiple clients.
+
+The Phases
+------------
 
 It consits of
 
@@ -24,10 +30,22 @@ Unicast based data / lost packet recovery logic - The server communicates with
 the clients one by one and gets their list of lost packets and helps them
 recover those by resending it thro unicast.
 
+UnicastRecovery
+-----------------
+If a client stops responding in the middle of unicast error recovery or has
+used up too many attempts and has still not fully recovered its lost packets,
+then the server side logic will gracefully keep that client aside, and go to
+the remaining clients. In turn at the end it will come back and check which
+clients had been kept aside and then will try to help those clients recover
+their lost packets.
 
-NOTE: If a client fails in the middle of unicast error recovery, the server
-side logic may or may not handle this gracefully. In a graceful handling
-scenario, the server should ignore that client and go to the remaining clients.
+The logic will run thro the remaining clients list 3 times, before fully giving
+up.
+
+NOTE: If a client doesn't respond back to the server for upto 3 minutes or if
+it has not recovered all its lost packets even after handshaking with it for
+512 times, then it is kept aside temporarily.
+
 
 
 Client
