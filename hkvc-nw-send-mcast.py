@@ -29,6 +29,7 @@ Bps=2e6
 addr="127.0.0.1"
 sfData=None
 iTestBlocks=1e6
+bSimLoss=False
 
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
@@ -52,6 +53,8 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--testblocks"):
 		iArg += 1
 		iTestBlocks = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--simloss"):
+		bSimLoss=True
 	iArg += 1
 
 fData=None
@@ -81,6 +84,12 @@ while True:
 		tmpData = bytes(dataSize-4)
 		curData = struct.pack("<I{}s".format(dataSize-4), pktid, tmpData)
 		#print(curData, len(curData))
+	if (bSimLoss):
+		iRem = pktid%10023
+		if ((pktid > 100) and (iRem < 2)):
+			print("INFO: Dropping [{}]".format(pktid))
+			pktid += 1
+			continue
 	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
 	sock.sendto(data, (addr, port))
 	pktid += 1
