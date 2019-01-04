@@ -158,7 +158,8 @@ def ur_client(client):
 	iCnt = 0
 	giveupReason = "No Response"
 	while(deltaTime < URDeltaTimeSecs):
-		dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
+		if ((iCnt % 30) == 0):
+			dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
 		data=struct.pack("<Is", URReqSeqNum, bytes("Hello", 'utf8'))
 		sock.sendto(data, (client, portClient))
 		try:
@@ -235,7 +236,7 @@ def send_file_data(peer, indexList):
 				if (len(rlist) == 1):
 					a=input()
 			prevTimeThrottle = time.time()
-		if ((pktid%(N*N*2)) == 0):
+		if ((pktid%(N*N*4)) == 0):
 			curTime=time.time()
 			numPkts = pktid - prevPktid
 			timeDelta = curTime - prevTime
