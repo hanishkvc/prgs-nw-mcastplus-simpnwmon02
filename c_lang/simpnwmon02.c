@@ -198,6 +198,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
+	curDTime = prevDTime;
 	gbDoMCast = 1;
 	while (gbDoMCast) {
 
@@ -309,14 +310,28 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 	int iRet;
 	char bufS[UR_BUFS_LEN], bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrS, addrR;
+	time_t prevSTime, curSTime;
+	int iPktCnt, iPrevPktCnt;
 
 	addrS.sin_family=AF_INET;
 	addrS.sin_port=htons(portServer);
 	addrS.sin_addr.s_addr = theSrvrPeer;
 	*(uint32_t *)bufS = URAckSeqNum;
 
+	iPrevPktCnt = 0;
+	iPktCnt = 0;
+	prevSTime = time(NULL);
 	int bUCastRecover = 1;
 	while(bUCastRecover) {
+		curSTime = time(NULL);
+		int iDeltaTimeSecs = curSTime - prevSTime;
+		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
+			int iDeltaPkts = iPktCnt - iPrevPktCnt;
+			int iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] DataBPS[%d]\n", __func__, iPktCnt, iDataBytesPerSec);
+			prevSTime = curSTime;
+			iPrevPktCnt = iPktCnt;
+		}
 		unsigned int iAddrLen = sizeof(addrR);
 		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
 		if (iRet == -1) {
@@ -327,6 +342,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 			}
 			continue;
 		}
+		iPktCnt += 1;
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		if (iSeq == URReqSeqNum) {
 			if (theSrvrPeer != addrR.sin_addr.s_addr) {
