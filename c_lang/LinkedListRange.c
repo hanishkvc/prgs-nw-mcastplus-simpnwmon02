@@ -9,6 +9,8 @@
 
 void ll_init(struct LLR *me) {
 	me->llStart = NULL;
+	me->llLastAdded = NULL;
+	me->iNodeCnt = 0;
 }
 
 struct _ll *_ll_alloc(int start, int end) {
