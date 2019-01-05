@@ -192,16 +192,23 @@ int ll_free(struct LLR *me) {
 
 void ll_print(struct LLR *me, char *sMsg) {
 
-	struct _ll *llNext = me->llStart;
+	ll_print_content(me, sMsg);
+	ll_print_summary(me, sMsg);
+}
+
+void ll_print_content(struct LLR *me, char *sMsg) {
+
 	printf("**** [%s] LinkedList Content ****\n", sMsg);
+	struct _ll *llNext = me->llStart;
 	while(llNext != NULL) {
 		printf("%d-%d\n", llNext->rStart, llNext->rEnd);
 		llNext = llNext->next;
 	}
-	ll_print_summary(me, sMsg);
+	printf("****    ****    ****    ****\n");
 }
 
 void ll_print_summary(struct LLR *me, char *sMsg) {
+
 	printf("**** [%s] LinkedList Summary ****\n", sMsg);
 	printf("NodeCnt: %d\n", me->iNodeCnt);
 	printf("TotalFromRanges: %d\n", me->iTotalFromRanges);
@@ -220,6 +227,7 @@ void ll_print_summary(struct LLR *me, char *sMsg) {
 	} else {
 		printf("EndNode: NULL\n");
 	}
+	printf("****    ****    ****    ****\n");
 }
 
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
