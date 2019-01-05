@@ -245,7 +245,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		}
 		if (iSeqDelta > 1) {
 			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
-			ll_add_sorted(llLostPkts, iPrevSeq+1, iSeq-1);
+			ll_add_sorted_startfrom_lastadded(llLostPkts, iPrevSeq+1, iSeq-1);
 			iDisjointSeqs += 1;
 			iDisjointPktCnt += (iSeqDelta-1);
 		}
