@@ -5,7 +5,7 @@
 # A test script which collates all available active clients in the network
 # which talk the same language. In turn it tries to help recover lost packets
 # wrt each of the client using unicast tranfers.
-# v20190105IST1818
+# v20190105IST1933
 # HanishKVC, GPL, 19XY
 #
 
@@ -156,10 +156,10 @@ def gen_lostpackets_array(lostPackets):
 		if (r[0] == 0):
 			continue
 		r = r.split(b'-')
-		if (r[0].startswith(b"IRanges"):
+		if (r[0].startswith(b"IRanges")):
 			iRangesCnt = int(r[1])
 			continue
-		if (r[0].startswith(b"ILost"):
+		if (r[0].startswith(b"ILost")):
 			iLostPkts = int(r[1])
 			continue
 		s = int(r[0])

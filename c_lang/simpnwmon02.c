@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190105IST1818
+    v20190105IST1933
     HanishKVC, GPL, 19XY
  */
 
@@ -350,14 +350,17 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				continue;
 			}
 			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
+#ifdef PRG_UR_VERBOSE
 			ll_print_summary(llLostPkts, "LostPackets");
+#endif
 			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 			if (iRet == -1) {
 				perror("Failed sending URAck");
 				exit(-1);
 			} else {
-				fprintf(stderr, "INFO:%s: Sent URAck with [%d] records\n", __func__, iRecords);
+				fprintf(stderr, "INFO:%s: URAck [%d]records", __func__, iRecords);
 			}
+			fprintf(stderr, ": Lost Ranges[%d] Pkts[%d]\n", llLostPkts->iNodeCnt, llLostPkts->iTotalFromRanges);
 		} else {
 			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
 				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
