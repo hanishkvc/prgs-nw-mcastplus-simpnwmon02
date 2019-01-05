@@ -235,12 +235,24 @@ def unicast_recovery(clients):
 	return remainingClients
 
 
+def print_throughput(prevTime, pktid, prevPktid):
+	curTime=time.time()
+	numPkts = pktid - prevPktid
+	timeDelta = curTime - prevTime
+	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
+	dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
+	return curTime, pktid
+
+
 def send_file_data(peer, indexList):
+	iNumPkts = len(indexList)
+	iStatMod = ((iNumPkts/(N*N))/4)
 	prevPktid=0
 	prevTime=time.time()
 	curTime=0.0
 	prevTimeThrottle=time.time()
 	pktid = 0
+	iStatCnt = 0
 	for i in indexList:
 		dprint(2, "send_file_data: sending data for index [{}]\n".format(i))
 		if (fData != None):
@@ -265,15 +277,10 @@ def send_file_data(peer, indexList):
 				if (len(rlist) == 1):
 					a=input()
 			prevTimeThrottle = time.time()
-		if ((pktid%(N*N*4)) == 0):
-			curTime=time.time()
-			numPkts = pktid - prevPktid
-			timeDelta = curTime - prevTime
-			nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-			dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
-			#time.sleep(1)
-			prevTime = time.time()
-			prevPktid = pktid
+		if ((pktid%(N*N)) == 0):
+			iStatCnt += 1
+			if (iStatCnt%iStatMode) == 0:
+				prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
 
 
 
