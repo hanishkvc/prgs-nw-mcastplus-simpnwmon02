@@ -27,12 +27,22 @@ URDeltaTimeSecs = 3*60
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
 URCLIENT_MAXCHANCES_PERATTEMPT = 512
+giNumOfAttempts = 3
+giTotalBlocksInvolved = 10e6
 
 
 DBGLVL = 7
 def dprint(lvl, msg):
 	if (lvl > DBGLVL):
 		print(msg)
+
+
+def guess_numofattempts(totalBlocksInvolved):
+	i10 = int(totalBlocksInvolved*0.1)
+	iAttempts = int((i10/URCLIENT_MAXCHANCES_PERATTEMPT)*2)
+	if (iAttempts < 3):
+		iAttempts = 3
+	return iAttempts
 
 
 port=1111
@@ -70,6 +80,9 @@ while iArg < len(sys.argv):
 fData=None
 if (sfData != None):
 	fData = open(sfData, 'br')
+	giTotalBlocksInvolved = int(os.stat(fData.fileno()).st_size/dataSize)+1
+
+giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
 dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
@@ -78,6 +91,8 @@ if (sMode == "FAST"):
 	PITotalTimeSecs=1*60
 dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
 dprint(9, " sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
+
+dprint(9, "giTotalBlocksInvolved [{}], URCLIENT_MAXCHANCES_PERATTEMPT [{}] giNumOfAttempts [{}]\n".format(giTotalBlocksInvolved, URCLIENT_MAXCHANCES_PERATTEMPT, giNumOfAttempts))
 
 socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -250,7 +265,7 @@ def send_file_data(peer, indexList):
 
 
 presence_info()
-for i in range(3):
+for i in range(giNumOfAttempts):
 	clients = unicast_recovery(clients)
 	if(len(clients) == 0):
 		break
