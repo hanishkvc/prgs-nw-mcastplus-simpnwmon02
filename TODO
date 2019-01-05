@@ -1,7 +1,7 @@
 LinkedListRange
 ==================
 
-	int iRangeTotal;
+	int iTotalFromRanges;
 
 ShouldBe_CheckOnce
 For usages where majority of the time new value ranges that are added are
@@ -17,4 +17,15 @@ node.
 
 Main logic
 =============
+
+Should add a Nodes/Ranges of LostPackets remaining in the lostPackets list
+still, to the info passed through URAckSeqNum packets.
+
+This will give a rough idea of how many more lost packets are there to be
+recovered, in a indirect way.
+
+At a later stage once the iTotalFromRanges is tracked in LinkedListRanges, then
+even it should be passed thro to server in these URAckSeqNum Packets. This will
+give a very accurate sense of amount of data to be recovered by the clients at
+that time.
 
