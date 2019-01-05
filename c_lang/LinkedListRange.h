@@ -26,7 +26,9 @@ struct LLR{
 
 void ll_init(struct LLR *me);
 struct _ll *_ll_alloc(int start, int end);
-void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext);
+#define _ADD_FROM_ADD 0
+#define _ADD_FROM_DEL 1
+void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext, int iMode);
 #define ll_add_sorted ll_add_sorted_startfrom_start
 int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end);
 int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end);

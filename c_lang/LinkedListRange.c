@@ -35,14 +35,16 @@ void _ll_update_end_for_add(struct LLR *me, struct _ll *new) {
 	}
 }
 
-void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
+void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext, int iMode) {
 
 	if (llNewNext == NULL) {
 		fprintf(stderr, "WARN:%s: A NULL node given for adding, returning\n", __func__);
 		return;
 	}
 	me->iNodeCnt += 1;
-	me->iTotalFromRanges += ((llNewNext->rEnd - llNewNext->rStart)+1);
+	if (iMode == _ADD_FROM_ADD) {
+		me->iTotalFromRanges += ((llNewNext->rEnd - llNewNext->rStart)+1);
+	}
 	me->llLastAdded = llNewNext;
 	if (llCur == NULL) {
 		if (me->llStart != NULL) {
@@ -83,7 +85,7 @@ int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end) {
 		llPrev = llNext;
 		llNext = llNext->next;
 	}
-	_ll_add(me, llPrev, llTemp);
+	_ll_add(me, llPrev, llTemp, _ADD_FROM_ADD);
 	fprintf(stderr, "INFO:%s: Added [%d-%d]\n", __func__, start, end);
 	return 0;
 }
@@ -105,7 +107,7 @@ int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end) {
 		llPrev = llNext;
 		llNext = llNext->next;
 	}
-	_ll_add(me, llPrev, llTemp);
+	_ll_add(me, llPrev, llTemp, _ADD_FROM_ADD);
 	fprintf(stderr, "INFO:%s: Added [%d-%d]\n", __func__, start, end);
 	return 0;
 }
@@ -140,6 +142,7 @@ int ll_delete(struct LLR *me, int val) {
 
 	llPrev = NULL;
 	llNext = me->llStart;
+	me->iTotalFromRanges -= 1;
 	while(llNext != NULL) {
 		if (llNext->rStart == val) {
 			if (llNext->rEnd == val) {
@@ -164,11 +167,12 @@ int ll_delete(struct LLR *me, int val) {
 			int iEnd = llNext->rEnd;
 			llNext->rEnd = val-1;
 			llTemp = _ll_alloc(val+1, iEnd);
-			_ll_add(me, llNext, llTemp);
+			_ll_add(me, llNext, llTemp, _ADD_FROM_DEL);
 			return 0;
 		}
 		llNext = llNext->next;
 	}
+	me->iTotalFromRanges += 1;
 	return -1;
 }
 
