@@ -277,10 +277,9 @@ def send_file_data(peer, indexList):
 				if (len(rlist) == 1):
 					a=input()
 			prevTimeThrottle = time.time()
-		if ((pktid%(N*N)) == 0):
-			iStatCnt += 1
-			if (iStatCnt%iStatMode) == 0:
-				prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
+		if ((pktid%(N*N*512)) == 0):
+			prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
+	print_throughput(prevTime, pktid, prevPktid)
 
 
 

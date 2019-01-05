@@ -16,6 +16,12 @@ import struct
 import select
 
 
+DBGLVL = 7
+def dprint(lvl, msg):
+	if (lvl > DBGLVL):
+		print(msg)
+
+
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
@@ -68,6 +74,18 @@ perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 print("Will start in 10 secs...")
 time.sleep(10)
+print("Started")
+
+
+
+def print_throughput(prevTime, pktid, prevPktid):
+	curTime=time.time()
+	numPkts = pktid - prevPktid
+	timeDelta = curTime - prevTime
+	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
+	dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
+	return curTime, pktid
+
 
 prevPktid=0
 prevTime=time.time()
@@ -104,15 +122,9 @@ while True:
 			if (len(rlist) == 1):
 				a=input()
 		prevTimeThrottle = time.time()
-	if ((pktid%(N*N*10)) == 0):
-		curTime=time.time()
-		numPkts = pktid - prevPktid
-		timeDelta = curTime - prevTime
-		nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-		print("Transfer speed [{}]MBps\n".format(nwSpeed))
-		#time.sleep(1)
-		prevTime = time.time()
-		prevPktid = pktid
+	if ((pktid%(N*N*256)) == 0):
+		prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
+print_throughput(prevTime, pktid, prevPktid)
 
 
 print("INFO: Done with transfer")
