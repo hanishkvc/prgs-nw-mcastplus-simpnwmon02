@@ -1,6 +1,6 @@
 ##################################
 Nw Testing/Data transfer logic
-v20190104IST1656
+v20190105IST2331
 HanishKVC, 19XY
 ##################################
 
@@ -39,13 +39,31 @@ the remaining clients. In turn at the end it will come back and check which
 clients had been kept aside and then will try to help those clients recover
 their lost packets.
 
-The logic will run thro the remaining clients list 3 times, before fully giving
-up.
+Depending on the length of the content transfered, the server logic will decide
+for how many times it should run thro the kept aside clients lists. Even after
+that if there are clients which haven't fully recovered, the server will list
+those clients and give up.
+
+The logic will assume that upto a max of 8% to 10% packet losess could be there
+and based on that decides how many attempts it should try wrt clients that keep
+getting kept aside.
 
 NOTE: If a client doesn't respond back to the server for upto 3 minutes or if
 it has not recovered all its lost packets even after handshaking with it for
 512 times, then it is kept aside temporarily.
 
+When the client communicates with server with URAckSeqNum, it not only gives a
+small list of lost packet ranges to recover, but also in total how many lost
+packet ranges as well as inturn the total number of lost packets at that given
+time in the client.
+
+LinkedListRanges
+-----------------
+
+The linked list will maintain reference to the start, end as well as the last
+added node in the list. It also maintains a count of total number of nodes and
+inturn the total number of values stored in the list in the shortened form of
+ranges.
 
 
 Client
