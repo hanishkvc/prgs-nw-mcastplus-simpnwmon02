@@ -190,14 +190,19 @@ int ll_free(struct LLR *me) {
 	return 0;
 }
 
-void ll_print(struct LLR *me) {
+void ll_print(struct LLR *me, char *sMsg) {
 
 	struct _ll *llNext = me->llStart;
-	printf("**** LinkedList Content ****\n");
+	printf("**** [%s] LinkedList Content ****\n", sMsg);
 	while(llNext != NULL) {
 		printf("%d-%d\n", llNext->rStart, llNext->rEnd);
 		llNext = llNext->next;
 	}
+	ll_print_summary(me, sMsg);
+}
+
+void ll_print_summary(struct LLR *me, char *sMsg) {
+	printf("**** [%s] LinkedList Summary ****\n", sMsg);
 	printf("NodeCnt: %d\n", me->iNodeCnt);
 	printf("TotalFromRanges: %d\n", me->iTotalFromRanges);
 	if (me->llStart != NULL) {
@@ -242,22 +247,26 @@ int main(int argc, char **argv) {
 	int iStart = 0;
 
 	ll_init(&theLLR);
+	ll_print_summary(&theLLR, "Testing LLR - After Init");
 	iStart = 1000;
 	for(int iCnt = 0; iCnt < (1024-10); iCnt++) {
 		iStart += 100;
 		ll_add_sorted(&theLLR, iStart, iStart+20);
 	}
+	ll_print_summary(&theLLR, "Testing LLR - After initial additions");
 	iStart = 0;
 	for(int iCnt = 0; iCnt < 10; iCnt++) {
 		iStart += 100;
 		ll_add_sorted(&theLLR, iStart, iStart+20);
 	}
+	ll_print_summary(&theLLR, "Testing LLR - After additions which should go at begining");
 	iStart = 2050;
 	for(int iCnt = 0; iCnt < 10; iCnt++) {
 		iStart += 100;
 		ll_add_sorted(&theLLR, iStart, iStart+20);
 	}
-	ll_print(&theLLR);
+	ll_print_summary(&theLLR, "Testing LLR - After additions which should go in-between");
+	ll_print(&theLLR, "Testing LLR - After all added");
 	ll_free(&theLLR);
 	return 0;
 }
