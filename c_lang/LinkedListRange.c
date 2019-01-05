@@ -1,6 +1,6 @@
 /*
     LinkedList implementation which stores a Range as the content of each node in the list
-    v20190105IST1051
+    v20190105IST1818
     HanishKVC, GPL, 19XY
  */
 
@@ -248,6 +248,8 @@ int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
 			break;
 		}
 	}
+	snprintf(tBuf, 128, "IRangesCnt-%d\nILostPkts-%d\n", me->iNodeCnt, me->iTotalFromRanges);
+	strncat(buf, tBuf, bufLen);
 	return iCnt;
 }
 

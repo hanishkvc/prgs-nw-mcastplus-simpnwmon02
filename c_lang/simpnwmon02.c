@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190104IST0037
+    v20190105IST1818
     HanishKVC, GPL, 19XY
  */
 
@@ -304,7 +304,7 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 	return -1;
 }
 
-#define UR_BUFS_LEN 512
+#define UR_BUFS_LEN 800
 #define UR_BUFR_LEN 1500
 int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts) {
 	int iRet;
@@ -349,7 +349,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				fprintf(stderr, "WARN:%s: Found peer srvr[0x%X] cmdGot from[0x%X], Ignoring\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
 				continue;
 			}
-			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 10);
+			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
 			ll_print_summary(llLostPkts, "LostPackets");
 			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 			if (iRet == -1) {

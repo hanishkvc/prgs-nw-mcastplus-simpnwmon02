@@ -5,7 +5,7 @@
 # A test script which collates all available active clients in the network
 # which talk the same language. In turn it tries to help recover lost packets
 # wrt each of the client using unicast tranfers.
-# v20190104IST2239
+# v20190105IST1818
 # HanishKVC, GPL, 19XY
 #
 
@@ -42,7 +42,7 @@ def guess_numofattempts(totalBlocksInvolved):
 	dLossPercent = 0.08
 	dBuffer = 1.5
 	iAvgNumOfPacketsPerRange = 8
-	iNumOfRangesPerChance = 10
+	iNumOfRangesPerChance = 20
 	iAvgNumOfPacketsPerChance = iNumOfRangesPerChance*iAvgNumOfPacketsPerRange
 	iLost = int(totalBlocksInvolved*dLossPercent)
 	iAttempts = int((iLost/(URCLIENT_MAXCHANCES_PERATTEMPT*iAvgNumOfPacketsPerChance))*dBuffer)
@@ -145,6 +145,8 @@ def presence_info():
 
 
 def gen_lostpackets_array(lostPackets):
+	iRangesCnt = -1
+	iLostPkts = -1
 	lp = lostPackets
 	lp = lp.split(b'\n')
 	lpa = []
@@ -154,17 +156,23 @@ def gen_lostpackets_array(lostPackets):
 		if (r[0] == 0):
 			continue
 		r = r.split(b'-')
+		if (r[0].startswith(b"IRanges"):
+			iRangesCnt = int(r[1])
+			continue
+		if (r[0].startswith(b"ILost"):
+			iLostPkts = int(r[1])
+			continue
 		s = int(r[0])
 		e = int(r[1])
 		for i in range(s,e+1):
 			lpa.append(i)
-	return lpa
+	return lpa, iRangesCnt, iLostPkts
 
 
 def ur_send_packets(client, lostPackets):
 	dprint(2, "ur_send_packets: client[{}] LostPackets:[{}]".format(client, lostPackets))
-	lpa = gen_lostpackets_array(lostPackets)
-	dprint(9, "ur_send_packets: client[{}] lostPackets count [{}]".format(client, len(lpa)))
+	lpa, iRangesCnt, iLostPkts = gen_lostpackets_array(lostPackets)
+	dprint(9, "ur_send_packets: client[{}] lostPackets curCount [{}], StillInTotal(Ranges[{}], LostPkts[{}])".format(client, len(lpa), iRangesCnt, iLostPkts))
 	iPkts = len(lpa)
 	if (iPkts != 0):
 		send_file_data(client, lpa)
