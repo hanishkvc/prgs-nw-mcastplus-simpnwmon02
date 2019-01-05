@@ -38,8 +38,13 @@ def dprint(lvl, msg):
 
 
 def guess_numofattempts(totalBlocksInvolved):
-	i10 = int(totalBlocksInvolved*0.1)
-	iAttempts = int((i10/URCLIENT_MAXCHANCES_PERATTEMPT)*2)
+	dLossPercent = 0.08
+	dBuffer = 1.5
+	iAvgNumOfPacketsPerRange = 8
+	iNumOfRangesPerChance = 10
+	iAvgNumOfPacketsPerChance = iNumOfRangesPerChance*iAvgNumOfPacketsPerRange
+	iLost = int(totalBlocksInvolved*dLossPercent)
+	iAttempts = int((iLost/(URCLIENT_MAXCHANCES_PERATTEMPT*iAvgNumOfPacketsPerChance))*dBuffer)
 	if (iAttempts < 3):
 		iAttempts = 3
 	return iAttempts
