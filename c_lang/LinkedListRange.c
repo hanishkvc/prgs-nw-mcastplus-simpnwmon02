@@ -279,6 +279,17 @@ int main(int argc, char **argv) {
 	}
 	ll_print_summary(&theLLR, "Testing LLR - After additions which should go in-between");
 	ll_print(&theLLR, "Testing LLR - After all added");
+
+	for(int iCnt = 1000; iCnt < (1024-10)*100; iCnt++) {
+		ll_delete(&theLLR, iCnt);
+	}
+	ll_print_summary(&theLLR, "Testing LLR - After deleting from 1000 to (1024-10)*100");
+	for(int iCnt = 0; iCnt < 1024; iCnt++) {
+		ll_delete(&theLLR, iCnt);
+	}
+	ll_print_summary(&theLLR, "Testing LLR - After deleting from 0 to 1024");
+	ll_print(&theLLR, "Testing LLR - After all deletes");
+
 	ll_free(&theLLR);
 	return 0;
 }
