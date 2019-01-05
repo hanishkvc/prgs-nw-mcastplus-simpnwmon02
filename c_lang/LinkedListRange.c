@@ -12,6 +12,7 @@ void ll_init(struct LLR *me) {
 	me->llLastAdded = NULL;
 	me->llEnd = NULL;
 	me->iNodeCnt = 0;
+	me->iTotalFromRanges = 0;
 }
 
 struct _ll *_ll_alloc(int start, int end) {
@@ -41,6 +42,7 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 		return;
 	}
 	me->iNodeCnt += 1;
+	me->iTotalFromRanges += ((llNewNext->rEnd - llNewNext->rStart)+1);
 	me->llLastAdded = llNewNext;
 	if (llCur == NULL) {
 		if (me->llStart != NULL) {
@@ -197,6 +199,7 @@ void ll_print(struct LLR *me) {
 		llNext = llNext->next;
 	}
 	printf("NodeCnt: %d\n", me->iNodeCnt);
+	printf("TotalFromRanges: %d\n", me->iTotalFromRanges);
 	if (me->llStart != NULL) {
 		printf("StartNode: %d-%d\n", me->llStart->rStart, me->llStart->rEnd);
 	} else {

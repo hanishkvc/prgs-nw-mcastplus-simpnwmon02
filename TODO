@@ -1,7 +1,6 @@
 LinkedListRange
 ==================
 
-	int iTotalFromRanges;
 
 ShouldBe_CheckOnce
 For usages where majority of the time new value ranges that are added are

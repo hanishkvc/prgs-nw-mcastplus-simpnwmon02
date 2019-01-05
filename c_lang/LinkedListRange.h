@@ -21,6 +21,7 @@ struct LLR{
 	struct _ll *llLastAdded;
 	struct _ll *llEnd;
 	int iNodeCnt;
+	int iTotalFromRanges;
 };
 
 void ll_init(struct LLR *me);
