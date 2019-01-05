@@ -10,6 +10,7 @@
 void ll_init(struct LLR *me) {
 	me->llStart = NULL;
 	me->llLastAdded = NULL;
+	me->llEnd = NULL;
 	me->iNodeCnt = 0;
 }
 
@@ -25,6 +26,12 @@ struct _ll *_ll_alloc(int start, int end) {
 	llTemp->prev = NULL;
 	llTemp->next = NULL;
 	return llTemp;
+}
+
+void _ll_update_end_for_add(struct LLR *me, struct _ll *new) {
+	if (new->next == NULL) {
+		me->llEnd = new;
+	}
 }
 
 void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
@@ -48,6 +55,7 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 			llNewNext->prev = NULL;
 			llNewNext->next = NULL;
 		}
+		_ll_update_end_for_add(me, llNewNext);
 		return;
 	}
 	llNewNext->prev = llCur;
@@ -56,6 +64,7 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 	if (llNewNext->next != NULL) {
 		llNewNext->next->prev = llNewNext;
 	}
+	_ll_update_end_for_add(me, llNewNext);
 }
 
 int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end) {
@@ -104,6 +113,9 @@ void _ll_delete(struct LLR *me, struct _ll *llDel) {
 	me->iNodeCnt -= 1;
 	if (me->llLastAdded == llDel) {
 		me->llLastAdded = NULL;
+	}
+	if (me->llEnd == llDel) {
+		me->llEnd = llDel->prev;
 	}
 	if (me->llStart == llDel) {
 		me->llStart = llDel->next;
@@ -194,6 +206,11 @@ void ll_print(struct LLR *me) {
 		printf("LastAddedNode: %d-%d\n", me->llLastAdded->rStart, me->llLastAdded->rEnd);
 	} else {
 		printf("LastAddedNode: NULL\n");
+	}
+	if (me->llEnd != NULL) {
+		printf("EndNode: %d-%d\n", me->llEnd->rStart, me->llEnd->rEnd);
+	} else {
+		printf("EndNode: NULL\n");
 	}
 }
 

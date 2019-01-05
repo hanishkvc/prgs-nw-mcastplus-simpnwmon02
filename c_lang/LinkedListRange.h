@@ -19,6 +19,7 @@ struct _ll{
 struct LLR{
 	struct _ll *llStart;
 	struct _ll *llLastAdded;
+	struct _ll *llEnd;
 	int iNodeCnt;
 };
 
