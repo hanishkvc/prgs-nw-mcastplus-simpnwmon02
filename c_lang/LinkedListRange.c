@@ -32,6 +32,7 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 		return;
 	}
 	me->iNodeCnt += 1;
+	me->llLastAdded = llNewNext;
 	if (llCur == NULL) {
 		if (me->llStart != NULL) {
 			fprintf(stderr, "DEBUG:%s: Adding entry to begin of LL, [%d-%d]\n", __func__, llNewNext->rStart, llNewNext->rEnd);
@@ -77,6 +78,9 @@ int ll_add_sorted(struct LLR *me, int start, int end) {
 void _ll_delete(struct LLR *me, struct _ll *llDel) {
 	struct _ll *llNext, *llPrev;
 	me->iNodeCnt -= 1;
+	if (me->llLastAdded == llDel) {
+		me->llLastAdded = NULL;
+	}
 	if (me->llStart == llDel) {
 		me->llStart = llDel->next;
 		if (me->llStart != NULL) {
@@ -157,6 +161,16 @@ void ll_print(struct LLR *me) {
 		llNext = llNext->next;
 	}
 	printf("NodeCnt: %d\n", me->iNodeCnt);
+	if (me->llStart != NULL) {
+		printf("StartNode: %d-%d\n", me->llStart->rStart, me->llStart->rEnd);
+	} else {
+		printf("StartNode: NULL\n");
+	}
+	if (me->llLastAdded != NULL) {
+		printf("LastAddedNode: %d-%d\n", me->llLastAdded->rStart, me->llLastAdded->rEnd);
+	} else {
+		printf("LastAddedNode: NULL\n");
+	}
 }
 
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
