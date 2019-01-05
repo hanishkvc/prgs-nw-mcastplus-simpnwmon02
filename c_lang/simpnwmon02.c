@@ -350,6 +350,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				continue;
 			}
 			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 10);
+			ll_print_summary(llLostPkts, "LostPackets");
 			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 			if (iRet == -1) {
 				perror("Failed sending URAck");
@@ -405,7 +406,7 @@ int main(int argc, char **argv) {
 	ll_init(&llLostPkts);
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
 	mcast_recv(sockMCast, fileData, &llLostPkts);
-	ll_print(&llLostPkts);
+	ll_print(&llLostPkts, "LostPackets at end of MCast");
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
 	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
