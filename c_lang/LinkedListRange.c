@@ -31,6 +31,7 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 		fprintf(stderr, "WARN:%s: A NULL node given for adding, returning\n", __func__);
 		return;
 	}
+	me->iNodeCnt += 1;
 	if (llCur == NULL) {
 		if (me->llStart != NULL) {
 			fprintf(stderr, "DEBUG:%s: Adding entry to begin of LL, [%d-%d]\n", __func__, llNewNext->rStart, llNewNext->rEnd);
@@ -75,6 +76,7 @@ int ll_add_sorted(struct LLR *me, int start, int end) {
 
 void _ll_delete(struct LLR *me, struct _ll *llDel) {
 	struct _ll *llNext, *llPrev;
+	me->iNodeCnt -= 1;
 	if (me->llStart == llDel) {
 		me->llStart = llDel->next;
 		if (me->llStart != NULL) {
@@ -120,16 +122,7 @@ int ll_delete(struct LLR *me, int val) {
 			int iEnd = llNext->rEnd;
 			llNext->rEnd = val-1;
 			llTemp = _ll_alloc(val+1, iEnd);
-#ifdef LL_EXPLICIT_INSERT_THE_OLD
-			llTemp->prev = llNext;
-			llTemp->next = llNext->next;
-			llNext->next = llTemp;
-			if (llTemp->next != NULL) {
-				llTemp->next->prev = llTemp;
-			}
-#else
 			_ll_add(me, llNext, llTemp);
-#endif
 			return 0;
 		}
 		llNext = llNext->next;
@@ -158,10 +151,12 @@ int ll_free(struct LLR *me) {
 void ll_print(struct LLR *me) {
 
 	struct _ll *llNext = me->llStart;
+	printf("**** LinkedList Content ****\n");
 	while(llNext != NULL) {
 		printf("%d-%d\n", llNext->rStart, llNext->rEnd);
 		llNext = llNext->next;
 	}
+	printf("NodeCnt: %d\n", me->iNodeCnt);
 }
 
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {

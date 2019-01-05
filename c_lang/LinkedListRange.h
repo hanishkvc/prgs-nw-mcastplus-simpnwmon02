@@ -18,6 +18,7 @@ struct _ll{
 
 struct LLR{
 	struct _ll *llStart;
+	int iNodeCnt;
 };
 
 void ll_init(struct LLR *me);
