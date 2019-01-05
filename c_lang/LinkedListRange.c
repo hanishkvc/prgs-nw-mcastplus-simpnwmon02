@@ -138,9 +138,8 @@ void _ll_delete(struct LLR *me, struct _ll *llDel) {
 
 int ll_delete(struct LLR *me, int val) {
 	struct _ll *llTemp;
-	struct _ll *llNext, *llPrev;
+	struct _ll *llNext;
 
-	llPrev = NULL;
 	llNext = me->llStart;
 	me->iTotalFromRanges -= 1;
 	while(llNext != NULL) {
