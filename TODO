@@ -1,0 +1,32 @@
+LinkedListRange
+==================
+
+	int iRangeTotal;
+
+ShouldBe_CheckOnce
+For usages where majority of the time new value ranges that are added are
+usually adjacent to one another and also having value ranges which are
+non-overlapping and increasing, then ll_add_sorted_startfrom_lastadded is a
+almost optimal logic to use, except for the situations where
+
+the new value range to add doesnt belong to the end of the list, but somewhere
+towards the begining or middle of the list, in this case, the
+startfrom_lastadded will insert these to the location just before the lastadded
+node.
+
+
+Main logic
+=============
+
+As part of Unicast Recovery logic:
+Instead of having the number of chances (URReqSeqNum) provided in a given
+attempt and the total number of attempts tried, being hardwired to say
+currently 512_Chances*3_attempts, change the logic to set this up to depend on
+the total number of blocks/packets sent as part of the transfer.
+
+This is required because, we have to assume a usual average percentage of
+packets that could be lost and then inturn allow the logic enough space to
+recover that average amount of possible lost packets and a bit more.
+
+Also it is better and simple to increase the number of attempts linear to the
+total amount of transfer involved.
