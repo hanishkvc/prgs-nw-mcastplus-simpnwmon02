@@ -27,7 +27,8 @@ URDeltaTimeSecs = 3*60
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
 URCLIENT_MAXCHANCES_PERATTEMPT = 512
-giNumOfAttempts = 3
+URATTEMPTS_MIN = 4
+giNumOfAttempts = URATTEMPTS_MIN
 giTotalBlocksInvolved = 10e6
 
 
@@ -45,8 +46,8 @@ def guess_numofattempts(totalBlocksInvolved):
 	iAvgNumOfPacketsPerChance = iNumOfRangesPerChance*iAvgNumOfPacketsPerRange
 	iLost = int(totalBlocksInvolved*dLossPercent)
 	iAttempts = int((iLost/(URCLIENT_MAXCHANCES_PERATTEMPT*iAvgNumOfPacketsPerChance))*dBuffer)
-	if (iAttempts < 3):
-		iAttempts = 3
+	if (iAttempts < URATTEMPTS_MIN):
+		iAttempts = URATTEMPTS_MIN
 	return iAttempts
 
 
