@@ -1,6 +1,6 @@
 /*
     LinkedList implementation which stores a Range as the content of each node in the list
-    v20190103IST1703
+    v20190105IST1051
     HanishKVC, GPL, 19XY
  */
 
@@ -25,7 +25,9 @@ struct LLR{
 void ll_init(struct LLR *me);
 struct _ll *_ll_alloc(int start, int end);
 void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext);
-int ll_add_sorted(struct LLR *me, int start, int end);
+#define ll_add_sorted ll_add_sorted_startfrom_start
+int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end);
+int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end);
 void _ll_delete(struct LLR *me, struct _ll *llDel);
 int ll_delete(struct LLR *me, int val);
 int ll_free(struct LLR *me);

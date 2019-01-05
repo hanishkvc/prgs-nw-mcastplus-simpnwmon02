@@ -1,6 +1,6 @@
 /*
     LinkedList implementation which stores a Range as the content of each node in the list
-    v20190103IST1703
+    v20190105IST1051
     HanishKVC, GPL, 19XY
  */
 
@@ -56,13 +56,35 @@ void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext) {
 	}
 }
 
-int ll_add_sorted(struct LLR *me, int start, int end) {
+int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end) {
 	struct _ll *llTemp;
 	struct _ll *llNext, *llPrev;
 
 	llTemp = _ll_alloc(start, end);
 	llPrev = NULL;
 	llNext = me->llStart;
+	while (llNext != NULL) {
+		if (llNext->rStart > end) {
+			break;
+		}
+		llPrev = llNext;
+		llNext = llNext->next;
+	}
+	_ll_add(me, llPrev, llTemp);
+	fprintf(stderr, "INFO:%s: Added [%d-%d]\n", __func__, start, end);
+	return 0;
+}
+
+int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end) {
+	struct _ll *llTemp;
+	struct _ll *llNext, *llPrev;
+
+	llTemp = _ll_alloc(start, end);
+	if (me->llLastAdded == NULL) {
+		return ll_add_sorted_startfrom_start(me, start, end);
+	}
+	llPrev = me->llLastAdded->prev;
+	llNext = me->llLastAdded;
 	while (llNext != NULL) {
 		if (llNext->rStart > end) {
 			break;
