@@ -115,6 +115,7 @@ time.sleep(10)
 clients = []
 def presence_info():
 	global sock
+	sock.settimeout(10.0)
 	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
 	startTime = time.time()
 	deltaTime = 0
@@ -181,6 +182,7 @@ def ur_send_packets(client, lostPackets):
 
 def ur_client(client):
 	global sock
+	sock.settimeout(10.0)
 	dprint(9, "UnicastRecovery: Listening on [{}:{}] for client [{}:{}]".format(addr, portServer, client, portClient))
 	startTime = time.time()
 	deltaTime = 0
