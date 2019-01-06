@@ -286,6 +286,7 @@ def send_file_data(peer, indexList):
 
 presence_info()
 for i in range(giNumOfAttempts):
+	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfAttempts))
 	clients = unicast_recovery(clients)
 	if(len(clients) == 0):
 		break
