@@ -16,6 +16,9 @@ import struct
 import select
 
 
+MCASTSTOPSeqNum = 0xffffffff
+MCASTSTOPAdditionalCheck = 0xf5a55a5f
+
 DBGLVL = 7
 def dprint(lvl, msg):
 	if (lvl > DBGLVL):
@@ -67,11 +70,18 @@ fData=None
 if (sfData != None):
 	print("MODE:FileTransfer:{}".format(sfData))
 	fData = open(sfData, 'br')
+	giTotalBlocksInvolved = int(os.stat(fData.fileno()).st_size/dataSize)+1
 else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
+	giTotalBlocksInvolved = iTestBlocks
 
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
+if (giTotalBlocksInvolved > (dataSize*2e9)):
+	print("ERROR: Too large a content size, not supported...")
+	exit(-2)
+
 print("Will start in 10 secs...")
 time.sleep(10)
 print("Started")
@@ -130,9 +140,9 @@ print_throughput(prevTime, pktid, prevPktid)
 print("INFO: Done with transfer")
 
 for i in range(120):
-	tmpData = bytes(dataSize-4)
-	curData = struct.pack("<I{}s".format(dataSize-4), 0xf5a55a5f, tmpData)
-	data=struct.pack("<I{}s".format(dataSize), 0xffffffff, curData)
+	tmpData = bytes(dataSize-8)
+	curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, giTotalBlocksInvolved,tmpData)
+	data=struct.pack("<I{}s".format(dataSize), MCASTSTOPSeqNum, curData)
 	sock.sendto(data, (addr, port))
 	time.sleep(1)
 
