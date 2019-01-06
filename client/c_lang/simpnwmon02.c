@@ -4,6 +4,7 @@
     HanishKVC, GPL, 19XY
  */
 
+#define _LARGEFILE64_SOURCE 1
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -149,13 +150,14 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	int iRet;
+	off64_t iRet64;
 	int iExpectedDataLen = giDataSize-PKT_DATA_OFFSET;
 
 	if (len != iExpectedDataLen) {
 		fprintf(stderr, "WARN:%s:ExpectedDataSize[%d] != pktDataLen[%d]\n", __func__, iExpectedDataLen, len);
 	}
-	iRet = lseek(fileData, iBlockOffset*giDataSize, SEEK_SET);
-	if (iRet == -1) {
+	iRet64 = lseek64(fileData, (off64_t)iBlockOffset*iExpectedDataLen, SEEK_SET);
+	if (iRet64 == -1) {
 		perror("WARN:filedata_save:lseek failed:");
 		return -1;
 	}

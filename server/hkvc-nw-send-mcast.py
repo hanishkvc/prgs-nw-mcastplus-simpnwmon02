@@ -73,7 +73,7 @@ if (sfData != None):
 	giTotalBlocksInvolved = int(os.stat(fData.fileno()).st_size/dataSize)+1
 else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
-	giTotalBlocksInvolved = iTestBlocks
+	giTotalBlocksInvolved = int(iTestBlocks)
 
 if (bSimLoss):
 	print("Simulate losses is Enabled")
