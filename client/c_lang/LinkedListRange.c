@@ -136,11 +136,11 @@ void _ll_delete(struct LLR *me, struct _ll *llDel) {
 	}
 }
 
-int ll_delete(struct LLR *me, int val) {
+int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
 	struct _ll *llTemp;
 	struct _ll *llNext;
 
-	llNext = me->llStart;
+	llNext = llStartFrom;
 	me->iTotalFromRanges -= 1;
 	while(llNext != NULL) {
 		if (llNext->rStart == val) {
@@ -173,6 +173,10 @@ int ll_delete(struct LLR *me, int val) {
 	}
 	me->iTotalFromRanges += 1;
 	return -1;
+}
+
+int ll_delete_starthint_start(struct LLR *me, int val) {
+	return ll_delete_core(me, val, me->llStart);
 }
 
 int ll_free(struct LLR *me) {
