@@ -17,3 +17,34 @@ node.
 Main logic
 =============
 
+* Multicast data packets in UCastRecovery (rather MCastRecovery) phase.
+
+Have implemented ll_delete_starthint_beforedel, which should help optimise the
+deletion from lost packets list usage, if I were to reimplement the unicast
+recovery as unicast query+response, but followed by multicast data packets
+being sent towards the clients instead of the current unicast data packets to
+the client which are working with at a given time in UR phase.
+
+In normal ucast recovery, as the client recovering the lost data packets is
+actively steering/controlling the server wrt what packets it will send, the
+deletion of lost packet from the lost packets list, once it has been recieved,
+will for the majority of the time occur at the beginning of the lost packets
+list.
+
+However if we allow the data packets sent to help with recovery for a given
+client to be also multicast, so that it can help other clients which may have
+lost the same packets, then other than the active client which is steering the
+data packets seen on the network thro its URAckSeqNum response packets, all
+other clients could be getting either packets which they already have with them
+as well as they could be getting packets which they dont have, but these
+packets could be somewhere other than the start of the lost packets list.
+
+This ll_delete_starthint_beforedel helps handle this situation in a efficient
+way.
+
+* Also may be make the client side logic stateless.
+
+i.e the client side logic should be written such that at the same time it is
+listenning for either mcast data/stop phase packets or PI phase packets or UR
+phase packets.
+
