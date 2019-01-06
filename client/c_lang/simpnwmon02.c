@@ -245,8 +245,10 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
 		if (iSeq == MCASTSTOPSeqNum) {
 			iActualLastSeqNum = *((uint32_t*)&gcBuf[PKT_MCASTSTOP_TOTALBLOCKS_OFFSET]) - 1;
-			if (iMaxDataSeqNumGot != iActualLastSeqNum) {
-				_account_lostpackets(llLostPkts, iMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
+			if (iRecvdStop == 0) {
+				if (iMaxDataSeqNumGot != iActualLastSeqNum) {
+					_account_lostpackets(llLostPkts, iMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
+				}
 			}
 			iRecvdStop += 1;
 			continue;
