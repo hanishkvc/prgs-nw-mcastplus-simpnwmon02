@@ -10,6 +10,7 @@
 void ll_init(struct LLR *me) {
 	me->llStart = NULL;
 	me->llLastAdded = NULL;
+	me->llBeforeDel = NULL;
 	me->llEnd = NULL;
 	me->iNodeCnt = 0;
 	me->iTotalFromRanges = 0;
@@ -144,6 +145,7 @@ int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
 	me->iTotalFromRanges -= 1;
 	while(llNext != NULL) {
 		if (llNext->rStart == val) {
+			me->llBeforeDel = llNext->prev;
 			if (llNext->rEnd == val) {
 				_ll_delete(me, llNext);
 				return 0;
@@ -153,6 +155,7 @@ int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
 			}
 		}
 		if (llNext->rEnd == val) {
+			me->llBeforeDel = llNext->prev;
 			if (llNext->rStart == val) {
 				// shouldn't reach here, it should have matched the (start==val => end==val) test above
 				fprintf(stderr, "DEBUG:%s: Shouldn't reach here for removing [%d]\n", __func__, val);
@@ -163,6 +166,7 @@ int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
 			}
 		}
 		if ((llNext->rStart < val) && (llNext->rEnd > val)) {
+			me->llBeforeDel = llNext->prev;
 			int iEnd = llNext->rEnd;
 			llNext->rEnd = val-1;
 			llTemp = _ll_alloc(val+1, iEnd);
@@ -177,6 +181,13 @@ int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
 
 int ll_delete_starthint_start(struct LLR *me, int val) {
 	return ll_delete_core(me, val, me->llStart);
+}
+
+int ll_delete_starthint_beforedel(struct LLR *me, int val) {
+	if (me->llBeforeDel == NULL) {
+		return ll_delete_core(me, val, me->llStart);
+	}
+	return ll_delete_core(me, val, me->llBeforeDel);
 }
 
 int ll_free(struct LLR *me) {

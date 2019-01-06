@@ -19,6 +19,7 @@ struct _ll{
 struct LLR{
 	struct _ll *llStart;
 	struct _ll *llLastAdded;
+	struct _ll *llBeforeDel;
 	struct _ll *llEnd;
 	int iNodeCnt;
 	int iTotalFromRanges;
@@ -36,6 +37,7 @@ void _ll_delete(struct LLR *me, struct _ll *llDel);
 int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom);
 #define ll_delete ll_delete_starthint_start
 int ll_delete_starthint_start(struct LLR *me, int val);
+int ll_delete_starthint_beforedel(struct LLR *me, int val);
 int ll_free(struct LLR *me);
 void ll_print(struct LLR *me, char *sMsg);
 void ll_print_content(struct LLR *me, char *sMsg);
