@@ -35,8 +35,9 @@ int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end);
 int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end);
 void _ll_delete(struct LLR *me, struct _ll *llDel);
 int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom);
-#define ll_delete ll_delete_starthint_start
+//#define ll_delete ll_delete_starthint_start
 int ll_delete_starthint_start(struct LLR *me, int val);
+#define ll_delete ll_delete_starthint_beforedel
 int ll_delete_starthint_beforedel(struct LLR *me, int val);
 int ll_free(struct LLR *me);
 void ll_print(struct LLR *me, char *sMsg);

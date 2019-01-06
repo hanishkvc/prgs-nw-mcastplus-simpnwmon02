@@ -187,6 +187,9 @@ int ll_delete_starthint_beforedel(struct LLR *me, int val) {
 	if (me->llBeforeDel == NULL) {
 		return ll_delete_core(me, val, me->llStart);
 	}
+	if (me->llBeforeDel->rStart > val) {
+		return ll_delete_core(me, val, me->llStart);
+	}
 	return ll_delete_core(me, val, me->llBeforeDel);
 }
 
