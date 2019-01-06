@@ -28,6 +28,7 @@ const int PI_RETRYCNT = 300;		// 300*1e6uSecs = Client will try PI for atleast 3
 const int UCAST_UR_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
+const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 
 int portMCast=1111;
 int portServer=1112;
@@ -179,6 +180,12 @@ void print_stat(const char *sTag, int iPktCnt, int iPrevPktCnt, int iSeq, time_t
 			sTag, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
 }
 
+void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDisjointSeqs, int *piDisjointPktCnt) {
+	ll_add_sorted_startfrom_lastadded(llrLostPkts, start, end);
+	*piDisjointSeqs += 1;
+	*piDisjointPktCnt += (end-start+1);
+}
+
 int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 
 	int iRet;
@@ -195,6 +202,8 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	int iRecvdStop = 0;
 	int iPrevRecvdStop = -1;
 	int iMCastSlowExit = 0;
+	int iMaxDataSeqNumGot = -1;
+	int iActualLastSeqNum = -1;
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
@@ -210,7 +219,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 			iPrevPktCnt = iPktCnt;
 			prevDTime = curDTime;
 			if (iRecvdStop > 0) {
-				fprintf(stderr, "INFO:%s: In MCastStop phase...", __func__);
+				fprintf(stderr, "INFO:%s: In MCastStop phase... (LastPkt Got[%d] Actual[%d]) ", __func__, iMaxDataSeqNumGot, iActualLastSeqNum);
 				if (iRecvdStop == iPrevRecvdStop) {
 					fprintf(stderr, ": No New MCastStop Packets\n");
 					iMCastSlowExit += 1;
@@ -235,9 +244,14 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
 		if (iSeq == MCASTSTOPSeqNum) {
+			iActualLastSeqNum = *((uint32_t*)&gcBuf[PKT_MCASTSTOP_TOTALBLOCKS_OFFSET]) - 1;
+			if (iMaxDataSeqNumGot != iActualLastSeqNum) {
+				_account_lostpackets(llLostPkts, iMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
+			}
 			iRecvdStop += 1;
 			continue;
 		}
+		iMaxDataSeqNumGot = iSeq;
 		iSeqDelta = iSeq - iPrevSeq;
 		if (iSeqDelta <= 0) {
 			iOldSeqs += 1;
