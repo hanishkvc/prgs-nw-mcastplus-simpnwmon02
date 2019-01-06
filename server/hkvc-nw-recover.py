@@ -172,7 +172,7 @@ def gen_lostpackets_array(lostPackets):
 def ur_send_packets(client, lostPackets):
 	dprint(2, "ur_send_packets: client[{}] LostPackets:[{}]".format(client, lostPackets))
 	lpa, iRangesCnt, iLostPkts = gen_lostpackets_array(lostPackets)
-	dprint(9, "ur_send_packets: client[{}] lostPackets curCount [{}], StillInTotal(Ranges[{}], LostPkts[{}])".format(client, len(lpa), iRangesCnt, iLostPkts))
+	dprint(9, "\nur_send_packets: client[{}] lostPackets curCount [{}], StillInTotal(Ranges[{}], LostPkts[{}])".format(client, len(lpa), iRangesCnt, iLostPkts))
 	iPkts = len(lpa)
 	if (iPkts != 0):
 		send_file_data(client, lpa)
@@ -240,7 +240,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	numPkts = pktid - prevPktid
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-	dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
+	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
 	return curTime, pktid
 
 

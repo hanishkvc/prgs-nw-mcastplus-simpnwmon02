@@ -75,6 +75,11 @@ else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
 	giTotalBlocksInvolved = iTestBlocks
 
+if (bSimLoss):
+	print("Simulate losses is Enabled")
+else:
+	print("Simulate losses is Disabled")
+
 perPktTime=1/(Bps/dataSize)
 print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
@@ -93,7 +98,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	numPkts = pktid - prevPktid
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-	dprint(8, "Transfer speed [{}]MBps\n".format(nwSpeed))
+	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
 	return curTime, pktid
 
 
