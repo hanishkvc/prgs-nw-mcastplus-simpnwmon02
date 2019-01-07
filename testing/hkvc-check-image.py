@@ -4,7 +4,10 @@
 # hkvc-check-image.py
 # A test script which checks if the specified image matchs the test data sent
 # by the network test scripts
-# v20181228IST0419
+# The test data/file is expected to contain a series of blocks of size
+# dataSize, where each block has a marker at the begining of the block
+# equivalent to the block id/num.
+# v20190107IST0600
 # HanishKVC, GPL, 19XY
 #
 
@@ -23,13 +26,13 @@ while True:
 		print("I: EOF");
 		break
 	iCur = struct.unpack('<I',d[0:4])[0]
-	if (iCur != iRef):
-		print("W: C[{}], R[{}]".format(iCur, iRef))
 	iDelta = iCur - iPrev
-	if (iDelta != 1):
-		print("E: B[{}], d[{}]".format(iCur, iDelta))
+	if (iCur != iRef):
+		print("E: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
+	elif (iDelta != 1):
+		print("W: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
 	if (iRef % (512*1024)) == 0:
 		print("I: {}".format(iCur))
-	iPrev = iCur
+	iPrev = iRef
 	iRef += 1
 
