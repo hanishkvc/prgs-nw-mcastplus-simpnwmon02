@@ -145,6 +145,8 @@ print_throughput(prevTime, pktid, prevPktid)
 print("INFO: Done with transfer")
 
 for i in range(120):
+	if (i%10) == 0:
+		print("INFO: MCastStop Num[{}] sending".format(i))
 	tmpData = bytes(dataSize-8)
 	curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, giTotalBlocksInvolved,tmpData)
 	data=struct.pack("<I{}s".format(dataSize), MCASTSTOPSeqNum, curData)
