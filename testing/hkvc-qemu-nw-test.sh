@@ -75,10 +75,10 @@ function vm_childs_run()
 	FSARG=""
 
 	# First time edit /etc/network/interfaces wrt ens3 to set the ip addr to 192.168.66.10 statically
-	qemu-system-x86_64 $GENRARG $NETARG1 -hda u1604m10.hda $FSARG &
+	qemu-system-x86_64 $GENRARG $NETARG1 -hda u1604m10.hda -hdb /media/hanishkvc/CAM_SD/test10.hdb $FSARG &
 	sleep 2
 	# First time edit /etc/network/interfaces wrt ens3 to set the ip addr to 192.168.66.11 statically
-	qemu-system-x86_64 $GENRARG $NETARG2 -hda u1604m11.hda $FSARG &
+	qemu-system-x86_64 $GENRARG $NETARG2 -hda u1604m11.hda -hdb /media/hanishkvc/CAM_SD/test11.hdb $FSARG &
 }
 
 $1

@@ -7,3 +7,5 @@ get hkvc-nw-recover.py
 get hkvc-check-image.py
 quit
 
+get hkvc-test-logic.sh
+get qemu-tftp-get-files.input
