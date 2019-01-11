@@ -70,7 +70,10 @@ fData=None
 if (sfData != None):
 	print("MODE:FileTransfer:{}".format(sfData))
 	fData = open(sfData, 'br')
-	giTotalBlocksInvolved = int(os.stat(fData.fileno()).st_size/dataSize)+1
+	fileSize = os.stat(fData.fileno()).st_size;
+	giTotalBlocksInvolved = int(fileSize/dataSize)
+	if ((fileSize%dataSize) != 0):
+		giTotalBlocksInvolved += 1
 else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
 	giTotalBlocksInvolved = int(iTestBlocks)

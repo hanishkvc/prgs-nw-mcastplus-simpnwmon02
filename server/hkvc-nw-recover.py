@@ -103,7 +103,10 @@ dprint(9, "INFO:Clients[{}]".format(gClients))
 fData=None
 if (sfData != None):
 	fData = open(sfData, 'br')
-	giTotalBlocksInvolved = int(os.stat(fData.fileno()).st_size/dataSize)+1
+	fileSize = os.stat(fData.fileno()).st_size;
+	giTotalBlocksInvolved = int(fileSize/dataSize)
+	if ((fileSize%dataSize) != 0):
+		giTotalBlocksInvolved += 1
 
 giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 
