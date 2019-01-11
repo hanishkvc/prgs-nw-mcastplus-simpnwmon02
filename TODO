@@ -17,6 +17,11 @@ node.
 Main logic
 =============
 
+* Have option to send mcast stops at the begining of hkvc-nw-recover.py
+
+This is to take care of any clients which might have missed the mcast stop
+sent by the mcast logic.
+
 * Multicast data packets in UCastRecovery (rather MCastRecovery) phase.
 
 Have implemented ll_delete_starthint_beforedel, which should help optimise the

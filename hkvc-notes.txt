@@ -24,7 +24,11 @@ Multicast based transfer logic
 Multicast based stop logic
 
 Unicast based Presence Info logic - to help clients and server come to know
-about one another.
+about one another. However if the PI phase fails to handshake between the
+server and the clients, the server has the possibility of using a predefined
+list of clients to work with, which it will get thro its context option.
+While the client (v20190111) eitherway will respond to any server which
+requests it for list of lost packets.
 
 Unicast based data / lost packet recovery logic - The server communicates with
 the clients one by one and gets their list of lost packets and helps them
@@ -72,6 +76,9 @@ Client
 
 The client side logic is implemented in a single program.
 
+the Arguments
+--------------
+
 The client side simpnwmon02 program has the following command line arguments
 
 ./simpnwmon02 local_nwif_index mcast_ip local_nwif_ip data_file nw_bcast_ip
@@ -95,6 +102,27 @@ If local_nwif_index is not being explicitly specified, then pass 0 for it.
 
 If local_nwif_ip is not explicitly specified, then pass 0.0.0.0 for it.
 
+the Logic
+-----------
+
+The logic remains in mcast phase keeping track of recieved and lost packets in
+sequence, as well as saving the recieved data into corresponding location in
+the data file specified.
+
+If and when it recieves a mcast stop command, it exits the mcast phase. It also
+will come to know about the total blocks involved in this file/test transfer.
+
+The client tries to notify any server that may be listening, about the client's
+presence in the network, as well as to know who the server is. Even thou both
+server and client go thro the PI phase, the logics are setup such that a
+failure in PI phase doesn't impact the over all flow.
+
+The logic goes into a unicast recovery phase, where it listens for any requests
+from server about lost packets. In turn when the server requests, the client
+sends the top N number of lost packet ranges it has. Parallely if it recieves
+any data packets, which it didn't have before, it will save the same into the
+data file.
+
 
 Server
 ========
@@ -104,6 +132,25 @@ The server side logic is implemented as part of two different programs.
 The first takes care of the multicast phases.
 
 The second takes care of the unicast phases.
+
+the Context file
+------------------
+
+THis is a file used by the unicast phase server program, to get the list of
+clients it should try to help wrt recovering their lost packets.
+
+A text file having the tag <clients> in a line. Followed by lines containing
+the ip addresses of the clients, one per line. Followed by </clients> in a
+line.
+
+for Firewall
+--------------
+
+The nw port usage is as follows
+
+a) 1111 - Multicast Server to Clients data push
+b) 1112 - Nw Broadcast PIReq from Client to Any listening Server
+c) 1113 - Unicast PIAck from Server to Client
 
 
 Examples
@@ -116,7 +163,8 @@ Example for actual testing
 Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255
 
 Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --file /path/to/file_to_send
-Server> ./hkvc-nw-recover.py --file /path/to/file_to_send
+Server> ./hkvc-nw-recover.py --file /path/to/file_to_send OR
+Server> ./hkvc-nw-recover.py --file /path/to/file_to_send --context /path/to/file_with_list_of_clientips
 
 
 
@@ -130,7 +178,8 @@ Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /dev/null 10.0.2.255
 On Server run, these two commands one after the other
 
 Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --testblocks 50000 --simloss
-Server> ./hkvc-nw-recover.py --fast
+Server> ./hkvc-nw-recover.py --fast OR
+Server> ./hkvc-nw-recover.py --fast --context /path/to/file_with_list_of_clientips
 
 
 
