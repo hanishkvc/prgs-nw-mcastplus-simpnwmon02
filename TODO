@@ -17,15 +17,8 @@ node.
 Main logic
 =============
 
-* If some clients don't respond back during PI phase, then resend mcast stop
-packets. Try this for N times.
-
-* Have option to send mcast stops at the begining of hkvc-nw-recover.py
-
-This is to take care of any clients which might have missed the mcast stop
-sent by the mcast logic.
-
-* Multicast data packets in UCastRecovery (rather MCastRecovery) phase.
+* Multicast data packets in UCastRecovery (rather it becomes a kind of
+MCastRecovery) phase.
 
 Have implemented ll_delete_starthint_beforedel, which should help optimise the
 deletion from lost packets list usage, if I were to reimplement the unicast
@@ -56,3 +49,12 @@ i.e the client side logic should be written such that at the same time it is
 listenning for either mcast data/stop phase packets or PI phase packets or UR
 phase packets.
 
+* Reduce the total time that server waits during ucast recover phase for client
+to respond to its repeated URReq commands/packets.
+
+Currently the server waits for 3 minutes with URReq packets sent every 10
+seconds, to see if a given client will respond back with URAck response/packet.
+Potentially we should reduce this to 1 or 1.5 minutes, so that unicast recovery
+doesn't get dragged on by a long time for other clients which are active. While
+at same time giving a sufficient time (1 min or so) for any given client to
+respond back, with enough reminders in that time (repeat once every 10 secs).

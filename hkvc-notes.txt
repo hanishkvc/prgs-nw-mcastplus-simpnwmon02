@@ -24,15 +24,27 @@ Multicast based transfer logic
 Multicast based stop logic
 
 Unicast based Presence Info logic - to help clients and server come to know
-about one another. However if the PI phase fails to handshake between the
-server and the clients, the server has the possibility of using a predefined
-list of clients to work with, which it will get thro its context option.
-While the client (v20190111) eitherway will respond to any server which
-requests it for list of lost packets.
+about one another. Logic can work even if no communication during PI phase,
+provided a known list of clients is provided before hand itself to the server.
 
 Unicast based data / lost packet recovery logic - The server communicates with
 the clients one by one and gets their list of lost packets and helps them
 recover those by resending it thro unicast.
+
+PI Phase
+----------
+
+If the PI phase fails to handshake between the server and the clients, the
+server has the possibility of using a predefined list of clients to work with,
+which it will get thro its context option.  While the client (v20190111)
+eitherway will respond to any server which requests it for list of lost
+packets.
+
+Also if some known clients (passed to server logic thro its context argument)
+don't send PIReq packets during PI phase, then the server will send mcast stop
+commands to ensure that if any clients are still in mcast phase, then they can
+come out of it and get into ucast recovery phase.
+
 
 UnicastRecovery
 -----------------
@@ -131,7 +143,9 @@ The server side logic is implemented as part of two different programs.
 
 The first takes care of the multicast phases.
 
-The second takes care of the unicast phases.
+The second takes care of the unicast phases. If required this unicast related
+script can be called more than once, provided a context file is passed to it,
+with the list of remaining clients with lost packets.
 
 the Context file
 ------------------
@@ -162,9 +176,9 @@ Example for actual testing
 
 Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255
 
-Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --file /path/to/file_to_send
-Server> ./hkvc-nw-recover.py --file /path/to/file_to_send OR
-Server> ./hkvc-nw-recover.py --file /path/to/file_to_send --context /path/to/file_with_list_of_clientips
+Server> ./hkvc-nw-send-mcast.py --maddr 230.0.0.1 --file /path/to/file_to_send
+Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send OR
+Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_client_ips
 
 
 
@@ -177,9 +191,9 @@ Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /dev/null 10.0.2.255
 
 On Server run, these two commands one after the other
 
-Server> ./hkvc-nw-send-mcast.py --addr 230.0.0.1 --testblocks 50000 --simloss
-Server> ./hkvc-nw-recover.py --fast OR
-Server> ./hkvc-nw-recover.py --fast --context /path/to/file_with_list_of_clientips
+Server> ./hkvc-nw-send-mcast.py --maddr 230.0.0.1 --testblocks 50000 --simloss
+Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --fast OR
+Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --fast --context /path/to/file_with_list_of_client_ips
 
 
 
