@@ -32,7 +32,7 @@ URAckSeqNum = 0xffffff03
 URCLIENT_MAXCHANCES_PERATTEMPT = 512
 URATTEMPTS_MIN = 4
 giNumOfAttempts = URATTEMPTS_MIN
-giTotalBlocksInvolved = 10e6
+iTestBlocks=1e6
 
 
 DBGLVL = 7
@@ -59,7 +59,7 @@ N=11
 dataSize=network.dataSize
 Bps=2e6
 addr="127.0.0.1"
-maddr="230.0.0.1"
+maddr=network.maddr
 sfData=None
 sMode="NORMAL"
 gsContext=None
@@ -87,6 +87,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--testblocks"):
+		iArg += 1
+		iTestBlocks = int(sys.argv[iArg])
 	elif (sys.argv[iArg] == "--context"):
 		iArg += 1
 		gsContext = sys.argv[iArg]
@@ -107,11 +110,15 @@ dprint(9, "INFO:Clients[{}]".format(gClients))
 
 fData=None
 if (sfData != None):
+	print("MODE:FileTransfer:{}".format(sfData))
 	fData = open(sfData, 'br')
 	fileSize = os.stat(fData.fileno()).st_size;
 	giTotalBlocksInvolved = int(fileSize/dataSize)
 	if ((fileSize%dataSize) != 0):
 		giTotalBlocksInvolved += 1
+else:
+	print("MODE:TestBlocks:{}".format(iTestBlocks))
+	giTotalBlocksInvolved = int(iTestBlocks)
 
 giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 

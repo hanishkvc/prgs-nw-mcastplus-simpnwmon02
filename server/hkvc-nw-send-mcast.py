@@ -34,7 +34,7 @@ port=1111
 N=11
 dataSize=network.dataSize
 Bps=2e6
-addr="127.0.0.1"
+maddr=network.maddr
 sfData=None
 iTestBlocks=1e6
 bSimLoss=False
@@ -52,9 +52,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--Bps"):
 		iArg += 1
 		Bps = int(sys.argv[iArg])
-	elif (sys.argv[iArg] == "--addr"):
+	elif (sys.argv[iArg] == "--maddr"):
 		iArg += 1
-		addr = sys.argv[iArg]
+		maddr = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
@@ -83,7 +83,7 @@ else:
 	print("Simulate losses is Disabled")
 
 perPktTime=1/(Bps/dataSize)
-print(" addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+print(" maddr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, port, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
 	print("ERROR: Too large a content size, not supported...")
@@ -126,7 +126,7 @@ while True:
 			pktid += 1
 			continue
 	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
-	sock.sendto(data, (addr, port))
+	sock.sendto(data, (maddr, port))
 	pktid += 1
 	if ((pktid%N) == 0):
 		curTime = time.time()
@@ -146,7 +146,7 @@ print_throughput(prevTime, pktid, prevPktid)
 
 print("INFO: Done with transfer")
 
-network.mcast_stop(sock, addr, port, giTotalBlocksInvolved, 120)
+network.mcast_stop(sock, maddr, port, giTotalBlocksInvolved, 120)
 
 print("INFO: Done sending stops, quiting...")
 

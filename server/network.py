@@ -10,6 +10,7 @@ import struct
 import time
 
 
+maddr="230.0.0.1"
 mcast_port=1111
 
 MCASTSTOPSeqNum = 0xffffffff
