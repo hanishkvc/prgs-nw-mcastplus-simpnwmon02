@@ -16,6 +16,8 @@ import socket
 import struct
 import select
 
+import context
+
 
 portServer = 1112
 portClient = 1113
@@ -58,6 +60,7 @@ Bps=2e6
 addr="127.0.0.1"
 sfData=None
 sMode="NORMAL"
+gsContext=None
 
 iArg=1
 while iArg < len(sys.argv):
@@ -79,9 +82,23 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--context"):
+		iArg += 1
+		gsContext = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--fast"):
 		sMode="FAST"
 	iArg += 1
+
+
+if (gsContext != None):
+	dprint(9, "INFO:Context: importing from [{}]".format(gsContext))
+	gContext = context.open(gsContext)
+	gClients = context.load_clients(gContext)
+	context.close(gContext)
+else:
+	dprint(9, "INFO:Context: None")
+	gClients = []
+dprint(9, "INFO:Clients[{}]".format(gClients))
 
 fData=None
 if (sfData != None):
@@ -112,7 +129,6 @@ dprint(9, "Will start in 10 secs...")
 time.sleep(10)
 
 
-gClients = []
 def presence_info(clients):
 	global sock
 	sock.settimeout(10.0)
