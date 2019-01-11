@@ -1,0 +1,27 @@
+
+#
+# A sample context file for hkvc-nw-recover.py
+# HanishKVC
+#
+
+Currently only non empty lines between <clients> and </clients> will be
+considered.
+
+The <clients> and </clients> tags should be on two different lines. With a list
+of clients in the lines in between.
+
+Any white space at the beginning or end of a line will be stripped out.
+
+# this line will be ignored
+This line will be ignored also
+    This will also be ignored
+
+<clients>
+192.168.1.1
+
+   192.168.1.100
+</clients>
+
+192.168.1.200
+This line will be ignored also
+
