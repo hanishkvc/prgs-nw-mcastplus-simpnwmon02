@@ -204,7 +204,7 @@ def ur_send_packets(client, lostPackets):
 	iPkts = len(lpa)
 	if (iPkts != 0):
 		send_file_data(client, lpa)
-	return iPkts
+	return iPkts, iLostPkts
 
 
 def ur_client(client):
@@ -215,6 +215,7 @@ def ur_client(client):
 	deltaTime = 0
 	iCnt = 0
 	giveupReason = "No Response"
+	iRemLostPkts = -1
 	while(deltaTime < URDeltaTimeSecs):
 		if ((iCnt % 30) == 0):
 			dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
@@ -235,10 +236,11 @@ def ur_client(client):
 			data = dataC[4:]
 			if (data == b''):
 				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
-				return 0
-			if (ur_send_packets(client, data) == 0):
+				return 0, -1
+			iCurLostPkts, iRemLostPkts = ur_send_packets(client, data)
+			if (iCurLostPkts == 0):
 				dprint(9, "UR:INFO: No MORE lost packets for [{}]".format(client))
-				return 0
+				return 0, iRemLostPkts
 			startTime = time.time() # This ensures that if the client doesn't respond for the specified amount of time, it will skip to the next client
 		except socket.timeout as e:
 			d = None
@@ -250,17 +252,20 @@ def ur_client(client):
 			giveupReason = "TooMany LostPackets???"
 			break
 	dprint(9, "UR:WARN: Giving up on [{}] temporarily bcas [{}]".format(client, giveupReason))
-	return -1
+	return -1, iRemLostPkts
 
 
 def unicast_recovery(clients):
 	remainingClients = []
+	remClientsDB = {}
 	for client in clients:
-		if (ur_client(client) != 0):
+		iRet, iRemLostPkts = ur_client(client)
+		if (iRet != 0):
 			remainingClients.append(client)
+			remClientsDB[client] = iRemLostPkts
 	dprint(9, "Remaining clients:")
 	for r in remainingClients:
-		dprint(9, r)
+		dprint(9, "{} potential RemPkts[{}]".format(r, remClientsDB[r]))
 	return remainingClients
 
 
