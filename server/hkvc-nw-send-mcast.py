@@ -15,9 +15,8 @@ import socket
 import struct
 import select
 
+import network
 
-MCASTSTOPSeqNum = 0xffffffff
-MCASTSTOPAdditionalCheck = 0xf5a55a5f
 
 DBGLVL = 7
 def dprint(lvl, msg):
@@ -33,7 +32,7 @@ pktid=0
 iArg=1
 port=1111
 N=11
-dataSize=1024
+dataSize=network.dataSize
 Bps=2e6
 addr="127.0.0.1"
 sfData=None
@@ -147,14 +146,7 @@ print_throughput(prevTime, pktid, prevPktid)
 
 print("INFO: Done with transfer")
 
-for i in range(120):
-	if (i%10) == 0:
-		print("INFO: MCastStop Num[{}] sending".format(i))
-	tmpData = bytes(dataSize-8)
-	curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, giTotalBlocksInvolved,tmpData)
-	data=struct.pack("<I{}s".format(dataSize), MCASTSTOPSeqNum, curData)
-	sock.sendto(data, (addr, port))
-	time.sleep(1)
+network.mcast_stop(sock, addr, port, giTotalBlocksInvolved, 120)
 
 print("INFO: Done sending stops, quiting...")
 

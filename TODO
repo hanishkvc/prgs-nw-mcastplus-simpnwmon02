@@ -17,6 +17,9 @@ node.
 Main logic
 =============
 
+* If some clients don't respond back during PI phase, then resend mcast stop
+packets. Try this for N times.
+
 * Have option to send mcast stops at the begining of hkvc-nw-recover.py
 
 This is to take care of any clients which might have missed the mcast stop

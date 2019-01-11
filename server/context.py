@@ -1,7 +1,7 @@
 #
 # context - a logic to load program related context from a given text file
 # v20190111IST1031
-# HanishKVC
+# HanishKVC, GPL, 19XY
 #
 import io
 import enum
