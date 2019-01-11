@@ -112,8 +112,8 @@ dprint(9, "Will start in 10 secs...")
 time.sleep(10)
 
 
-clients = []
-def presence_info():
+gClients = []
+def presence_info(clients):
 	global sock
 	sock.settimeout(10.0)
 	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
@@ -286,15 +286,15 @@ def send_file_data(peer, indexList):
 
 
 
-presence_info()
+presence_info(gClients)
 for i in range(giNumOfAttempts):
 	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfAttempts))
-	clients = unicast_recovery(clients)
-	if(len(clients) == 0):
+	gClients = unicast_recovery(gClients)
+	if(len(gClients) == 0):
 		break
 
-if (len(clients) == 0):
+if (len(gClients) == 0):
 	dprint(9, "INFO: Done with transfer")
 else:
-	dprint(9, "INFO: Giving up, clients still with lost packets [{}]".format(clients))
+	dprint(9, "INFO: Giving up, clients still with lost packets [{}]".format(gClients))
 
