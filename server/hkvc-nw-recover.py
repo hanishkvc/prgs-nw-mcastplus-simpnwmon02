@@ -132,7 +132,7 @@ dprint(9, "Will start in 10 secs...")
 time.sleep(10)
 
 
-def presence_info(clients):
+def _presence_info(clients):
 	global sock
 	clientsDB = {}
 	for r in clients:
@@ -165,11 +165,25 @@ def presence_info(clients):
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
 	dprint(9, "PI:END: Status:")
+	iSilentClients = 0
 	for r in clientsDB:
 		dprint(9, "{} = {}".format(r, clientsDB[r]))
+		if (clientsDB[r]['cnt'] == 0):
+			iSilentClients += 1
 	dprint(9, "PI:END: Clients list")
 	for r in clients:
 		dprint(9, r)
+	return iSilentClients
+
+
+def presence_info(clients):
+	for i in range(4):
+		iSilentClients = _presence_info(clients)
+		if (iSilentClients == 0):
+			dprint(9, "INFO:PI: handshaked with all known clients")
+			return
+		else:
+			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
 
 
 def gen_lostpackets_array(lostPackets):
