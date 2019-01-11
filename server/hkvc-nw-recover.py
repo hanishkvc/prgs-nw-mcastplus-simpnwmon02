@@ -134,6 +134,9 @@ time.sleep(10)
 
 def presence_info(clients):
 	global sock
+	clientsDB = {}
+	for r in clients:
+		clientsDB[r] = {'type':'known', 'cnt': 0}
 	sock.settimeout(10.0)
 	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
 	startTime = time.time()
@@ -148,9 +151,11 @@ def presence_info(clients):
 			try:
 				i = clients.index(peer)
 				dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
+				clientsDB[peer]['cnt'] += 1
 			except ValueError as e:
 				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
+				clientsDB[peer] = {'type':'new', 'cnt': 1}
 			data=struct.pack("<Is", PIAckSeqNum, bytes("Hello", 'utf8'))
 			sock.sendto(data, (peer, portClient))
 		except socket.timeout as e:
@@ -159,7 +164,10 @@ def presence_info(clients):
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
-	dprint(9, "PI identified following clients:")
+	dprint(9, "PI:END: Status:")
+	for r in clientsDB:
+		dprint(9, "{} = {}".format(r, clientsDB[r]))
+	dprint(9, "PI:END: Clients list")
 	for r in clients:
 		dprint(9, r)
 
