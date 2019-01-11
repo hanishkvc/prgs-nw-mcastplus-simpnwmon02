@@ -364,8 +364,9 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		if (iSeq == URReqSeqNum) {
 			if (theSrvrPeer != addrR.sin_addr.s_addr) {
-				fprintf(stderr, "WARN:%s: Found peer srvr[0x%X] cmdGot from[0x%X], Ignoring\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
-				continue;
+				fprintf(stderr, "WARN:%s: prev peer srvr[0x%X] cmdGot from[0x%X], adjusting...\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
+				theSrvrPeer = addrR.sin_addr.s_addr;
+				addrS.sin_addr.s_addr = theSrvrPeer;
 			}
 			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
 #ifdef PRG_UR_VERBOSE
@@ -431,10 +432,9 @@ int main(int argc, char **argv) {
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
 	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
-		fprintf(stderr, "WARN:%s: No Server found during PI Phase, quiting...\n", __func__);
-	} else {
-		ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
+		fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
 	}
+	ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
 
 	ll_free(&llLostPkts);
 	return 0;
