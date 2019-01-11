@@ -6,6 +6,11 @@
 import io
 import enum
 
+
+gbSkipEmptyLines=True
+
+
+
 def open(sfContext, sMode="r"):
 	fContext = io.open(sfContext, sMode)
 	return fContext
@@ -21,6 +26,9 @@ def load_clients(fContext):
 		if (l == ""):
 			break
 		l = l.strip()
+		if (gbSkipEmptyLines):
+			if (l == ""):
+				continue
 		if (l.startswith("<clients>")):
 			if (lcMode != LCMode.NONE):
 				print("ERROR:load_clients: logic state wrong at clients_begin")
