@@ -10,6 +10,8 @@ import struct
 import time
 
 
+mcast_port=1111
+
 MCASTSTOPSeqNum = 0xffffffff
 MCASTSTOPAdditionalCheck = 0xf5a55a5f
 

@@ -17,6 +17,7 @@ import struct
 import select
 
 import context
+import network
 
 
 portServer = 1112
@@ -55,9 +56,10 @@ def guess_numofattempts(totalBlocksInvolved):
 
 port=1111
 N=11
-dataSize=1024
+dataSize=network.dataSize
 Bps=2e6
 addr="127.0.0.1"
+maddr="230.0.0.1"
 sfData=None
 sMode="NORMAL"
 gsContext=None
@@ -79,6 +81,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--addr"):
 		iArg += 1
 		addr = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--maddr"):
+		iArg += 1
+		maddr = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--file"):
 		iArg += 1
 		sfData = sys.argv[iArg]
@@ -111,6 +116,7 @@ if (sfData != None):
 giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
+dprint(9, "maddr [{}]".format(maddr))
 dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 
 if (sMode == "FAST"):
@@ -184,6 +190,7 @@ def presence_info(clients):
 			return
 		else:
 			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
+			network.mcast_stop(sock, maddr, network.mcast_port, giTotalBlocksInvolved, 120)
 
 
 def gen_lostpackets_array(lostPackets):
