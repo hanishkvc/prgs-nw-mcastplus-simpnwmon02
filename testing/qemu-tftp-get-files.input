@@ -1,0 +1,9 @@
+connect 10.0.2.2
+bin
+get simpnwmon02
+get context.py
+get hkvc-nw-send-mcast.py
+get hkvc-nw-recover.py
+get hkvc-check-image.py
+quit
+
