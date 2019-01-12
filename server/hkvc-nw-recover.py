@@ -23,7 +23,7 @@ import network
 portServer = 1112
 portClient = 1113
 
-PITotalTimeSecs = 10*60
+PITotalTimeSecs = 2*60
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
 URDeltaTimeSecs = int(1.5*60)
@@ -61,7 +61,7 @@ Bps=2e6
 addr="127.0.0.1"
 maddr=network.maddr
 sfData=None
-sMode="NORMAL"
+sPIMode="NORMAL"
 gsContext=None
 
 iArg=1
@@ -93,8 +93,8 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--context"):
 		iArg += 1
 		gsContext = sys.argv[iArg]
-	elif (sys.argv[iArg] == "--fast"):
-		sMode="FAST"
+	elif (sys.argv[iArg] == "--slow"):
+		sPIMode="SLOW"
 	iArg += 1
 
 
@@ -126,10 +126,10 @@ perPktTime=1/(Bps/dataSize)
 dprint(9, "maddr [{}]".format(maddr))
 dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 
-if (sMode == "FAST"):
-	PITotalTimeSecs=2*60
+if (sPIMode == "SLOW"):
+	PITotalTimeSecs=10*60
 dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
-dprint(9, " sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
+dprint(9, " sPIMode=[{}], PITotalTimeSecs=[{}]\n".format(sPIMode, PITotalTimeSecs))
 
 dprint(9, "giTotalBlocksInvolved [{}], URCLIENT_MAXCHANCES_PERATTEMPT [{}] giNumOfAttempts [{}]\n".format(giTotalBlocksInvolved, URCLIENT_MAXCHANCES_PERATTEMPT, giNumOfAttempts))
 
