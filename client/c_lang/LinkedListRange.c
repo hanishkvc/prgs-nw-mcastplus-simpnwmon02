@@ -319,7 +319,7 @@ int ll_load(struct LLR *me, char *sFName) {
 		perror("ERROR:LLR:Load:Open");
 		return -1;
 	}
-	iRet = 999;
+	ll_init(me);
 	iPos = 0;
 	iTotal = 0;
 	do {
@@ -334,10 +334,11 @@ int ll_load(struct LLR *me, char *sFName) {
 		memmove(tBuf, &tBuf[iPos], iTotal-iPos);
 		iTotal = iTotal - iPos;
 		iPos = 0;
-		fprintf(stderr, "%d-%d\n", iStart, iEnd);
+		ll_add_sorted(me, iStart, iEnd);
+		//fprintf(stderr, "%d-%d\n", iStart, iEnd);
 	} while(iTotal > 3);
 	close(iFLoad);
-	return 0;
+	return iRet;
 }
 
 #ifdef MODE_PROGRAM_LL
@@ -381,9 +382,10 @@ int main(int argc, char **argv) {
 	// Test save and load
 	ll_save(&theLLR, "/tmp/t.llr.100");
 	ll_free(&theLLR);
+	ll_print(&theLLR, "Testing LLR - After save and free");
 
-	fprintf(stderr, "************* LOADED LLR **************\n");
 	ll_load(&theLLR, "/tmp/t.llr.100");
+	ll_print(&theLLR, "Testing LLR - After load");
 
 	return 0;
 }
