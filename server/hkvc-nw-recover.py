@@ -145,11 +145,8 @@ dprint(9, "Will start in 10 secs...")
 time.sleep(10)
 
 
-def _presence_info(clients):
+def _presence_info(clients, clientsDB):
 	global sock
-	clientsDB = {}
-	for r in clients:
-		clientsDB[r] = {'type':'known', 'cnt': 0}
 	sock.settimeout(10.0)
 	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
 	startTime = time.time()
@@ -190,8 +187,11 @@ def _presence_info(clients):
 
 
 def presence_info(clients):
+	clientsDB = {}
+	for r in clients:
+		clientsDB[r] = {'type':'known', 'cnt': 0}
 	for i in range(4):
-		iSilentClients = _presence_info(clients)
+		iSilentClients = _presence_info(clients, clientsDB)
 		if (iSilentClients == 0):
 			dprint(9, "INFO:PI: handshaked with all known clients")
 			return
