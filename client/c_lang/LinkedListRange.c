@@ -271,6 +271,31 @@ int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
 	return iCnt;
 }
 
+int ll_save(struct LLR *me, char *sFName) {
+	char tBuf[128];
+	int iRet;
+
+	int iFSaveTo = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (iFSaveTo == -1) {
+		perror("ERROR:LLR:Save:Open");
+		return -1;
+	}
+	struct _ll *llNext = me->llStart;
+	int iCnt = 0;
+	while(llNext != NULL) {
+		iCnt += 1;
+		snprintf(tBuf, 128, "%d-%d\n", llNext->rStart, llNext->rEnd);
+		iRet = write(iFSaveTo, tBuf, strlen(tBuf));
+		if (iRet == -1) {
+			perror("ERROR:LLR:Save:Write");
+			break;
+		}
+		llNext = llNext->next;
+	}
+	close(iFSaveTo);
+	return iCnt;
+}
+
 #ifdef MODE_PROGRAM_LL
 
 int main(int argc, char **argv) {

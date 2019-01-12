@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 struct _ll{
 	struct _ll *prev, *next;
@@ -44,6 +48,7 @@ void ll_print(struct LLR *me, char *sMsg);
 void ll_print_content(struct LLR *me, char *sMsg);
 void ll_print_summary(struct LLR *me, char *sMsg);
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt);
+int ll_save(struct LLR *me, char *sFName);
 
 #endif
 
