@@ -415,6 +415,8 @@ void signal_handler(int arg) {
 #define ARG_DATAFILE 4
 #define ARG_PINWBCAST 5
 #define ARG_COUNT (5+1)
+#define ARG_LLLOSTPKTS4RES 6
+#define ARG_COUNT_EXTENDED (6+1)
 
 int main(int argc, char **argv) {
 
@@ -422,9 +424,10 @@ int main(int argc, char **argv) {
 	int sockUCast = -1;
 	struct LLR llLostPkts;
 	uint32_t theSrvrPeer = 0;
+	int iResume = -1;
 
 	if (argc < ARG_COUNT) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile> <pi_nw_bcast_addr>\n", argv[0]);
+		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile> <pi_nw_bcast_addr> [lostpkts_infofile_4resume]\n", argv[0]);
 		exit(-1);
 	}
 
@@ -446,8 +449,18 @@ int main(int argc, char **argv) {
 
 	ll_init(&llLostPkts);
 	gpllLostPkts = &llLostPkts;
+
+	if (argc >= ARG_COUNT_EXTENDED) {
+		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, argv[ARG_LLLOSTPKTS4RES]);
+		iResume = ll_load_append(&llLostPkts, argv[ARG_LLLOSTPKTS4RES]);
+	}
+
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
-	mcast_recv(sockMCast, fileData, &llLostPkts);
+	if (iResume == -1) {
+		mcast_recv(sockMCast, fileData, &llLostPkts);
+	} else {
+		fprintf(stderr, "INFO:%s: Skipped mcast_recv bcas resuming...\n", __func__);
+	}
 	ll_print(&llLostPkts, "LostPackets at end of MCast");
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
