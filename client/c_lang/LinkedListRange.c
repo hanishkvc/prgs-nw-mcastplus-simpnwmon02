@@ -322,7 +322,7 @@ int ll_load(struct LLR *me, char *sFName) {
 	iRet = 999;
 	iPos = 0;
 	iTotal = 0;
-	while(iRet > 0) {
+	do {
 		iRet = _readline(iFLoad, &tBuf[iTotal], BUFLEN-iTotal);
 		iTotal += iRet;
 		begin = &tBuf[iPos];
@@ -330,12 +330,12 @@ int ll_load(struct LLR *me, char *sFName) {
 		iPos = rem - begin + 1;
 		begin = &tBuf[iPos];
 		iEnd = strtol(&tBuf[iPos], &rem, 10);
-		iPos += (rem - begin);
+		iPos += (rem - begin + 1);
 		memmove(tBuf, &tBuf[iPos], iTotal-iPos);
 		iTotal = iTotal - iPos;
 		iPos = 0;
 		fprintf(stderr, "%d-%d\n", iStart, iEnd);
-	}
+	} while(iTotal > 3);
 	close(iFLoad);
 	return 0;
 }

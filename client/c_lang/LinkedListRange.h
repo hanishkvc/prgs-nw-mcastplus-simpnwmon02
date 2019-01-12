@@ -49,6 +49,7 @@ void ll_print_content(struct LLR *me, char *sMsg);
 void ll_print_summary(struct LLR *me, char *sMsg);
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt);
 int ll_save(struct LLR *me, char *sFName);
+int ll_load(struct LLR *me, char *sFName);
 
 #endif
 
