@@ -307,7 +307,7 @@ int _readline(int iFile, char *buf, int bufLen) {
 }
 
 #define BUFLEN 128
-int ll_load(struct LLR *me, char *sFName) {
+int ll_load_append(struct LLR *me, char *sFName) {
 	char tBuf[BUFLEN];
 	int iRet;
 	char *begin, *rem;
@@ -319,7 +319,6 @@ int ll_load(struct LLR *me, char *sFName) {
 		perror("ERROR:LLR:Load:Open");
 		return -1;
 	}
-	ll_init(me);
 	iPos = 0;
 	iTotal = 0;
 	do {
@@ -339,6 +338,11 @@ int ll_load(struct LLR *me, char *sFName) {
 	} while(iTotal > 3);
 	close(iFLoad);
 	return iRet;
+}
+
+int ll_load(struct LLR *me, char *sFName) {
+	ll_init(me);
+	return ll_load_append(me, sFName);
 }
 
 #ifdef MODE_PROGRAM_LL
