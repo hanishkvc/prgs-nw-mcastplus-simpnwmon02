@@ -25,7 +25,7 @@ const int STATS_TIMEDELTA=20;
 const int MCASTSLOWEXIT_CNT=3;		// 20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
 const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
-const int PI_RETRYCNT = 300;		// 300*1e6uSecs = Client will try PI for atleast 300 seconds
+const int PI_RETRYCNT = 600;		// 600*1e6uSecs = Client will try PI for atleast 600 seconds
 const int UCAST_UR_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;

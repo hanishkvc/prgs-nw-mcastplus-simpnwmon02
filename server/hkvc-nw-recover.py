@@ -127,7 +127,7 @@ dprint(9, "maddr [{}]".format(maddr))
 dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
 
 if (sMode == "FAST"):
-	PITotalTimeSecs=1*60
+	PITotalTimeSecs=2*60
 dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
 dprint(9, " sMode=[{}], PITotalTimeSecs=[{}]\n".format(sMode, PITotalTimeSecs))
 
@@ -197,7 +197,7 @@ def presence_info(clients):
 			return
 		else:
 			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
-			network.mcast_stop(sock, maddr, network.mcast_port, giTotalBlocksInvolved, 120)
+			network.mcast_stop(sock, maddr, network.mcast_port, giTotalBlocksInvolved, 60)
 
 
 def gen_lostpackets_array(lostPackets):
