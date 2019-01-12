@@ -14,6 +14,7 @@ import time
 import socket
 import struct
 import select
+import random
 
 import network
 
@@ -138,7 +139,7 @@ while True:
 		if ((pktid > 100) and (iRem < iSimLossRange)):
 			print("INFO: Dropping [{}]".format(pktid))
 			pktid += 1
-			if (bSimLossRandom):
+			if (bSimLossRandom and ((iRem+1) == iSimLossRange)):
 				iSimLossMod, iSimLossRange = simloss_random()
 			continue
 	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
