@@ -38,6 +38,7 @@ maddr=network.maddr
 sfData=None
 iTestBlocks=1e6
 bSimLoss=False
+bSimLossRandom=True
 
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--port"):
@@ -104,6 +105,19 @@ def print_throughput(prevTime, pktid, prevPktid):
 	return curTime, pktid
 
 
+
+def simloss_random():
+	iSimLossMod = random.randint(5000, 15000)
+	iSimLossRange = random.randint(1,10)
+	return iSimLossMod, iSimLossRange
+
+
+
+if (bSimLossRandom):
+	iSimLossMod, iSimLossRange = simloss_random()
+else:
+	iSimLossMod = 10023
+	iSimLossRange = 2
 prevPktid=0
 prevTime=time.time()
 curTime=0.0
@@ -120,10 +134,12 @@ while True:
 		curData = struct.pack("<I{}s".format(dataSize-4), pktid, tmpData)
 		#print(curData, len(curData))
 	if (bSimLoss):
-		iRem = pktid%10023
-		if ((pktid > 100) and (iRem < 2)):
+		iRem = pktid%iSimLossMod
+		if ((pktid > 100) and (iRem < iSimLossRange)):
 			print("INFO: Dropping [{}]".format(pktid))
 			pktid += 1
+			if (bSimLossRandom):
+				iSimLossMod, iSimLossRange = simloss_random()
 			continue
 	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
 	sock.sendto(data, (maddr, port))
