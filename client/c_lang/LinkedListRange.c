@@ -201,13 +201,22 @@ int ll_free(struct LLR *me) {
 	while(llNext != NULL) {
 		llTemp = llNext;
 		llNext = llNext->next;
-		free(llTemp);
+		me->iTotalFromRanges -= (llTemp->rEnd-llTemp->rStart+1);
+		me->iNodeCnt -= 1;
 		// The below logic is just to keep the structure always consistant. But technically this is not required, as this will be freeing up the full ll.
 		me->llStart = llNext;
 		if (llNext != NULL) {
 			llNext->prev = NULL;
 		}
+		if (me->llLastAdded == llTemp) {
+			me->llLastAdded = NULL;
+		}
+		if (me->llBeforeDel == llTemp) {
+			me->llBeforeDel = NULL;
+		}
+		free(llTemp);
 	}
+	me->llEnd = NULL;
 	return 0;
 }
 
