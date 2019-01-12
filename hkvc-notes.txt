@@ -137,6 +137,16 @@ sends the top N number of lost packet ranges it has. Parallely if it recieves
 any data packets, which it didn't have before, it will save the same into the
 data file.
 
+Save & Resume
+---------------
+
+If one forces the program to quit when it is in the middle of a transfer, by
+sending a SIGINT. Then the program irrespective of whether it is in mcast
+phases or ucast phases, will save the current list of lost packets to a
+predefined location.
+
+This info can be used to resume the transfer and recover remaining or lost
+packets. This resume logic will be added shortly.
 
 Server
 ========
@@ -147,7 +157,13 @@ The first takes care of the multicast phases.
 
 The second takes care of the unicast phases. If required this unicast related
 script can be called more than once, provided a context file is passed to it,
-with the list of remaining clients with lost packets.
+with the list of remaining clients with lost packets. Even if the full list of
+know clients is passed to the 2nd invocation of the ucast recovery program /
+script, the logic will handle all corner cases properly. Because even if there
+are clients with fully transfered contents, if they are running, they will
+inform the server that they dont have any lost packets; and if they are not
+running, the server will automatically timeout wrt such clients (the program
+will take more time than ideal, otherwise no other issues).
 
 the Context file
 ------------------

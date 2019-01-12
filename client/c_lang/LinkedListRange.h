@@ -1,6 +1,6 @@
 /*
     LinkedList implementation which stores a Range as the content of each node in the list
-    v20190105IST1051
+    v20190113IST0200
     HanishKVC, GPL, 19XY
  */
 
