@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <signal.h>
 
 #include <LinkedListRange.h>
 
@@ -394,6 +395,20 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 	return -1;
 }
 
+struct LLR *gpllLostPkts = NULL;
+
+void signal_handler(int arg) {
+	int iRet;
+
+	if (gpllLostPkts == NULL) {
+		fprintf(stderr, "WARN:%s:LostPacketRanges ll not yet setup\n", __func__);
+	} else {
+		iRet = ll_save(gpllLostPkts, "/tmp/snm02.lostpackets");
+		fprintf(stderr, "INFO:%s:LostPacketRangess ll saved [%d] of [%d]\n", __func__, iRet, gpllLostPkts->iNodeCnt);
+	}
+	exit(2);
+}
+
 #define ARG_IFINDEX 1
 #define ARG_MCASTADDR 2
 #define ARG_LOCALADDR 3
@@ -413,6 +428,10 @@ int main(int argc, char **argv) {
 		exit(-1);
 	}
 
+	if (signal(SIGINT, &signal_handler) == SIG_ERR) {
+		perror("WARN:main:Failed setting SIGINT handler");
+	}
+
 	int ifIndex = strtol(argv[ARG_IFINDEX], NULL, 0);
 	char *sMCastAddr = argv[ARG_MCASTADDR];
 	char *sLocalAddr = argv[ARG_LOCALADDR];
@@ -426,6 +445,7 @@ int main(int argc, char **argv) {
 	}
 
 	ll_init(&llLostPkts);
+	gpllLostPkts = &llLostPkts;
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
 	mcast_recv(sockMCast, fileData, &llLostPkts);
 	ll_print(&llLostPkts, "LostPackets at end of MCast");
