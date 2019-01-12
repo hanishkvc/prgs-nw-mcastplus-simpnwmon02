@@ -296,6 +296,50 @@ int ll_save(struct LLR *me, char *sFName) {
 	return iCnt;
 }
 
+int _readline(int iFile, char *buf, int bufLen) {
+	int iRet;
+
+	iRet = read(iFile, buf, bufLen);
+	if (iRet == -1) {
+		perror("ERROR:LLR:_readline");
+	}
+	return iRet;
+}
+
+#define BUFLEN 128
+int ll_load(struct LLR *me, char *sFName) {
+	char tBuf[BUFLEN];
+	int iRet;
+	char *begin, *rem;
+	int iStart, iEnd;
+	int iPos, iTotal;
+
+	int iFLoad = open(sFName, O_RDWR);
+	if (iFLoad == -1) {
+		perror("ERROR:LLR:Load:Open");
+		return -1;
+	}
+	iRet = 999;
+	iPos = 0;
+	iTotal = 0;
+	while(iRet > 0) {
+		iRet = _readline(iFLoad, &tBuf[iTotal], BUFLEN-iTotal);
+		iTotal += iRet;
+		begin = &tBuf[iPos];
+		iStart = strtol(&tBuf[iPos], &rem, 10);
+		iPos = rem - begin + 1;
+		begin = &tBuf[iPos];
+		iEnd = strtol(&tBuf[iPos], &rem, 10);
+		iPos += (rem - begin);
+		memmove(tBuf, &tBuf[iPos], iTotal-iPos);
+		iTotal = iTotal - iPos;
+		iPos = 0;
+		fprintf(stderr, "%d-%d\n", iStart, iEnd);
+	}
+	close(iFLoad);
+	return 0;
+}
+
 #ifdef MODE_PROGRAM_LL
 
 int main(int argc, char **argv) {
@@ -334,7 +378,13 @@ int main(int argc, char **argv) {
 	ll_print_summary(&theLLR, "Testing LLR - After deleting from 0 to 1024");
 	ll_print(&theLLR, "Testing LLR - After all deletes");
 
+	// Test save and load
+	ll_save(&theLLR, "/tmp/t.llr.100");
 	ll_free(&theLLR);
+
+	fprintf(stderr, "************* LOADED LLR **************\n");
+	ll_load(&theLLR, "/tmp/t.llr.100");
+
 	return 0;
 }
 
