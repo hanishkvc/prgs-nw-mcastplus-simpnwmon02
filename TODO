@@ -61,3 +61,25 @@ respond back, with enough reminders in that time (repeat once every 10 secs).
 
 This is done, but should I reduce this time further ????
 
+* Client/Srvr resending pkts faster than required
+
+If client which was quit during unicast recovery transfer either somewhere in
+the middle of the transfer or during PI phase,
+
+is resumed when the server is still in the middle of unicast recovery
+transfers, then the PI packets sent by the resuming client, will trigger the
+server to send out lot of URReq packets, which inturn the client corresponding
+to that URReq will respond.  This leads to a large number of same URRes packets
+with same data being recieved. And the server will currently inturn respond to
+each of these repeated URRes packets, which leads to the same data packets
+being sent to that client again and again.
+
+is resumed when the server is still in the middle of PI phase, then everything
+will be fine.
+
+Have to modify the server side logic such that if it recieves PI packets in the
+middle of UR transfer, it should still wait for the specified socket timeout to
+see if a proper URRes comes or not, before resending the URReq packet again.
+
+Even client side the PI logic resends PIReq packets faster than the configured
+rate, if it recieves unrelated packets. Even this requires to be fixed.
