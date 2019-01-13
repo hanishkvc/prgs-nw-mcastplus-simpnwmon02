@@ -95,7 +95,7 @@ the Arguments
 
 The client side simpnwmon02 program has the following command line arguments
 
-./simpnwmon02 local_nwif_index mcast_ip local_nwif_ip data_file nw_bcast_ip
+./simpnwmon02 local_nwif_index mcast_ip local_nwif_ip data_file nw_bcast_ip [lostpacketranges_savefile]
 
 the local_nwif means the ethernet or wifi interface which connects to the
 network on which we want to run the test/data transfer logic.
@@ -115,6 +115,21 @@ values.
 If local_nwif_index is not being explicitly specified, then pass 0 for it.
 
 If local_nwif_ip is not explicitly specified, then pass 0.0.0.0 for it.
+
+mcast_ip is the multicast group ip address on which to listen for data / test
+packets.
+
+data_file is the file into which recieved data should be saved.
+
+nw_bcast_ip is the network broadcast address into which PIReq packets should be
+sent.
+
+lostpacketranges_savefile is a optional parameter. This is required to be
+given/used/passed, if one wants the program to resume a previously broken in
+ucast recovery phase transfer. Ideally It should be the file into which the
+program had saved the list of lost packet ranges, when it was force exited
+previously by sending a SIGINT (ctrl+c) signal.
+
 
 the Logic
 -----------
@@ -204,6 +219,11 @@ Possibility2 ==>
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send AND_OR
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_or_remaining_client_ips
 
+If the client was force quit in the middle of unicast recovery, then to resume run the below
+Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255 /path/to/lostpacketranges_savefile
+
+The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
+
 
 Example for testing using VM
 ------------------------------
@@ -230,6 +250,10 @@ If required could Use slow mode ==>
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --testblocks 5000 --slow
 
 
+If the client was force quit in the middle of unicast recovery, then to resume run the below
+Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /dev/null 10.0.2.255 /path/to/lostpacketranges_savefile
+
+The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
 
 
 
