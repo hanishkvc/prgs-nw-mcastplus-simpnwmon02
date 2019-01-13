@@ -128,6 +128,7 @@ void _ll_delete(struct LLR *me, struct _ll *llDel) {
 		if (me->llStart != NULL) {
 			me->llStart->prev = NULL;
 		}
+		free(llDel);
 		return;
 	}
 	llPrev = llDel->prev;
@@ -136,6 +137,7 @@ void _ll_delete(struct LLR *me, struct _ll *llDel) {
 	if (llNext != NULL) {
 		llNext->prev = llPrev;
 	}
+	free(llDel);
 }
 
 int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {
