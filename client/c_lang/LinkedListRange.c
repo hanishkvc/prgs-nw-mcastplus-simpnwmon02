@@ -305,7 +305,7 @@ int ll_save(struct LLR *me, char *sFName) {
 	return iCnt;
 }
 
-int _readline(int iFile, char *buf, int bufLen) {
+int _readfile(int iFile, char *buf, int bufLen) {
 	int iRet;
 
 	iRet = read(iFile, buf, bufLen);
@@ -331,7 +331,7 @@ int ll_load_append(struct LLR *me, char *sFName) {
 	iPos = 0;
 	iTotal = 0;
 	do {
-		iRet = _readline(iFLoad, &tBuf[iTotal], BUFLEN-iTotal);
+		iRet = _readfile(iFLoad, &tBuf[iTotal], BUFLEN-iTotal);
 		iTotal += iRet;
 		begin = &tBuf[iPos];
 		iStart = strtol(&tBuf[iPos], &rem, 10);
