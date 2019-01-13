@@ -27,6 +27,7 @@ int fu_readline(struct fu *me, char *buf, int bufLen) {
 	for(; iPos < bufLen; iPos++) {
 		if (me->iCnt == 0) {
 			me->iCnt = read(me->iFile, me->buf, FU_BUFLEN);
+			me->iPos = 0;
 			if (me->iCnt == -1) {
 				perror("ERROR:fu_readline:read failed");
 			}
