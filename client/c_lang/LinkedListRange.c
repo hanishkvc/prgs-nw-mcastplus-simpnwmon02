@@ -324,6 +324,7 @@ int ll_load_append(struct LLR *me, char *sFName) {
 	}
 	do {
 		iRet = fu_readline(&fuLoad, tBuf, LL_BUFLEN);
+		//fprintf(stderr, "DEBUG:%s:[%d][%s]\n", __func__, iRet, tBuf);
 		if (iRet <= 0) {
 			break;
 		}
@@ -336,7 +337,7 @@ int ll_load_append(struct LLR *me, char *sFName) {
 		iPos += (rem - begin + 1);
 		iRet = iRet - iPos;
 		if (iRet != 0) {
-			fprintf(stderr, "DEBUG:%s: after parsing a range not reached end of line\n", __func__);
+			fprintf(stderr, "DEBUG:%s: after parsing a range, end of line not reached\n", __func__);
 		}
 		ll_add_sorted(me, iStart, iEnd);
 		//fprintf(stderr, "%d-%d\n", iStart, iEnd);

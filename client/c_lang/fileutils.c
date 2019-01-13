@@ -33,7 +33,7 @@ int fu_readline(struct fu *me, char *buf, int bufLen) {
 			}
 		}
 		if (me->iCnt <= 0) {
-			return 0;
+			return iPos;
 		}
 		buf[iPos] = me->buf[me->iPos];
 		me->iPos += 1;
