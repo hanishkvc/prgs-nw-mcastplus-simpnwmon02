@@ -339,6 +339,16 @@ int ll_load_append(struct LLR *me, char *sFName) {
 		if (iRet != 0) {
 			fprintf(stderr, "DEBUG:%s: after parsing a range, end of line not reached\n", __func__);
 		}
+		// Ideally one can use add_sorted_startfrom_lastadded, because
+		// the ll_save will have saved a sorted linked list (unless
+		// while adding into that list originally there was a goof up),
+		// which  ensures that each new range read from the save file
+		// will be getting added such that it follows the last node added.
+		// However in case some one edits the file manually and forgets
+		// to keep it sorted, then to avoid any issues, for now I am
+		// using the slightly inefficient startfrom_start which will
+		// search from beginning of the linked list each time the new
+		// range is being added into the list.
 		ll_add_sorted(me, iStart, iEnd);
 		//fprintf(stderr, "%d-%d\n", iStart, iEnd);
 	} while(1);
