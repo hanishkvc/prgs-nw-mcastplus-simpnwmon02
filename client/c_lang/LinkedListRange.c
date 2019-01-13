@@ -5,6 +5,7 @@
  */
 
 #include <LinkedListRange.h>
+#include <fileutils.h>
 
 
 void ll_init(struct LLR *me) {
@@ -305,47 +306,42 @@ int ll_save(struct LLR *me, char *sFName) {
 	return iCnt;
 }
 
-int _readfile(int iFile, char *buf, int bufLen) {
-	int iRet;
-
-	iRet = read(iFile, buf, bufLen);
-	if (iRet == -1) {
-		perror("ERROR:LLR:_readline");
-	}
-	return iRet;
-}
-
-#define BUFLEN 128
+#define LL_BUFLEN 64
 int ll_load_append(struct LLR *me, char *sFName) {
-	char tBuf[BUFLEN];
+	char tBuf[LL_BUFLEN];
 	int iRet;
 	char *begin, *rem;
 	int iStart, iEnd;
-	int iPos, iTotal;
+	int iPos;
+	struct fu fuLoad;
 
-	int iFLoad = open(sFName, O_RDWR);
-	if (iFLoad == -1) {
-		perror("ERROR:LLR:Load:Open");
+	fu_init(&fuLoad);
+
+	iRet = fu_open(&fuLoad, sFName, O_RDWR, 0);
+	if (iRet == -1) {
+		fprintf(stderr, "ERROR:%s: failed for [%s]\n", __func__, sFName);
 		return -1;
 	}
-	iPos = 0;
-	iTotal = 0;
 	do {
-		iRet = _readfile(iFLoad, &tBuf[iTotal], BUFLEN-iTotal);
-		iTotal += iRet;
+		iRet = fu_readline(&fuLoad, tBuf, LL_BUFLEN);
+		if (iRet <= 0) {
+			break;
+		}
+		iPos = 0;
 		begin = &tBuf[iPos];
 		iStart = strtol(&tBuf[iPos], &rem, 10);
 		iPos = rem - begin + 1;
 		begin = &tBuf[iPos];
 		iEnd = strtol(&tBuf[iPos], &rem, 10);
 		iPos += (rem - begin + 1);
-		memmove(tBuf, &tBuf[iPos], iTotal-iPos);
-		iTotal = iTotal - iPos;
-		iPos = 0;
+		iRet = iRet - iPos;
+		if (iRet != 0) {
+			fprintf(stderr, "DEBUG:%s: after parsing a range not reached end of line\n", __func__);
+		}
 		ll_add_sorted(me, iStart, iEnd);
 		//fprintf(stderr, "%d-%d\n", iStart, iEnd);
-	} while(iTotal > 3);
-	close(iFLoad);
+	} while(1);
+	fu_close(&fuLoad);
 	return iRet;
 }
 
