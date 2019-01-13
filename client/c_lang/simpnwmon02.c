@@ -318,6 +318,7 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 			return 0;
 		} else {
 			fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
+			usleep(UCAST_PI_USLEEP);
 		}
 	}
 	return -1;
