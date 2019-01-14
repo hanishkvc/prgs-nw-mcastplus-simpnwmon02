@@ -58,8 +58,15 @@ struct snm {
 	char *sLocalAddr;
 	char *sBCastAddr;
 	char *sDataFile;
+	int iRunModes;
 	char *sContextFile;
 };
+
+#define RUNMODE_MCAST 0x01
+#define RUNMODE_UCASTPI 0x02
+#define RUNMODE_UCASTUR 0x04
+#define RUNMODE_UCAST 0x06
+#define RUNMODE_ALL 0x07
 
 void snm_init(struct snm *me) {
 	me->sockMCast = -1;
@@ -69,6 +76,7 @@ void snm_init(struct snm *me) {
 	me->sLocalAddr = NULL;
 	me->sBCastAddr = NULL;
 	me->sDataFile = NULL;
+	me->iRunModes = RUNMODE_ALL;
 	me->sContextFile = NULL;
 }
 
@@ -446,6 +454,7 @@ void signal_handler(int arg) {
 #define ARG_LOCAL "--local"
 #define ARG_BCAST "--bcast"
 #define ARG_CONTEXT "--context"
+#define ARG_RUNMODES "--runmodes"
 
 void print_usage(void) {
 	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr> [--context lostpkts_infofile_4resume]\n");
@@ -477,6 +486,10 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 			iArg += 1;
 			me->sContextFile = argv[iArg];
 		}
+		if (strcmp(argv[iArg], ARG_RUNMODES) == 0) {
+			iArg += 1;
+			me->iRunModes = strtol(argv[iArg], NULL, 0);
+		}
 		if (iArg >= argc) {
 			print_usage();
 			exit(-1);
@@ -497,7 +510,7 @@ int main(int argc, char **argv) {
 	int sockUCast = -1;
 	struct LLR llLostPkts;
 	uint32_t theSrvrPeer = 0;
-	int iResume = -1;
+	int iRet = -1;
 
 	snm_init(&snmCur);
 	snm_parse_args(&snmCur, argc, argv);
@@ -523,23 +536,34 @@ int main(int argc, char **argv) {
 
 	if (snmCur.sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, snmCur.sContextFile);
-		iResume = ll_load_append(&llLostPkts, snmCur.sContextFile);
+		iRet = ll_load_append(&llLostPkts, snmCur.sContextFile);
+		if (iRet == -1) {
+			return 2;
+		}
 	}
 
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
-	if (iResume == -1) {
+	if ((snmCur.iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
 		mcast_recv(sockMCast, fileData, &llLostPkts);
+		save_context(&llLostPkts, gsContextFileBase, "mcast");
 	} else {
-		fprintf(stderr, "INFO:%s: Skipped mcast_recv bcas resuming...\n", __func__);
+		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
 	}
 	ll_print(&llLostPkts, "LostPackets at end of MCast");
-	save_context(&llLostPkts, gsContextFileBase, "mcast");
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
-	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
-		fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
+	if ((snmCur.iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
+		if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
+			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
+		}
+	} else {
+		fprintf(stderr, "INFO:%s: Skipping ucast:pi...\n", __func__);
 	}
-	ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
+	if ((snmCur.iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
+		ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
+	} else {
+		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
+	}
 
 	ll_free(&llLostPkts);
 	return 0;
