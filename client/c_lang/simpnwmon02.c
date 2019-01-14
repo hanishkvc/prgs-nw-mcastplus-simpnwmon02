@@ -32,6 +32,7 @@ const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 
+int gNwGroupMul=5;
 int gPortMCast=1111;
 int gPortServer=1112;
 int gPortClient=1113;
@@ -64,6 +65,7 @@ struct snm {
 	char *sContextFile;
 	char *sContextFileBase;
 	struct LLR llLostPkts;
+	int iNwGroup;
 	int portMCast, portServer, portClient;
 	int fileData;
 	uint32_t theSrvrPeer;
@@ -76,6 +78,12 @@ struct snm snmCur;
 #define RUNMODE_UCAST 0x06
 #define RUNMODE_ALL 0x07
 
+void _snm_ports_update(struct snm *me) {
+	me->portMCast = gPortMCast + gNwGroupMul*me->iNwGroup;
+	me->portServer = gPortServer + gNwGroupMul*me->iNwGroup;
+	me->portClient = gPortClient + gNwGroupMul*me->iNwGroup;
+}
+
 void snm_init(struct snm *me) {
 	me->sockMCast = -1;
 	me->sockUCast = -1;
@@ -87,9 +95,8 @@ void snm_init(struct snm *me) {
 	me->iRunModes = RUNMODE_ALL;
 	me->sContextFile = NULL;
 	me->sContextFileBase = gsContextFileBase;
-	me->portMCast = gPortMCast;
-	me->portServer = gPortServer;
-	me->portClient = gPortClient;
+	me->iNwGroup = 0;
+	_snm_ports_update(me);
 	me->fileData = -1;
 	me->theSrvrPeer = 0;
 	ll_init(&me->llLostPkts);
@@ -534,6 +541,7 @@ void signal_handler(int arg) {
 #define ARG_CONTEXT "--context"
 #define ARG_CONTEXTBASE "--contextbase"
 #define ARG_RUNMODES "--runmodes"
+#define ARG_NWGROUP "--nwgroup"
 
 void print_usage(void) {
 	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr>\n");
@@ -575,6 +583,10 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 		if (strcmp(argv[iArg], ARG_RUNMODES) == 0) {
 			iArg += 1;
 			me->iRunModes = strtol(argv[iArg], NULL, 0);
+		}
+		if (strcmp(argv[iArg], ARG_NWGROUP) == 0) {
+			iArg += 1;
+			me->iNwGroup = strtol(argv[iArg], NULL, 0);
 		}
 		if (iArg >= argc) {
 			print_usage();
