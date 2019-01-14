@@ -441,15 +441,6 @@ void signal_handler(int arg) {
 	exit(2);
 }
 
-#define ARG_IFINDEX 1
-#define ARG_MCASTADDR 2
-#define ARG_LOCALADDR 3
-#define ARG_DATAFILE 4
-#define ARG_PINWBCAST 5
-#define ARG_COUNT (5+1)
-#define ARG_LLLOSTPKTS4RES 6
-#define ARG_COUNT_EXTENDED (6+1)
-
 #define ARG_MADDR "--maddr"
 #define ARG_FILE "--file"
 #define ARG_LOCAL "--local"
