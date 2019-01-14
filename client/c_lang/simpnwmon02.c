@@ -520,13 +520,23 @@ int snm_datafile_open(struct snm *me) {
 }
 
 int snm_context_load(struct snm *me) {
-	int iRet = -1;
+	int iRet = 0;
 
 	if (me->sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
 		iRet = ll_load_append(&me->llLostPkts, me->sContextFile);
 	}
 	return iRet;
+}
+
+void snm_args_process_p1(struct snm *me) {
+	if (snm_datafile_open(me) < 0) {
+		exit(1);
+	}
+	_snm_ports_update(me);
+	if (snm_context_load(me) < 0) {
+		exit(2);
+	}
 }
 
 void signal_handler(int arg) {
@@ -612,14 +622,7 @@ int main(int argc, char **argv) {
 		perror("WARN:main:Failed setting SIGINT handler");
 	}
 
-	if (snm_datafile_open(&snmCur) < 0) {
-		return 1;
-	}
-
-
-	if (snm_context_load(&snmCur) < 0) {
-		return 2;
-	}
+	snm_args_process_p1(&snmCur);
 
 	snm_sock_mcast_init(&snmCur);
 	snm_mcast_recv(&snmCur);
