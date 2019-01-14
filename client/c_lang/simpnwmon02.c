@@ -397,16 +397,26 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 }
 
 struct LLR *gpllLostPkts = NULL;
+#define MAIN_FPATH_LEN 256
+
+void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
+	int iRet;
+	char sFName[MAIN_FPATH_LEN];
+
+	strncpy(sFName, sBase, MAIN_FPATH_LEN);
+	strncat(sFName, ".", MAIN_FPATH_LEN);
+	strncat(sFName, sTag, MAIN_FPATH_LEN);
+
+	if (meLLR == NULL) {
+		fprintf(stderr, "WARN:%s:%s: Passed LostPacketRanges ll not yet setup\n", __func__, sTag);
+	} else {
+		iRet = ll_save(meLLR, sFName);
+		fprintf(stderr, "INFO:%s:%s: LostPacketRanges ll saved [%d of %d] to [%s]\n", __func__, sTag, iRet, meLLR->iNodeCnt, sFName);
+	}
+}
 
 void signal_handler(int arg) {
-	int iRet;
-
-	if (gpllLostPkts == NULL) {
-		fprintf(stderr, "WARN:%s:LostPacketRanges ll not yet setup\n", __func__);
-	} else {
-		iRet = ll_save(gpllLostPkts, "/tmp/snm02.lostpackets");
-		fprintf(stderr, "INFO:%s:LostPacketRangess ll saved [%d] of [%d]\n", __func__, iRet, gpllLostPkts->iNodeCnt);
-	}
+	save_context(gpllLostPkts, "/tmp/snm02.lostpackets", "quit");
 	exit(2);
 }
 
