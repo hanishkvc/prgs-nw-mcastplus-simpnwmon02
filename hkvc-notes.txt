@@ -85,10 +85,27 @@ inturn the total/actual number of values stored/represented in the list
 indirectly in the shortened form of ranges.
 
 
+NwGroups
+---------
+
+A given group of Server/ServerInstance and a set of clients assigned to that
+Server/ServerInstance is given a unique NwGroup id/number. This helps assign a
+unique set of ports for that nw test/transfer group.
+
+By default this is 0. Which is good enough if only 1 nw test/transfer is used.
+
+However if multiple nw tests/transfers require to be run parallely, then each
+such group of server+clients should be given unique NwGroup Ids.
+
+This also allows a single machine to run multiple instances of server or
+multiple instances of client logic if required.
+
 Client
 ==========
 
 The client side logic is implemented in a single program.
+
+./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit
 
 the Arguments
 --------------
