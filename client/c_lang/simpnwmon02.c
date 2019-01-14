@@ -95,7 +95,21 @@ void snm_init(struct snm *me) {
 	me->theSrvrPeer = 0;
 }
 
-void save_context(struct LLR *meLLR, char *sBase, char *sTag);
+void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
+	int iRet;
+	char sFName[MAIN_FPATH_LEN];
+
+	strncpy(sFName, sBase, MAIN_FPATH_LEN);
+	strncat(sFName, ".lostpackets.", MAIN_FPATH_LEN);
+	strncat(sFName, sTag, MAIN_FPATH_LEN);
+
+	if (meLLR == NULL) {
+		fprintf(stderr, "WARN:%s:%s: Passed LostPacketRanges ll not yet setup\n", __func__, sTag);
+	} else {
+		iRet = ll_save(meLLR, sFName);
+		fprintf(stderr, "INFO:%s:%s: LostPacketRanges ll saved [%d of %d] to [%s]\n", __func__, sTag, iRet, meLLR->iNodeCnt, sFName);
+	}
+}
 
 #define ENABLE_MULTICAST_ALL 1
 int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
@@ -487,20 +501,25 @@ int snm_ucast_recover(struct snm *me) {
 	return iRet;
 }
 
-void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
-	int iRet;
-	char sFName[MAIN_FPATH_LEN];
-
-	strncpy(sFName, sBase, MAIN_FPATH_LEN);
-	strncat(sFName, ".lostpackets.", MAIN_FPATH_LEN);
-	strncat(sFName, sTag, MAIN_FPATH_LEN);
-
-	if (meLLR == NULL) {
-		fprintf(stderr, "WARN:%s:%s: Passed LostPacketRanges ll not yet setup\n", __func__, sTag);
+int snm_datafile_open(struct snm *me) {
+	me->fileData = open(me->sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
+	if (snmCur.fileData == -1) {
+		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, me->sDataFile);
+		perror("Failed datafile open");
 	} else {
-		iRet = ll_save(meLLR, sFName);
-		fprintf(stderr, "INFO:%s:%s: LostPacketRanges ll saved [%d of %d] to [%s]\n", __func__, sTag, iRet, meLLR->iNodeCnt, sFName);
+		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, me->sDataFile);
 	}
+	return me->fileData;
+}
+
+int snm_context_load(struct snm *me) {
+	int iRet = -1;
+
+	if (me->sContextFile != NULL) {
+		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
+		iRet = ll_load_append(me->pllLostPkts, me->sContextFile);
+	}
+	return iRet;
 }
 
 void signal_handler(int arg) {
@@ -573,7 +592,6 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 int main(int argc, char **argv) {
 
 	struct LLR llLostPkts;
-	int iRet = -1;
 
 	snm_init(&snmCur);
 	snm_parse_args(&snmCur, argc, argv);
@@ -582,23 +600,15 @@ int main(int argc, char **argv) {
 		perror("WARN:main:Failed setting SIGINT handler");
 	}
 
-	snmCur.fileData = open(snmCur.sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
-	if (snmCur.fileData == -1) {
-		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, snmCur.sDataFile);
-		perror("Failed datafile open");
-	} else {
-		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, snmCur.sDataFile);
+	if (snm_datafile_open(&snmCur) < 0) {
+		return 1;
 	}
 
 	ll_init(&llLostPkts);
 	snmCur.pllLostPkts = &llLostPkts;
 
-	if (snmCur.sContextFile != NULL) {
-		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, snmCur.sContextFile);
-		iRet = ll_load_append(&llLostPkts, snmCur.sContextFile);
-		if (iRet == -1) {
-			return 2;
-		}
+	if (snm_context_load(&snmCur) < 0) {
+		return 2;
 	}
 
 	snm_sock_mcast_init(&snmCur);
