@@ -44,13 +44,33 @@ const int URAckSeqNum     = 0xffffff03;
 const int MCASTSTOPSeqNum = 0xffffffff;
 
 //char *sLocalAddr="0.0.0.0";
-char *sPIInitAddr="255.255.255.255";
 
 #define BUF_MAXSIZE 1600
 int giDataSize=(1024+4);
 char gcBuf[BUF_MAXSIZE];
 
 int gbDoMCast = 1;
+
+struct snm {
+	int sockMCast, sockUCast;
+	int iLocalIFIndex;
+	char *sMCastAddr;
+	char *sLocalAddr;
+	char *sBCastAddr;
+	char *sDataFile;
+	char *sContextFile;
+};
+
+void snm_init(struct snm *me) {
+	me->sockMCast = -1;
+	me->sockUCast = -1;
+	me->iLocalIFIndex = 0;
+	me->sMCastAddr = NULL;
+	me->sLocalAddr = NULL;
+	me->sBCastAddr = NULL;
+	me->sDataFile = NULL;
+	me->sContextFile = NULL;
+}
 
 #define ENABLE_MULTICAST_ALL 1
 int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
@@ -430,7 +450,57 @@ void signal_handler(int arg) {
 #define ARG_LLLOSTPKTS4RES 6
 #define ARG_COUNT_EXTENDED (6+1)
 
+#define ARG_MADDR "--maddr"
+#define ARG_FILE "--file"
+#define ARG_LOCAL "--local"
+#define ARG_BCAST "--bcast"
+#define ARG_CONTEXT "--context"
+
+void print_usage(void) {
+	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr> [--context lostpkts_infofile_4resume]\n");
+}
+
+int snm_parse_args(struct snm *me, int argc, char **argv) {
+
+	int iArg = 1;
+	while(iArg < argc) {
+		if (strcmp(argv[iArg], ARG_MADDR) == 0) {
+			iArg += 1;
+			me->sMCastAddr = argv[iArg];
+		}
+		if (strcmp(argv[iArg], ARG_LOCAL) == 0) {
+			iArg += 1;
+			me->iLocalIFIndex = strtol(argv[iArg], NULL, 0);
+			iArg += 1;
+			me->sLocalAddr = argv[iArg];
+		}
+		if (strcmp(argv[iArg], ARG_FILE) == 0) {
+			iArg += 1;
+			me->sDataFile = argv[iArg];
+		}
+		if (strcmp(argv[iArg], ARG_BCAST) == 0) {
+			iArg += 1;
+			me->sBCastAddr = argv[iArg];
+		}
+		if (strcmp(argv[iArg], ARG_CONTEXT) == 0) {
+			iArg += 1;
+			me->sContextFile = argv[iArg];
+		}
+		if (iArg >= argc) {
+			print_usage();
+			exit(-1);
+		}
+		iArg += 1;
+	}
+	if ((me->sMCastAddr == NULL) || (me->sLocalAddr == NULL) || (me->sDataFile == NULL) || (me->sBCastAddr == NULL)) {
+		print_usage();
+		exit(-1);
+	}
+	return 0;
+}
+
 int main(int argc, char **argv) {
+	struct snm snmCur;
 
 	int sockMCast = -1;
 	int sockUCast = -1;
@@ -438,33 +508,31 @@ int main(int argc, char **argv) {
 	uint32_t theSrvrPeer = 0;
 	int iResume = -1;
 
-	if (argc < ARG_COUNT) {
-		fprintf(stderr, "usage: %s <ifIndex4mcast> <mcast_addr> <local_addr> <datafile> <pi_nw_bcast_addr> [lostpkts_infofile_4resume]\n", argv[0]);
-		exit(-1);
-	}
+	snm_init(&snmCur);
+	snm_parse_args(&snmCur, argc, argv);
 
 	if (signal(SIGINT, &signal_handler) == SIG_ERR) {
 		perror("WARN:main:Failed setting SIGINT handler");
 	}
 
-	int ifIndex = strtol(argv[ARG_IFINDEX], NULL, 0);
-	char *sMCastAddr = argv[ARG_MCASTADDR];
-	char *sLocalAddr = argv[ARG_LOCALADDR];
-	char *sPINwBCast = argv[ARG_PINWBCAST];
-	int fileData = open(argv[ARG_DATAFILE], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
+	int ifIndex = snmCur.iLocalIFIndex;
+	char *sMCastAddr = snmCur.sMCastAddr;
+	char *sLocalAddr = snmCur.sLocalAddr;
+	char *sPINwBCast = snmCur.sBCastAddr;
+	int fileData = open(snmCur.sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
 	if (fileData == -1) {
-		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, argv[ARG_DATAFILE]);
+		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, snmCur.sDataFile);
 		perror("Failed datafile open");
 	} else {
-		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, argv[ARG_DATAFILE]);
+		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, snmCur.sDataFile);
 	}
 
 	ll_init(&llLostPkts);
 	gpllLostPkts = &llLostPkts;
 
-	if (argc >= ARG_COUNT_EXTENDED) {
-		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, argv[ARG_LLLOSTPKTS4RES]);
-		iResume = ll_load_append(&llLostPkts, argv[ARG_LLLOSTPKTS4RES]);
+	if (snmCur.sContextFile != NULL) {
+		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, snmCur.sContextFile);
+		iResume = ll_load_append(&llLostPkts, snmCur.sContextFile);
 	}
 
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
