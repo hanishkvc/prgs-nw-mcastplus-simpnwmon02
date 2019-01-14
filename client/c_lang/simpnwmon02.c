@@ -48,6 +48,8 @@ const int MCASTSTOPSeqNum = 0xffffffff;
 #define BUF_MAXSIZE 1600
 int giDataSize=(1024+4);
 char gcBuf[BUF_MAXSIZE];
+#define MAIN_FPATH_LEN 256
+char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 
 int gbDoMCast = 1;
 
@@ -60,7 +62,10 @@ struct snm {
 	char *sDataFile;
 	int iRunModes;
 	char *sContextFile;
+	char *sContextFileBase;
+	struct LLR *pllLostPkts;
 };
+struct snm snmCur;
 
 #define RUNMODE_MCAST 0x01
 #define RUNMODE_UCASTPI 0x02
@@ -78,6 +83,8 @@ void snm_init(struct snm *me) {
 	me->sDataFile = NULL;
 	me->iRunModes = RUNMODE_ALL;
 	me->sContextFile = NULL;
+	me->sContextFileBase = gsContextFileBase;
+	me->pllLostPkts = NULL;
 }
 
 #define ENABLE_MULTICAST_ALL 1
@@ -424,9 +431,6 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 	return -1;
 }
 
-struct LLR *gpllLostPkts = NULL;
-#define MAIN_FPATH_LEN 256
-char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 
 void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 	int iRet;
@@ -445,7 +449,7 @@ void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 }
 
 void signal_handler(int arg) {
-	save_context(gpllLostPkts, gsContextFileBase, "quit");
+	save_context(snmCur.pllLostPkts, snmCur.sContextFileBase, "quit");
 	exit(2);
 }
 
@@ -454,10 +458,14 @@ void signal_handler(int arg) {
 #define ARG_LOCAL "--local"
 #define ARG_BCAST "--bcast"
 #define ARG_CONTEXT "--context"
+#define ARG_CONTEXTBASE "--contextbase"
 #define ARG_RUNMODES "--runmodes"
 
 void print_usage(void) {
-	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr> [--context lostpkts_infofile_4resume]\n");
+	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr>\n");
+	fprintf(stderr, "\t Optional args\n");
+	fprintf(stderr, "\t --context contextfile_to_load # If specified, the list of lost pkt ranges is initialised with its contents\n");
+	fprintf(stderr, "\t --contextbase contextfile_basename_forsaving\n");
 }
 
 int snm_parse_args(struct snm *me, int argc, char **argv) {
@@ -486,6 +494,10 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 			iArg += 1;
 			me->sContextFile = argv[iArg];
 		}
+		if (strcmp(argv[iArg], ARG_CONTEXTBASE) == 0) {
+			iArg += 1;
+			me->sContextFileBase = argv[iArg];
+		}
 		if (strcmp(argv[iArg], ARG_RUNMODES) == 0) {
 			iArg += 1;
 			me->iRunModes = strtol(argv[iArg], NULL, 0);
@@ -504,7 +516,6 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	struct snm snmCur;
 
 	int sockMCast = -1;
 	int sockUCast = -1;
@@ -532,7 +543,7 @@ int main(int argc, char **argv) {
 	}
 
 	ll_init(&llLostPkts);
-	gpllLostPkts = &llLostPkts;
+	snmCur.pllLostPkts = &llLostPkts;
 
 	if (snmCur.sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, snmCur.sContextFile);
@@ -545,7 +556,7 @@ int main(int argc, char **argv) {
 	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
 	if ((snmCur.iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
 		mcast_recv(sockMCast, fileData, &llLostPkts);
-		save_context(&llLostPkts, gsContextFileBase, "mcast");
+		save_context(&llLostPkts, snmCur.sContextFileBase, "mcast");
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
 	}
