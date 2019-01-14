@@ -398,13 +398,14 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 
 struct LLR *gpllLostPkts = NULL;
 #define MAIN_FPATH_LEN 256
+char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 
 void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 	int iRet;
 	char sFName[MAIN_FPATH_LEN];
 
 	strncpy(sFName, sBase, MAIN_FPATH_LEN);
-	strncat(sFName, ".", MAIN_FPATH_LEN);
+	strncat(sFName, ".lostpackets.", MAIN_FPATH_LEN);
 	strncat(sFName, sTag, MAIN_FPATH_LEN);
 
 	if (meLLR == NULL) {
@@ -416,7 +417,7 @@ void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 }
 
 void signal_handler(int arg) {
-	save_context(gpllLostPkts, "/tmp/snm02.lostpackets", "quit");
+	save_context(gpllLostPkts, gsContextFileBase, "quit");
 	exit(2);
 }
 
@@ -473,6 +474,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "INFO:%s: Skipped mcast_recv bcas resuming...\n", __func__);
 	}
 	ll_print(&llLostPkts, "LostPackets at end of MCast");
+	save_context(&llLostPkts, gsContextFileBase, "mcast");
 
 	sockUCast = sock_ucast_init(sLocalAddr, portClient);
 	if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
