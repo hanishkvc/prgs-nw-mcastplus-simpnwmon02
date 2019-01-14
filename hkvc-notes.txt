@@ -1,6 +1,6 @@
 ##################################
 Nw Testing/Data transfer logic
-v20190105IST2331
+v20190114IST1918 - NEEDS UPDATING
 HanishKVC, 19XY
 ##################################
 
@@ -161,7 +161,8 @@ phases or ucast phases, will save the current list of lost packets to a
 predefined location.
 
 This info can be used to resume the transfer and recover remaining or lost
-packets. This resume logic will be added shortly.
+packets. A simple resume logic has been added, which allows recovering when the
+client was stopped in the middle of ucast phase.
 
 Server
 ========
@@ -207,7 +208,7 @@ Examples
 Example for actual testing
 ----------------------------
 
-Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --contextbase /path/with/basefilename
 
 Server> ./hkvc-nw-send-mcast.py --maddr 230.0.0.1 --file /path/to/file_to_send
 
@@ -220,9 +221,12 @@ Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send AND_
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_or_remaining_client_ips
 
 If the client was force quit in the middle of unicast recovery, then to resume run the below
-Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /path/to/datafile 10.0.2.255 /path/to/lostpacketranges_savefile
+TO run both UCast PI and UR phases
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 6 --context /path/to/saved_contextfile  OR
+TO run both only UCast UR phase
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 4 --context /path/to/saved_contextfile
 
-The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
+The default /path/to/saved_contextfile will be /tmp/snm02.lostpackets.quit, however if --contextbase was given then updated path and name suitably.
 
 
 Example for testing using VM
@@ -260,6 +264,31 @@ The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
 
 Notes / Thoughts during some of the releases
 #############################################
+
+v20190114IST1923
+=================
+
+Mainly a cleanup and fine grained control related updates wrt client logic.
+
+The client now uses descriptive tags to identify the arguments being specified.
+Running the client without arguments will give the details. A sample client run
+will be
+
+./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --contextbase /path/to/contextfilebasename
+
+For some reason if client was stopped in the middle of unicast recovery then to
+resume within ucast recovery run
+
+./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --context /path/to/saved_contextfile --runmodes 4
+
+NOTE: that normal running requires --contextbase, while resuming requires
+--context. Also resuming requires --runmodes 6 (if server still in PI phase) or
+--runmodes 4 (if server already in UR phase or even if in PI phase, this will
+always work).
+
+Also when done with mcast, now it saves a lost packet ranges context file. This
+is independent of the quit related lost packet ranges context file, which will
+be created if the program is forced to quit with a SIGINT.
 
 
 v20181228
