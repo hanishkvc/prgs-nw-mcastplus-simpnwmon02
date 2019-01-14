@@ -282,6 +282,27 @@ The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
 Notes / Thoughts during some of the releases
 #############################################
 
+v20190115IST02XY
+=================
+
+Attached is a updated version with following main changes
+
+a) All nw program related variables moved into a single context. And wrapper
+funcs added to use this new context, as required.
+
+b) Added a nwgroup argument, which helps have multiple parallel nw
+tests/transfers running on the network, as well as wrt multiple server
+instances/client instances running on a given machine. Currently this support
+has been fully implemented on client side. TODO1: In next release it will be
+also added to the server side logic.
+
+TODOX:
+Later MaxSeqNumSeen till a given moment will also be saved as part of this
+context. And then saving and restoring of the nw context will be added. This
+will allow one to implement mcast resume on the client side if required in
+future.
+
+
 v20190114IST1923
 =================
 
@@ -306,6 +327,20 @@ always work).
 Also when done with mcast, now it saves a lost packet ranges context file. This
 is independent of the quit related lost packet ranges context file, which will
 be created if the program is forced to quit with a SIGINT.
+
+Just to be clear:
+
+If for some reason one had to stop the client in the middle of unicast recovery
+by sending it a SIGINT. Then while resuming it
+
+Irrespective of whether the server is in unicast PI phase or unicast UR phase,
+the client can be resumed with --runmodes 6 or --runmodes 4, and everything
+will work fine.
+
+However if we want to resume and resync in a efficient manner then
+
+If server in ucast PI phase, then start client with --runmodes 6
+if server in ucast UR phase already, then start client with --runmodes 4
 
 
 v20181228
