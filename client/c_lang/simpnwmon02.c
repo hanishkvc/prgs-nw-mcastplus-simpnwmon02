@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190113IST0200
+    v20190115IST0040
     HanishKVC, GPL, 19XY
  */
 
@@ -63,7 +63,7 @@ struct snm {
 	int iRunModes;
 	char *sContextFile;
 	char *sContextFileBase;
-	struct LLR *pllLostPkts;
+	struct LLR llLostPkts;
 	int portMCast, portServer, portClient;
 	int fileData;
 	uint32_t theSrvrPeer;
@@ -87,12 +87,12 @@ void snm_init(struct snm *me) {
 	me->iRunModes = RUNMODE_ALL;
 	me->sContextFile = NULL;
 	me->sContextFileBase = gsContextFileBase;
-	me->pllLostPkts = NULL;
 	me->portMCast = gPortMCast;
 	me->portServer = gPortServer;
 	me->portClient = gPortClient;
 	me->fileData = -1;
 	me->theSrvrPeer = 0;
+	ll_init(&me->llLostPkts);
 }
 
 void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
@@ -351,8 +351,8 @@ int snm_mcast_recv(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		iRet = mcast_recv(me->sockMCast, me->fileData, me->pllLostPkts);
-		save_context(me->pllLostPkts, me->sContextFileBase, "mcast");
+		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts);
+		save_context(&me->llLostPkts, me->sContextFileBase, "mcast");
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
 	}
@@ -494,7 +494,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 int snm_ucast_recover(struct snm *me) {
 	int iRet = -1;
 	if ((me->iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
-		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, me->pllLostPkts);
+		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, &me->llLostPkts);
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
 	}
@@ -517,13 +517,13 @@ int snm_context_load(struct snm *me) {
 
 	if (me->sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
-		iRet = ll_load_append(me->pllLostPkts, me->sContextFile);
+		iRet = ll_load_append(&me->llLostPkts, me->sContextFile);
 	}
 	return iRet;
 }
 
 void signal_handler(int arg) {
-	save_context(snmCur.pllLostPkts, snmCur.sContextFileBase, "quit");
+	save_context(&snmCur.llLostPkts, snmCur.sContextFileBase, "quit");
 	exit(2);
 }
 
@@ -604,8 +604,6 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	ll_init(&llLostPkts);
-	snmCur.pllLostPkts = &llLostPkts;
 
 	if (snm_context_load(&snmCur) < 0) {
 		return 2;
