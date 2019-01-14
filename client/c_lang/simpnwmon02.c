@@ -32,9 +32,9 @@ const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 
-int portMCast=1111;
-int portServer=1112;
-int portClient=1113;
+int gPortMCast=1111;
+int gPortServer=1112;
+int gPortClient=1113;
 
 const int SeqNumCmdsCmn   = 0xffffff00;
 const int PIReqSeqNum     = 0xffffff00;
@@ -64,6 +64,9 @@ struct snm {
 	char *sContextFile;
 	char *sContextFileBase;
 	struct LLR *pllLostPkts;
+	int portMCast, portServer, portClient;
+	int fileData;
+	uint32_t theSrvrPeer;
 };
 struct snm snmCur;
 
@@ -85,7 +88,14 @@ void snm_init(struct snm *me) {
 	me->sContextFile = NULL;
 	me->sContextFileBase = gsContextFileBase;
 	me->pllLostPkts = NULL;
+	me->portMCast = gPortMCast;
+	me->portServer = gPortServer;
+	me->portClient = gPortClient;
+	me->fileData = -1;
+	me->theSrvrPeer = 0;
 }
+
+void save_context(struct LLR *meLLR, char *sBase, char *sTag);
 
 #define ENABLE_MULTICAST_ALL 1
 int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
@@ -147,6 +157,11 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	return sockMCast;
 }
 
+int snm_sock_mcast_init(struct snm *me) {
+	me->sockMCast = sock_mcast_init_ex(me->iLocalIFIndex, me->sMCastAddr, me->portMCast, me->sLocalAddr);
+	return me->sockMCast;
+}
+
 #define ENABLE_BROADCAST 1
 int sock_ucast_init(char *sLocalAddr, int port) {
 	int iRet;
@@ -182,6 +197,11 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 	}
 	fprintf(stderr, "INFO:%s: sockUCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockUCast, INADDR_ANY, port, iRet);
 	return sockUCast;
+}
+
+int snm_sock_ucast_init(struct snm *me) {
+	me->sockUCast = sock_ucast_init(me->sLocalAddr, me->portClient);
+	return me->sockUCast;
 }
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
@@ -313,6 +333,18 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	return 0;
 }
 
+int snm_mcast_recv(struct snm *me) {
+	int iRet = -1;
+
+	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
+		iRet = mcast_recv(me->sockMCast, me->fileData, me->pllLostPkts);
+		save_context(me->pllLostPkts, me->sContextFileBase, "mcast");
+	} else {
+		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
+	}
+	return iRet;
+}
+
 int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer) {
 	int iRet;
 	char bufS[32], bufR[32];
@@ -357,6 +389,20 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 		}
 	}
 	return -1;
+}
+
+int snm_ucast_pi(struct snm *me) {
+	int iRet = -1;
+
+	if ((me->iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
+		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer));
+		if (iRet < 0) {
+			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
+		}
+	} else {
+		fprintf(stderr, "INFO:%s: Skipping ucast:pi...\n", __func__);
+	}
+	return iRet;
 }
 
 #define UR_BUFS_LEN 800
@@ -431,6 +477,15 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 	return -1;
 }
 
+int snm_ucast_recover(struct snm *me) {
+	int iRet = -1;
+	if ((me->iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
+		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, me->pllLostPkts);
+	} else {
+		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
+	}
+	return iRet;
+}
 
 void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 	int iRet;
@@ -517,10 +572,7 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 
 int main(int argc, char **argv) {
 
-	int sockMCast = -1;
-	int sockUCast = -1;
 	struct LLR llLostPkts;
-	uint32_t theSrvrPeer = 0;
 	int iRet = -1;
 
 	snm_init(&snmCur);
@@ -530,12 +582,8 @@ int main(int argc, char **argv) {
 		perror("WARN:main:Failed setting SIGINT handler");
 	}
 
-	int ifIndex = snmCur.iLocalIFIndex;
-	char *sMCastAddr = snmCur.sMCastAddr;
-	char *sLocalAddr = snmCur.sLocalAddr;
-	char *sPINwBCast = snmCur.sBCastAddr;
-	int fileData = open(snmCur.sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
-	if (fileData == -1) {
+	snmCur.fileData = open(snmCur.sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
+	if (snmCur.fileData == -1) {
 		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, snmCur.sDataFile);
 		perror("Failed datafile open");
 	} else {
@@ -553,28 +601,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	sockMCast = sock_mcast_init_ex(ifIndex, sMCastAddr, portMCast, sLocalAddr);
-	if ((snmCur.iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		mcast_recv(sockMCast, fileData, &llLostPkts);
-		save_context(&llLostPkts, snmCur.sContextFileBase, "mcast");
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
-	}
-	ll_print(&llLostPkts, "LostPackets at end of MCast");
+	snm_sock_mcast_init(&snmCur);
+	snm_mcast_recv(&snmCur);
 
-	sockUCast = sock_ucast_init(sLocalAddr, portClient);
-	if ((snmCur.iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
-		if (ucast_pi(sockUCast, sPINwBCast, portServer, &theSrvrPeer) < 0) {
-			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
-		}
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping ucast:pi...\n", __func__);
-	}
-	if ((snmCur.iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
-		ucast_recover(sockUCast, fileData, theSrvrPeer, portServer, &llLostPkts);
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
-	}
+	ll_print(&llLostPkts, "LostPackets before UCast");
+
+	snm_sock_ucast_init(&snmCur);
+	snm_ucast_pi(&snmCur);
+	snm_ucast_recover(&snmCur);
 
 	ll_free(&llLostPkts);
 	return 0;
