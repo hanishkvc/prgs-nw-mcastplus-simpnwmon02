@@ -114,11 +114,11 @@ void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
 	}
 }
 
-void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
+void snm_save_context(struct snm *me, char *sTag) {
 	char sFName[MAIN_FPATH_LEN];
 	int iFile;
 
-	strncpy(sFName, sBase, MAIN_FPATH_LEN);
+	strncpy(sFName, me->sContextFileBase, MAIN_FPATH_LEN);
 	strncat(sFName, ".context.", MAIN_FPATH_LEN);
 	strncat(sFName, sTag, MAIN_FPATH_LEN);
 	iFile = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -126,7 +126,7 @@ void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
 		perror("ERROR:save_context:Open");
 		return;
 	}
-	_save_ll_context(meLLR, iFile, sTag, sFName);
+	_save_ll_context(&me->llLostPkts, iFile, sTag, sFName);
 	close(iFile);
 }
 
@@ -375,7 +375,7 @@ int snm_mcast_recv(struct snm *me) {
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
 		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot);
-		save_context(&me->llLostPkts, me->sContextFileBase, "mcast");
+		snm_save_context(me, "mcast");
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
 	}
@@ -556,7 +556,7 @@ void snm_args_process_p1(struct snm *me) {
 }
 
 void signal_handler(int arg) {
-	save_context(&snmCur.llLostPkts, snmCur.sContextFileBase, "quit");
+	snm_save_context(&snmCur, "quit");
 	exit(2);
 }
 
