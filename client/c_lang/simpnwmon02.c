@@ -666,8 +666,6 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 
 int main(int argc, char **argv) {
 
-	struct LLR llLostPkts;
-
 	snm_init(&snmCur);
 	snm_parse_args(&snmCur, argc, argv);
 
@@ -680,13 +678,13 @@ int main(int argc, char **argv) {
 	snm_sock_mcast_init(&snmCur);
 	snm_mcast_recv(&snmCur);
 
-	ll_print(&llLostPkts, "LostPackets before UCast");
+	ll_print(&snmCur.llLostPkts, "LostPackets before UCast");
 
 	snm_sock_ucast_init(&snmCur);
 	snm_ucast_pi(&snmCur);
 	snm_ucast_recover(&snmCur);
 
-	ll_free(&llLostPkts);
+	ll_free(&snmCur.llLostPkts);
 	return 0;
 }
 
