@@ -88,6 +88,7 @@ struct snm snmCur;
 #define RUNMODE_UCASTUR 0x04
 #define RUNMODE_UCAST 0x06
 #define RUNMODE_ALL 0x07
+#define RUNMODE_AUTO 0x10000 // 65536
 
 void _snm_ports_update(struct snm *me) {
 	me->portMCast = gPortMCast + gNwGroupMul*me->iNwGroup;
@@ -575,8 +576,12 @@ int snm_context_load(struct snm *me) {
 		fprintf(stderr, "INFO:%s: About to load context including lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
 		iRet = ll_load_append_ex(&me->llLostPkts, me->sContextFile, '#', _snm_context_load, me);
 #ifdef AUTOADJUST_RUNMODESFROMDONEMODES
-		me->iRunModes &= ~me->iDoneModes;
-		fprintf(stderr, "INFO:%s: AutoAdjusted RunModes [%d]\n", __func__, me->iRunModes);
+		if (me->iRunModes == RUNMODE_AUTO) {
+			me->iRunModes = RUNMODE_ALL & ~me->iDoneModes;
+			fprintf(stderr, "INFO:%s: AutoAdjusted RunModes [%d]\n", __func__, me->iRunModes);
+		} else {
+			fprintf(stderr, "INFO:%s: Ignoring DoneModes [%d], RunModes [%d]\n", __func__, me->iDoneModes, me->iRunModes);
+		}
 #endif
 	}
 	return iRet;
