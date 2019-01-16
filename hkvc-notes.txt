@@ -229,14 +229,17 @@ Save & Resume
 If one forces the program to quit when it is in the middle of a transfer, by
 sending a SIGINT. Then the program irrespective of whether it is in mcast
 phases or ucast phases, will save the current list of lost packets to a
-predefined location.
+predefined location. Also some other important variables/data/info which
+provide context to the current transfer is also saved.
 
-This info can be used to resume the transfer and recover remaining or lost
-packets. A simple resume logic has been added, which allows recovering when the
-client was stopped in the middle of ucast phase.
+This info can be used to resume the transfer and recieve remaining data if any
+as well as recover remaining or lost packets. A basic resume logic has been
+added, which allows recovering when the client was stopped in the middle of
+either the mcast phase or the ucast phase.
 
-ToDO: A more full fledged context requires to be saved, so that one can even
-resume a mcast interruption.
+ToDO: A more full fledged context requires to be saved, so that when one
+resumes, even the network performance related info is also recovered esp wrt
+the mcast transfer interruption.
 
 NOTE: A ctrl+c will generate SIGINT if client is being run directly on a
 console as the foreground process.
@@ -327,6 +330,10 @@ Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --co
 Client Side Resume
 ~~~~~~~~~~~~~~~~~~~~~
 
+If the client was force quit in the middle of a multicast phase, then to resume run the below
+
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 7 --context /path/to/saved_contextfile
+
 If the client was force quit in the middle of a unicast phase, then to resume run the below
 
 TO run both UCast PI and UR phases
@@ -364,11 +371,13 @@ Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --testblocks 5000 --context /path
 If required could Use slow mode ==>
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --testblocks 5000 --slow
 
+If the client was force quit in the middle of multicast phase, then to resume run the below
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /dev/null --bcast 10.0.2.255 --context /path/to/saved_contextfile --rumodes 7
 
-If the client was force quit in the middle of unicast recovery, then to resume run the below
-Client> ./simpnwmon02 0 230.0.0.1 10.0.2.11 /dev/null 10.0.2.255 /path/to/lostpacketranges_savefile
+If the client was force quit in the middle of unicast phase, then to resume run the below
+Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /dev/null --bcast 10.0.2.255 --context /path/to/saved_contextfile --rumodes 6
 
-The default /path/to/lostpacketranges_savefile will be /tmp/snm02.lostpackets
+The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
 
 
