@@ -393,8 +393,24 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Notes / Thoughts during some of the releases
 #############################################
 
-v20190115IST02XY
-=================
+
+v20190116IST15XY - rc3
+========================
+
+This version allows the client side logic to be resumed, even if it was
+interrupted in the middle of the multicast transfer. And in this case the
+--runmodes should be 7 (and not 6 or 4, which is used for ucast phase
+resumption).
+
+NOTE: The network transfer performance related info is not currently saved and
+restored between interruption-resumption cycle. So the nw transfer performance
+data will contain info related to the resumed section of the transfer only.
+
+Do read the notes at the root, to understand the logic and usage better.
+
+
+v20190115IST02XY - rc2
+=======================
 
 Attached is a updated version with following main changes
 
@@ -414,8 +430,8 @@ will allow one to implement mcast resume on the client side if required in
 future.
 
 
-v20190114IST1923
-=================
+v20190114IST1923 - rc1
+=======================
 
 Mainly a cleanup and fine grained control related updates wrt client logic.
 
