@@ -104,20 +104,30 @@ void snm_init(struct snm *me) {
 	me->iMaxDataSeqNumGot = -1;
 }
 
-void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
+void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
 	int iRet;
-	char sFName[MAIN_FPATH_LEN];
-
-	strncpy(sFName, sBase, MAIN_FPATH_LEN);
-	strncat(sFName, ".lostpackets.", MAIN_FPATH_LEN);
-	strncat(sFName, sTag, MAIN_FPATH_LEN);
-
 	if (meLLR == NULL) {
 		fprintf(stderr, "WARN:%s:%s: Passed LostPacketRanges ll not yet setup\n", __func__, sTag);
 	} else {
-		iRet = ll_save(meLLR, sFName);
+		iRet = _ll_save(meLLR, iFile);
 		fprintf(stderr, "INFO:%s:%s: LostPacketRanges ll saved [%d of %d] to [%s]\n", __func__, sTag, iRet, meLLR->iNodeCnt, sFName);
 	}
+}
+
+void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
+	char sFName[MAIN_FPATH_LEN];
+	int iFile;
+
+	strncpy(sFName, sBase, MAIN_FPATH_LEN);
+	strncat(sFName, ".context.", MAIN_FPATH_LEN);
+	strncat(sFName, sTag, MAIN_FPATH_LEN);
+	iFile = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (iFile == -1) {
+		perror("ERROR:save_context:Open");
+		return;
+	}
+	_save_ll_context(meLLR, iFile, sTag, sFName);
+	close(iFile);
 }
 
 #define ENABLE_MULTICAST_ALL 1
