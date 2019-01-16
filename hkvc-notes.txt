@@ -1,8 +1,8 @@
 ##################################
 Nw Testing/Data transfer logic
+##################################
 v20190116IST0653 - NEEDS UPDATING
 HanishKVC, 19XY
-##################################
 
 
 Logic and Usage
@@ -461,10 +461,12 @@ Data Thread synchronisation
 ------------------------------
 
 * Failure - UseData before FillData
+
 Producer->Acquire->FillData->Loop
 Consumer->UseData->Release->Loop
 
 * Failure - Race, FillData before UseData is finished
+
 Producer->FillData->Acquire->Loop
 Consumer->Release->UseData->Loop
 
@@ -473,6 +475,7 @@ Consumer->Release->UseData->Loop
 0,0,0,1=XXXXXX
 
 * Ok - SemCount 1 or more less than Total Buffers
+
 Producer->FillData->Acquire->Loop
 Consumer->Release->UseData->Loop
 
