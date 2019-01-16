@@ -316,7 +316,7 @@ int ll_save(struct LLR *me, char *sFName) {
 }
 
 #define LL_BUFLEN 64
-int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callback marker_cb) {
+int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callback marker_cb, void *markerContext) {
 	char tBuf[LL_BUFLEN];
 	int iRet;
 	char *begin, *rem;
@@ -339,7 +339,7 @@ int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callbac
 		}
 		if (tBuf[0] == cMarker) {
 			if (marker_cb != NULL) {
-				marker_cb(tBuf, iRet);
+				marker_cb(tBuf, iRet, markerContext);
 			}
 			continue;
 		}
@@ -372,7 +372,7 @@ int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callbac
 }
 
 int ll_load_append(struct LLR *me, char *sFName) {
-	return ll_load_append_ex(me, sFName, '#', NULL);
+	return ll_load_append_ex(me, sFName, '#', NULL, NULL);
 }
 
 int ll_load(struct LLR *me, char *sFName) {
