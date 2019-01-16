@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-# v20190113IST0200
+# v20190116IST2323
 # HanishKVC, GPL, 19XY
 #
 
