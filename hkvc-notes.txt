@@ -1,6 +1,6 @@
 ##################################
 Nw Testing/Data transfer logic
-v20190114IST1918 - NEEDS UPDATING
+v20190116IST0653 - NEEDS UPDATING
 HanishKVC, 19XY
 ##################################
 
@@ -8,11 +8,13 @@ HanishKVC, 19XY
 Logic and Usage
 #################
 
+
 Overview
 ==========
 
 This set of programs helps verify network performance as well as if required
 transfer a file from server to multiple clients.
+
 
 The Phases
 ------------
@@ -28,17 +30,17 @@ about one another. Logic can work even if no communication during PI phase,
 provided a known list of clients is provided before hand itself to the server.
 
 Unicast based data / lost packet recovery logic - The server communicates with
-the clients one by one and gets their list of lost packets and helps them
-recover those by resending it thro unicast.
+the clients one by one and gets their list of lost packets, a small part at a
+time, and helps them recover those by resending it thro unicast.
+
 
 PI Phase
 ----------
 
 If the PI phase fails to handshake between the server and the clients, the
 server has the possibility of using a predefined list of clients to work with,
-which it will get thro its context option.  While the client (v20190111)
-eitherway will respond to any server which requests it for list of lost
-packets.
+which is given to it, thro its context option.  While the client eitherway will
+now respond to any server which requests it for list of lost packets.
 
 Also if some known clients (passed to server logic thro its context argument)
 don't send PIReq packets during PI phase, then the server will send mcast stop
@@ -66,23 +68,32 @@ The logic will assume that upto a max of 8% to 10% packet losess could be there
 and based on that decides how many attempts it should try wrt clients that keep
 getting kept aside.
 
-NOTE: If a client doesn't respond back to the server for upto 3 minutes or if
-it has not recovered all its lost packets even after handshaking with it for
+NOTE: If a client doesn't respond back to the server for upto N(1.5) minutes or
+if it has not recovered all its lost packets even after handshaking with it for
 512 times, then it is kept aside temporarily.
 
 When the client communicates with server with URAckSeqNum, it not only gives a
 small list of lost packet ranges to recover immidiately, but also in total how
 many lost packet ranges (i.e iNodeCnt - the number of nodes in the list) are
 there as well as inturn the total number of lost packets that are there to be
-recovered (i.e iTotalFromRanges) at that given time in the client.
+recovered (i.e iTotalFromRanges) at that given time in the client. These counts
+also include the packets specified in the URAckSeqNum packet for immidiate
+recovery.
+
 
 LinkedListRanges
 -----------------
 
-The linked list will maintain reference to the start, end as well as the last
-added node in the list. It also maintains a count of total number of nodes and
-inturn the total/actual number of values stored/represented in the list
-indirectly in the shortened form of ranges.
+The linked list will maintain reference to the
+* start,
+* end
+as well as
+* the last added node, in the list.
+* the node immidiately before the last deleted (if any) node, in the list
+
+It also maintains a count of total number of nodes and inturn the total/actual
+number of values stored/represented in the list indirectly in the shortened
+form of ranges.
 
 
 NwGroups
@@ -100,19 +111,25 @@ such group of server+clients should be given unique NwGroup Ids.
 This also allows a single machine to run multiple instances of server or
 multiple instances of client logic if required.
 
+
 Client
 ==========
 
 The client side logic is implemented in a single program.
 
-./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit
+./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit --runmodes 7
+
 
 the Arguments
 --------------
 
 The client side simpnwmon02 program has the following command line arguments
 
-./simpnwmon02 local_nwif_index mcast_ip local_nwif_ip data_file nw_bcast_ip [lostpacketranges_savefile]
+./simpnwmon02
+Mandatory arguments
+--maddr mcast_ip --local local_nwif_index local_nwif_ip --file data_file --bcast nw_bcast_ip
+Optional arguments
+[--contextbase pathANDbasename_forcontext2save --context context2load_ifany --nwgroup id --runmodes runmodes]
 
 the local_nwif means the ethernet or wifi interface which connects to the
 network on which we want to run the test/data transfer logic.
@@ -141,33 +158,63 @@ data_file is the file into which recieved data should be saved.
 nw_bcast_ip is the network broadcast address into which PIReq packets should be
 sent.
 
-lostpacketranges_savefile is a optional parameter. This is required to be
-given/used/passed, if one wants the program to resume a previously broken in
-ucast recovery phase transfer. Ideally It should be the file into which the
-program had saved the list of lost packet ranges, when it was force exited
-previously by sending a SIGINT (ctrl+c) signal.
+context2load_ifany is a optional parameter. This is required to be given, if
+one wants the program to resume a previously broken in ucast recovery phase
+transfer. Ideally It should be the file into which the program had saved the
+context, when it was force exited previously by sending a SIGINT (ctrl+c)
+signal. Default value is NULL (ie dont load any context)
+
+pathANDbasename_forcontext2save is a optional parameter. This is the path and
+the base part of the filename to be used for any context files generated by the
+program. Default value is /tmp/snm02.
+
+nwgroup id a optional parameter. This helps a given set of clients and its
+corresponding server to communicate with one another, independent of other
+possibly parallel groups. Default value 0.
+
+runmodes a optional parameter specifies which and all phases of the program
+should be run. 1 represents mcast transfer, 2 represents ucast pi, 4 represents
+ucast recovery. The values can be or'd together, if more than one phase
+requires to be run. Default value is 7 (i.e run all the 3 phases).
+
+
+Client's context
+------------------
+
+It contains
+
+* list of lost packet ranges
+
+Two context files
+
+* When ever the program is asked to quit thro SIGINT
+
+* At the end of mcast phase
 
 
 the Logic
 -----------
 
-The logic remains in mcast phase keeping track of recieved and lost packets in
-sequence, as well as saving the recieved data into corresponding location in
-the data file specified.
+The 1st phase of the logic consists of mcast transfer. During this phase it
+keeps track of the recieved and lost packets in sequence, as well as saving the
+recieved data into corresponding location in the data file specified.
 
 If and when it recieves a mcast stop command, it exits the mcast phase. It also
 will come to know about the total blocks involved in this file/test transfer.
 
-The client tries to notify any server that may be listening, about the client's
-presence in the network, as well as to know who the server is. Even thou both
-server and client go thro the PI phase, the logics are setup such that a
-failure in PI phase doesn't impact the over all flow.
+Next the client tries to notify any server that may be listening, about the
+client's presence in the network, as well as to know who the server is. Even
+thou both server and client go thro the PI phase, the logics are setup such
+that a failure in PI phase doesn't impact the over all flow.
 
 The logic goes into a unicast recovery phase, where it listens for any requests
 from server about lost packets. In turn when the server requests, the client
 sends the top N number of lost packet ranges it has. Parallely if it recieves
 any data packets, which it didn't have before, it will save the same into the
-data file.
+data file. The total number of lost packet ranges and inturn the total number
+of lost packets represented thro these ranges is also sent to the server as
+part of the URAck packet.
+
 
 Save & Resume
 ---------------
@@ -181,22 +228,38 @@ This info can be used to resume the transfer and recover remaining or lost
 packets. A simple resume logic has been added, which allows recovering when the
 client was stopped in the middle of ucast phase.
 
+ToDO: A more full fledged context requires to be saved, so that one can even
+resume a mcast interruption.
+
+NOTE: A ctrl+c will generate SIGINT if client is being run directly on a
+console as the foreground process.
+
+
 Server
 ========
 
 The server side logic is implemented as part of two different programs.
 
+mcast phase
+-------------
+
 The first takes care of the multicast phases.
+
+ucast phase
+-------------
 
 The second takes care of the unicast phases. If required this unicast related
 script can be called more than once, provided a context file is passed to it,
-with the list of remaining clients with lost packets. Even if the full list of
-know clients is passed to the 2nd invocation of the ucast recovery program /
-script, the logic will handle all corner cases properly. Because even if there
-are clients with fully transfered contents, if they are running, they will
-inform the server that they dont have any lost packets; and if they are not
-running, the server will automatically timeout wrt such clients (the program
-will take more time than ideal, otherwise no other issues).
+with the list of remaining clients with lost packets.
+
+Even if the full list of know clients is passed to the 2nd invocation of the
+ucast recovery program / script, the logic will handle all corner cases
+properly. Because even if there are clients with fully transfered contents, if
+they are running, they will inform the server that they dont have any lost
+packets; and if they are not running, the server will automatically timeout wrt
+such clients (the program will take more time than ideal, otherwise no other
+issues).
+
 
 the Context file
 ------------------
@@ -208,14 +271,20 @@ A text file having the tag <clients> in a line. Followed by lines containing
 the ip addresses of the clients, one per line. Followed by </clients> in a
 line.
 
+
 for Firewall
 --------------
 
-The nw port usage is as follows
+The nw port usage is as follows if NwGroup is 0 (the default)
 
 a) 1111 - Multicast Server to Clients data push
 b) 1112 - Nw Broadcast PIReq from Client to Any listening Server
 c) 1113 - Unicast PIAck from Server to Client
+
+However if there are NwGroups with id/num other than 0, then use following to
+identify the port to be enabled.
+
+PortUsed = BasePort + 5*NwGroupId
 
 
 Examples
@@ -237,10 +306,10 @@ Possibility2 ==>
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send AND_OR
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_or_remaining_client_ips
 
-If the client was force quit in the middle of unicast recovery, then to resume run the below
+If the client was force quit in the middle of a unicast phase, then to resume run the below
 TO run both UCast PI and UR phases
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 6 --context /path/to/saved_contextfile  OR
-TO run both only UCast UR phase
+TO run only the UCast UR phase
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 4 --context /path/to/saved_contextfile
 
 The default /path/to/saved_contextfile will be /tmp/snm02.lostpackets.quit, however if --contextbase was given then updated path and name suitably.
