@@ -85,9 +85,12 @@ LinkedListRanges
 -----------------
 
 The linked list will maintain reference to the
+
 * start,
 * end
+
 as well as
+
 * the last added node, in the list.
 * the node immidiately before the last deleted (if any) node, in the list
 
@@ -126,9 +129,13 @@ the Arguments
 The client side simpnwmon02 program has the following command line arguments
 
 ./simpnwmon02
+
 Mandatory arguments
+
 --maddr mcast_ip --local local_nwif_index local_nwif_ip --file data_file --bcast nw_bcast_ip
+
 Optional arguments
+
 [--contextbase pathANDbasename_forcontext2save --context context2load_ifany --nwgroup id --runmodes runmodes]
 
 the local_nwif means the ethernet or wifi interface which connects to the
@@ -294,22 +301,40 @@ Examples
 Example for actual testing
 ----------------------------
 
+Client Side Initialy
+~~~~~~~~~~~~~~~~~~~~~
+
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --contextbase /path/with/basefilename
+
+Server Side
+~~~~~~~~~~~~~
 
 Server> ./hkvc-nw-send-mcast.py --maddr 230.0.0.1 --file /path/to/file_to_send
 
 Possibility1 (Prefered) ==>
+
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_client_ips FOLLOWED_BY_IF_REQUIRED
+
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_or_remaining_client_ips
 
 Possibility2 ==>
+
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send AND_OR
+
 Server> ./hkvc-nw-recover.py --maddr 230.0.0.1 --file /path/to/file_to_send --context /path/to/file_with_list_of_all_known_or_remaining_client_ips
 
+
+Client Side Resume
+~~~~~~~~~~~~~~~~~~~~~
+
 If the client was force quit in the middle of a unicast phase, then to resume run the below
+
 TO run both UCast PI and UR phases
+
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 6 --context /path/to/saved_contextfile  OR
+
 TO run only the UCast UR phase
+
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 4 --context /path/to/saved_contextfile
 
 The default /path/to/saved_contextfile will be /tmp/snm02.lostpackets.quit, however if --contextbase was given then updated path and name suitably.
