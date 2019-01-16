@@ -117,6 +117,7 @@ void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
 void snm_save_context(struct snm *me, char *sTag) {
 	char sFName[MAIN_FPATH_LEN];
 	int iFile;
+	char sTmp[128];
 
 	strncpy(sFName, me->sContextFileBase, MAIN_FPATH_LEN);
 	strncat(sFName, ".context.", MAIN_FPATH_LEN);
@@ -126,6 +127,8 @@ void snm_save_context(struct snm *me, char *sTag) {
 		perror("ERROR:save_context:Open");
 		return;
 	}
+	snprintf(sTmp, 128, "#MaxDataSeqNumGot:%d\n", me->iMaxDataSeqNumGot);
+	write(iFile, sTmp, strlen(sTmp));
 	_save_ll_context(&me->llLostPkts, iFile, sTag, sFName);
 	close(iFile);
 }
