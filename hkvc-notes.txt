@@ -1,8 +1,10 @@
 ##################################
 Nw Testing/Data transfer logic
 ##################################
-v20190116IST0653 - NEEDS UPDATING
+v20190116IST1620
 HanishKVC, 19XY
+
+.. section-numbering::
 
 
 Logic and Usage
