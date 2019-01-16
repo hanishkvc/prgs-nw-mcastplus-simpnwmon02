@@ -276,6 +276,8 @@ auto mode.
 If runmodes is set to auto, and there is no DoneModes in the context file being
 loaded, or if there is no context file, then runmodes gets reset to 7.
 
+Caution
+''''''''
 However if a long time has passed between when the program was forced to quit
 and now when it is being resumed, then the server might have already finished
 with the phase which was active when the client program quit, so it may get
@@ -284,6 +286,14 @@ manually edit the DoneModes entry in the context file, before passing it to
 resume OR better still the user should explicitly specify the runmodes thro the
 commandline.
 
+The above caution is mainly applicable when only client is being restarted.
+However if even the server side ucast program is being restarted along with all
+the clients, then one can run the clients with --runmodes 6 (or even 7 will do,
+as server pi logic will automatically send out mcast_stop if the client hasn't
+sent any PIReq packets in a given time).
+
+Ideal case usage
+'''''''''''''''''
 With this ideally, in the normal case, when starting the program on powering
 on, the runmodes should be specified as 7 or not specified at-all, in which
 case again it defaults to 7. This is equivalent to run all modes/phases.
@@ -393,7 +403,7 @@ Client Side Resume
 ~~~~~~~~~~~~~~~~~~~~~
 
 Explicit control
-,,,,,,,,,,,,,,,,,
+''''''''''''''''''
 
 If one wants to control the phase to resume into, then use one of the below.
 
@@ -414,7 +424,7 @@ Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/data
 The default /path/to/saved_contextfile will be /tmp/snm02.context.quit, however if --contextbase was given then updated path and name suitably.
 
 Auto Adjust
-,,,,,,,,,,,,,
+'''''''''''''
 
 If one wants the program to auto decide as to which phase it should resume into then run as below
 
