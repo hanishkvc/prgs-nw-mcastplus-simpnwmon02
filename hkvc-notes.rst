@@ -124,6 +124,9 @@ The client side logic is implemented in a single program.
 
 ./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit --runmodes 7
 
+NOTE: In the above example, the client is run on a non default network group id
+of 2. So there should be a corresponding server instance running with the
+nwgroup id of 2.
 
 the Arguments
 --------------
@@ -468,6 +471,30 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
 Notes / Thoughts during some of the releases
 #############################################
+
+
+v20190116IST2323 - rc4
+========================
+
+NwGroup support added to server side programs also now. With this now both
+server and client support nwgroups concept. With this one can have multiple
+parallel independent nw test/transfer sessions running on the network, at the
+same time.
+
+Now the Client program --runmodes argument can take a additional value called
+auto represented by 65536. If this is given and then if a context file is being
+loaded, so as to resume a previously interrupted nw transfer session, then the
+client program will automatically decide the appropriate runmodes/phases to be
+enabled for this run. So the user no longer as to worry at what phase the
+client program was forced to quit, the program will save this information as
+part of its saved context and when this saved context is loaded into a new
+instance of the client, it will automatically go into the right phase/mode of
+the transfer.
+
+NOTE: However if a sufficiently long time as passed between interruption and
+resumption of the client side program, then it is better to explicitly set /
+specify the runmodes to be enabled for this run in the commandline, after
+looking at the server side's current phase.
 
 
 v20190116IST15XY - rc3
