@@ -48,6 +48,7 @@ void ll_print(struct LLR *me, char *sMsg);
 void ll_print_content(struct LLR *me, char *sMsg);
 void ll_print_summary(struct LLR *me, char *sMsg);
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt);
+int _ll_save(struct LLR *me, int iFSaveTo);
 int ll_save(struct LLR *me, char *sFName);
 int ll_load_append(struct LLR *me, char *sFName);
 int ll_load(struct LLR *me, char *sFName);

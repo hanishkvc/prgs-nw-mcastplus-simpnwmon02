@@ -283,15 +283,10 @@ int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {
 	return iCnt;
 }
 
-int ll_save(struct LLR *me, char *sFName) {
+int _ll_save(struct LLR *me, int iFSaveTo) {
 	char tBuf[128];
 	int iRet;
 
-	int iFSaveTo = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
-	if (iFSaveTo == -1) {
-		perror("ERROR:LLR:Save:Open");
-		return -1;
-	}
 	struct _ll *llNext = me->llStart;
 	int iCnt = 0;
 	while(llNext != NULL) {
@@ -304,6 +299,18 @@ int ll_save(struct LLR *me, char *sFName) {
 		}
 		llNext = llNext->next;
 	}
+	return iCnt;
+}
+
+int ll_save(struct LLR *me, char *sFName) {
+	int iCnt;
+
+	int iFSaveTo = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (iFSaveTo == -1) {
+		perror("ERROR:LLR:Save:Open");
+		return -1;
+	}
+	iCnt = _ll_save(me, iFSaveTo);
 	close(iFSaveTo);
 	return iCnt;
 }
