@@ -69,6 +69,7 @@ struct snm {
 	int portMCast, portServer, portClient;
 	int fileData;
 	uint32_t theSrvrPeer;
+	int iMaxDataSeqNumGot;
 };
 struct snm snmCur;
 
@@ -100,6 +101,7 @@ void snm_init(struct snm *me) {
 	me->fileData = -1;
 	me->theSrvrPeer = 0;
 	ll_init(&me->llLostPkts);
+	me->iMaxDataSeqNumGot = -1;
 }
 
 void save_context(struct LLR *meLLR, char *sBase, char *sTag) {
@@ -265,11 +267,11 @@ void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDi
 	*piDisjointPktCnt += (end-start+1);
 }
 
-int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
+int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot) {
 
 	int iRet;
-	int iPrevSeq = -1;
-	int iSeq = 0;
+	int iPrevSeq = *piMaxDataSeqNumGot - 1;
+	int iSeq = *piMaxDataSeqNumGot;
 	int iPktCnt = 0;
 	int iOldSeqs = 0;
 	int iDisjointSeqs = 0;
@@ -281,8 +283,12 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 	int iRecvdStop = 0;
 	int iPrevRecvdStop = -1;
 	int iMCastSlowExit = 0;
-	int iMaxDataSeqNumGot = -1;
 	int iActualLastSeqNum = -1;
+
+	if (iPrevSeq == -2) {
+		iPrevSeq = -1;
+		iSeq = -1;
+	}
 
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
@@ -298,7 +304,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 			iPrevPktCnt = iPktCnt;
 			prevDTime = curDTime;
 			if (iRecvdStop > 0) {
-				fprintf(stderr, "INFO:%s: In MCastStop phase... (LastPkt Got[%d] Actual[%d]) ", __func__, iMaxDataSeqNumGot, iActualLastSeqNum);
+				fprintf(stderr, "INFO:%s: In MCastStop phase... (LastPkt Got[%d] Actual[%d]) ", __func__, *piMaxDataSeqNumGot, iActualLastSeqNum);
 				if (iRecvdStop == iPrevRecvdStop) {
 					fprintf(stderr, ": No New MCastStop Packets\n");
 					iMCastSlowExit += 1;
@@ -325,14 +331,14 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts) {
 		if (iSeq == MCASTSTOPSeqNum) {
 			iActualLastSeqNum = *((uint32_t*)&gcBuf[PKT_MCASTSTOP_TOTALBLOCKS_OFFSET]) - 1;
 			if (iRecvdStop == 0) {
-				if (iMaxDataSeqNumGot != iActualLastSeqNum) {
-					_account_lostpackets(llLostPkts, iMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
+				if (*piMaxDataSeqNumGot != iActualLastSeqNum) {
+					_account_lostpackets(llLostPkts, *piMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
 				}
 			}
 			iRecvdStop += 1;
 			continue;
 		}
-		iMaxDataSeqNumGot = iSeq;
+		*piMaxDataSeqNumGot = iSeq;
 		iSeqDelta = iSeq - iPrevSeq;
 		if (iSeqDelta <= 0) {
 			iOldSeqs += 1;
@@ -358,7 +364,7 @@ int snm_mcast_recv(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts);
+		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot);
 		save_context(&me->llLostPkts, me->sContextFileBase, "mcast");
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
