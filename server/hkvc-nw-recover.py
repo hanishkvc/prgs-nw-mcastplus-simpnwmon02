@@ -59,7 +59,7 @@ nwGroup=0
 N=11
 dataSize=network.dataSize
 Bps=2e6
-addr="127.0.0.1"
+laddr="0.0.0.0"
 maddr=network.maddr
 sfData=None
 sPIMode="NORMAL"
@@ -79,9 +79,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--Bps"):
 		iArg += 1
 		Bps = int(sys.argv[iArg])
-	elif (sys.argv[iArg] == "--addr"):
+	elif (sys.argv[iArg] == "--laddr"):
 		iArg += 1
-		addr = sys.argv[iArg]
+		laddr = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--maddr"):
 		iArg += 1
 		maddr = sys.argv[iArg]
@@ -126,8 +126,8 @@ else:
 giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
-dprint(9, "maddr [{}]".format(maddr))
-dprint(9, " addr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, portMCast, N, dataSize, Bps, perPktTime))
+dprint(9, "laddr [{}]".format(laddr))
+dprint(9, "maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
 
 if (sPIMode == "SLOW"):
 	PITotalTimeSecs=10*60
@@ -140,9 +140,8 @@ socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
-addr = "0.0.0.0"
-dprint(9, "Listening on [{}:{}]".format(addr, portServer))
-sock.bind((addr, portServer))
+dprint(9, "Listening on [{}:{}]".format(laddr, portServer))
+sock.bind((laddr, portServer))
 
 dprint(9, "Will start in 10 secs...")
 time.sleep(10)
@@ -151,7 +150,7 @@ time.sleep(10)
 def _presence_info(clients, clientsDB):
 	global sock
 	sock.settimeout(10.0)
-	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(addr, portServer))
+	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
@@ -241,7 +240,7 @@ def ur_send_packets(client, lostPackets):
 def ur_client(client):
 	global sock
 	sock.settimeout(10.0)
-	dprint(9, "UnicastRecovery: Listening on [{}:{}] for client [{}:{}]".format(addr, portServer, client, portClient))
+	dprint(9, "UnicastRecovery: Listening on [{}:{}] for client [{}:{}]".format(laddr, portServer, client, portClient))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0

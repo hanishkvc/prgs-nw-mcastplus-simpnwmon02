@@ -88,7 +88,7 @@ else:
 	print("Simulate losses is Disabled")
 
 perPktTime=1/(Bps/dataSize)
-print(" maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
+print("maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
 	print("ERROR: Too large a content size, not supported...")
