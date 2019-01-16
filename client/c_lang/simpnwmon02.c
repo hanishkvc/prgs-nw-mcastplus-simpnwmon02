@@ -56,6 +56,10 @@ char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 #define SC_MAXDATASEQ "MaxDataSeqNumGot"
 #define SC_MAXDATASEQEX "#MaxDataSeqNumGot:"
 #define SC_MAXDATASEQEX_LEN 18
+#define SC_DONEMODES "DoneModes"
+#define SC_DONEMODESEX "#DoneModes:"
+#define SC_DONEMODESEX_LEN 11
+
 
 int gbDoMCast = 1;
 
@@ -75,6 +79,7 @@ struct snm {
 	int fileData;
 	uint32_t theSrvrPeer;
 	int iMaxDataSeqNumGot;
+	int iDoneModes;
 };
 struct snm snmCur;
 
@@ -107,6 +112,7 @@ void snm_init(struct snm *me) {
 	me->theSrvrPeer = 0;
 	ll_init(&me->llLostPkts);
 	me->iMaxDataSeqNumGot = -1;
+	me->iDoneModes = 0;
 }
 
 void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
@@ -133,6 +139,8 @@ void snm_save_context(struct snm *me, char *sTag) {
 		return;
 	}
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQ, me->iMaxDataSeqNumGot);
+	write(iFile, sTmp, strlen(sTmp));
+	snprintf(sTmp, 128, "#%s:%d\n", SC_DONEMODES, me->iDoneModes);
 	write(iFile, sTmp, strlen(sTmp));
 	_save_ll_context(&me->llLostPkts, iFile, sTag, sFName);
 	close(iFile);
@@ -387,6 +395,7 @@ int snm_mcast_recv(struct snm *me) {
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
 	}
+	me->iDoneModes |= RUNMODE_MCAST;
 	return iRet;
 }
 
@@ -447,6 +456,7 @@ int snm_ucast_pi(struct snm *me) {
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping ucast:pi...\n", __func__);
 	}
+	me->iDoneModes |= RUNMODE_UCASTPI;
 	return iRet;
 }
 
@@ -529,6 +539,7 @@ int snm_ucast_recover(struct snm *me) {
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
 	}
+	me->iDoneModes |= RUNMODE_UCASTUR;
 	return iRet;
 }
 
@@ -547,17 +558,26 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	struct snm *me = (struct snm*)meMaya;
 
 	if (strncmp(sLine, SC_MAXDATASEQEX, SC_MAXDATASEQEX_LEN) == 0) {
-		me->iMaxDataSeqNumGot = strtol(&sLine[18], NULL, 10);
+		me->iMaxDataSeqNumGot = strtol(&sLine[SC_MAXDATASEQEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
+	}
+	if (strncmp(sLine, SC_DONEMODESEX, SC_DONEMODESEX_LEN) == 0) {
+		me->iDoneModes = strtol(&sLine[SC_DONEMODESEX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded iDoneModes [%d]\n", __func__, me->iDoneModes);
 	}
 }
 
+#define AUTOADJUST_RUNMODESFROMDONEMODES
 int snm_context_load(struct snm *me) {
 	int iRet = 0;
 
 	if (me->sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load context including lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
 		iRet = ll_load_append_ex(&me->llLostPkts, me->sContextFile, '#', _snm_context_load, me);
+#ifdef AUTOADJUST_RUNMODESFROMDONEMODES
+		me->iRunModes &= ~me->iDoneModes;
+		fprintf(stderr, "INFO:%s: AutoAdjusted RunModes [%d]\n", __func__, me->iRunModes);
+#endif
 	}
 	return iRet;
 }
