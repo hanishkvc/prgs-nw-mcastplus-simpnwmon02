@@ -20,6 +20,7 @@ import context
 import network
 
 
+portMCast = 1111
 portServer = 1112
 portClient = 1113
 
@@ -54,7 +55,7 @@ def guess_numofattempts(totalBlocksInvolved):
 	return iAttempts
 
 
-port=1111
+nwGroup=0
 N=11
 dataSize=network.dataSize
 Bps=2e6
@@ -66,9 +67,9 @@ gsContext=None
 
 iArg=1
 while iArg < len(sys.argv):
-	if (sys.argv[iArg] == "--port"):
+	if (sys.argv[iArg] == "--nwgroup"):
 		iArg += 1
-		port=int(sys.argv[iArg])
+		nwGroup = int(sys.argv[iArg])
 	elif (sys.argv[iArg] == "--dim"):
 		iArg += 1
 		N = int(sys.argv[iArg])
@@ -98,6 +99,8 @@ while iArg < len(sys.argv):
 	iArg += 1
 
 
+portMCast, portServer, portClient = network.ports_ngupdate(nwGroup)
+
 if (gsContext != None):
 	dprint(9, "INFO:Context: importing from [{}]".format(gsContext))
 	gContext = context.open(gsContext)
@@ -124,7 +127,7 @@ giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
 dprint(9, "maddr [{}]".format(maddr))
-dprint(9, " addr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, port, N, dataSize, Bps, perPktTime))
+dprint(9, " addr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(addr, portMCast, N, dataSize, Bps, perPktTime))
 
 if (sPIMode == "SLOW"):
 	PITotalTimeSecs=10*60
@@ -197,7 +200,7 @@ def presence_info(clients):
 			return
 		else:
 			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
-			network.mcast_stop(sock, maddr, network.mcast_port, giTotalBlocksInvolved, 60)
+			network.mcast_stop(sock, maddr, portMCast, giTotalBlocksInvolved, 60)
 
 
 def gen_lostpackets_array(lostPackets):

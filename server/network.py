@@ -11,12 +11,22 @@ import time
 
 
 maddr="230.0.0.1"
-mcast_port=1111
+portMul = 5
+portMCast = 1111
+portServer = 1112
+portClient = 1113
 
 MCASTSTOPSeqNum = 0xffffffff
 MCASTSTOPAdditionalCheck = 0xf5a55a5f
 
 dataSize=1024
+
+
+def ports_ngupdate(nwGroup):
+	tPortMCast = portMCast + portMul*nwGroup
+	tPortServer = portServer + portMul*nwGroup
+	tPortClient = portClient + portMul*nwGroup
+	return tPortMCast, tPortServer, tPortClient
 
 
 def mcast_stop(sock, addr, port, totalBlocksInvolved, times=120):

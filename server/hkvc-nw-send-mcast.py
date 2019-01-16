@@ -29,9 +29,10 @@ sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
 
+nwGroup=0
 pktid=0
 iArg=1
-port=1111
+portMCast=1111
 N=11
 dataSize=network.dataSize
 Bps=2e6
@@ -42,9 +43,9 @@ bSimLoss=False
 bSimLossRandom=True
 
 while iArg < len(sys.argv):
-	if (sys.argv[iArg] == "--port"):
+	if (sys.argv[iArg] == "--nwgroup"):
 		iArg += 1
-		port=int(sys.argv[iArg])
+		nwGroup = int(sys.argv[iArg])
 	elif (sys.argv[iArg] == "--dim"):
 		iArg += 1
 		N = int(sys.argv[iArg])
@@ -67,6 +68,8 @@ while iArg < len(sys.argv):
 		bSimLoss=True
 	iArg += 1
 
+portMCast, _portServer, _portClient = network.ports_ngupdate(nwGroup)
+
 fData=None
 if (sfData != None):
 	print("MODE:FileTransfer:{}".format(sfData))
@@ -85,7 +88,7 @@ else:
 	print("Simulate losses is Disabled")
 
 perPktTime=1/(Bps/dataSize)
-print(" maddr [{}], port [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, port, N, dataSize, Bps, perPktTime))
+print(" maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
 	print("ERROR: Too large a content size, not supported...")
@@ -143,7 +146,7 @@ while True:
 				iSimLossMod, iSimLossRange = simloss_random()
 			continue
 	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
-	sock.sendto(data, (maddr, port))
+	sock.sendto(data, (maddr, portMCast))
 	pktid += 1
 	if ((pktid%N) == 0):
 		curTime = time.time()
@@ -163,7 +166,7 @@ print_throughput(prevTime, pktid, prevPktid)
 
 print("INFO: Done with transfer")
 
-network.mcast_stop(sock, maddr, port, giTotalBlocksInvolved, 120)
+network.mcast_stop(sock, maddr, portMCast, giTotalBlocksInvolved, 120)
 
 print("INFO: Done sending stops, quiting...")
 
