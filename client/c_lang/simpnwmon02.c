@@ -52,6 +52,11 @@ char gcBuf[BUF_MAXSIZE];
 #define MAIN_FPATH_LEN 256
 char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 
+// Saved SNM Contexts
+#define SC_MAXDATASEQ "MaxDataSeqNumGot"
+#define SC_MAXDATASEQEX "#MaxDataSeqNumGot:"
+#define SC_MAXDATASEQEX_LEN 18
+
 int gbDoMCast = 1;
 
 struct snm {
@@ -127,7 +132,7 @@ void snm_save_context(struct snm *me, char *sTag) {
 		perror("ERROR:save_context:Open");
 		return;
 	}
-	snprintf(sTmp, 128, "#MaxDataSeqNumGot:%d\n", me->iMaxDataSeqNumGot);
+	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQ, me->iMaxDataSeqNumGot);
 	write(iFile, sTmp, strlen(sTmp));
 	_save_ll_context(&me->llLostPkts, iFile, sTag, sFName);
 	close(iFile);
@@ -541,7 +546,7 @@ int snm_datafile_open(struct snm *me) {
 void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	struct snm *me = (struct snm*)meMaya;
 
-	if (strncmp(sLine, "#MaxDataSeqNumGot:", 18) == 0) {
+	if (strncmp(sLine, SC_MAXDATASEQEX, SC_MAXDATASEQEX_LEN) == 0) {
 		me->iMaxDataSeqNumGot = strtol(&sLine[18], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
 	}
