@@ -584,6 +584,9 @@ int snm_context_load(struct snm *me) {
 		}
 #endif
 	}
+	if (me->iRunModes == RUNMODE_AUTO) {
+		me->iRunModes = RUNMODE_ALL;
+	}
 	return iRet;
 }
 
