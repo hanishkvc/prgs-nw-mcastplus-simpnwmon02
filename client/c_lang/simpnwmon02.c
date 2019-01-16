@@ -529,7 +529,7 @@ int snm_ucast_recover(struct snm *me) {
 
 int snm_datafile_open(struct snm *me) {
 	me->fileData = open(me->sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
-	if (snmCur.fileData == -1) {
+	if (me->fileData == -1) {
 		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, me->sDataFile);
 		perror("Failed datafile open");
 	} else {
