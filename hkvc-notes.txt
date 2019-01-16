@@ -343,7 +343,7 @@ TO run only the UCast UR phase
 
 Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /path/to/datafile --bcast 10.0.2.255 --runmodes 4 --context /path/to/saved_contextfile
 
-The default /path/to/saved_contextfile will be /tmp/snm02.lostpackets.quit, however if --contextbase was given then updated path and name suitably.
+The default /path/to/saved_contextfile will be /tmp/snm02.context.quit, however if --contextbase was given then updated path and name suitably.
 
 
 Example for testing using VM
