@@ -538,12 +538,21 @@ int snm_datafile_open(struct snm *me) {
 	return me->fileData;
 }
 
+void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
+	struct snm *me = (struct snm*)meMaya;
+
+	if (strncmp(sLine, "#MaxDataSeqNumGot:", 18) == 0) {
+		me->iMaxDataSeqNumGot = strtol(&sLine[18], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
+	}
+}
+
 int snm_context_load(struct snm *me) {
 	int iRet = 0;
 
 	if (me->sContextFile != NULL) {
-		fprintf(stderr, "INFO:%s: About to load lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
-		iRet = ll_load_append(&me->llLostPkts, me->sContextFile);
+		fprintf(stderr, "INFO:%s: About to load context including lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
+		iRet = ll_load_append_ex(&me->llLostPkts, me->sContextFile, '#', _snm_context_load, me);
 	}
 	return iRet;
 }
