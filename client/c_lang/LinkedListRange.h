@@ -50,6 +50,8 @@ void ll_print_summary(struct LLR *me, char *sMsg);
 int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt);
 int _ll_save(struct LLR *me, int iFSaveTo);
 int ll_save(struct LLR *me, char *sFName);
+typedef void (*marker_callback)(char *sLine, int iLineLength);
+int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callback marker_cb);
 int ll_load_append(struct LLR *me, char *sFName);
 int ll_load(struct LLR *me, char *sFName);
 
