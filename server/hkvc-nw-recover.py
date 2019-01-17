@@ -249,7 +249,7 @@ def ur_client(client):
 	while(deltaTime < URDeltaTimeSecs):
 		if ((iCnt % 30) == 0):
 			dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
-		data=struct.pack("<Is", URReqSeqNum, bytes("Hello", 'utf8'))
+		data=struct.pack("<I4sI", URReqSeqNum, bytes("Helo", 'utf8'), giTotalBlocksInvolved)
 		sock.sendto(data, (client, portClient))
 		try:
 			d = sock.recvfrom(1024)

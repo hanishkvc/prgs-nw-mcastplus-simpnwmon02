@@ -31,6 +31,7 @@ const int UCAST_UR_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
+const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;
 
 int gNwGroupMul=5;
 int gPortMCast=1111;
@@ -80,6 +81,7 @@ struct snm {
 	uint32_t theSrvrPeer;
 	int iMaxDataSeqNumGot;
 	int iDoneModes;
+	int iMaxDataSeqNumProcessed;
 };
 struct snm snmCur;
 
@@ -114,6 +116,7 @@ void snm_init(struct snm *me) {
 	ll_init(&me->llLostPkts);
 	me->iMaxDataSeqNumGot = -1;
 	me->iDoneModes = 0;
+	me->iMaxDataSeqNumProcessed = -1;
 }
 
 void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
@@ -294,7 +297,7 @@ void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDi
 	*piDisjointPktCnt += (end-start+1);
 }
 
-int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot) {
+int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot, int *piMaxDataSeqNumProcessed) {
 
 	int iRet;
 	int iPrevSeq = *piMaxDataSeqNumGot - 1;
@@ -360,17 +363,24 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 			if (iRecvdStop == 0) {
 				if (*piMaxDataSeqNumGot != iActualLastSeqNum) {
 					_account_lostpackets(llLostPkts, *piMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
+					if (*piMaxDataSeqNumProcessed < iActualLastSeqNum) {
+						fprintf(stderr, "WARN:%s: ProcessedMaxDataSeq [%d] < ActualLastSeq[%d], updated\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
+						*piMaxDataSeqNumProcessed = iActualLastSeqNum;
+					} else {
+						fprintf(stderr, "DBUG:%s: ProcessedMaxDataSeq [%d] >= ActualLastSeq[%d]\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
+					}
 				}
 			}
 			iRecvdStop += 1;
 			continue;
 		}
-		*piMaxDataSeqNumGot = iSeq;
 		iSeqDelta = iSeq - iPrevSeq;
 		if (iSeqDelta <= 0) {
 			iOldSeqs += 1;
 			continue;
 		}
+		*piMaxDataSeqNumGot = iSeq;
+		*piMaxDataSeqNumProcessed = iSeq;
 		if (iSeqDelta > 1) {
 			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
 			_account_lostpackets(llLostPkts, iPrevSeq+1, iSeq-1, &iDisjointSeqs, &iDisjointPktCnt);
@@ -389,7 +399,7 @@ int snm_mcast_recv(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot);
+		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot, &me->iMaxDataSeqNumProcessed);
 		me->iDoneModes |= RUNMODE_MCAST;
 		snm_save_context(me, "mcast");
 	} else {
@@ -462,7 +472,7 @@ int snm_ucast_pi(struct snm *me) {
 
 #define UR_BUFS_LEN 800
 #define UR_BUFR_LEN 1500
-int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts) {
+int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts, int *piMaxDataSeqNumProcessed) {
 	int iRet;
 	char bufS[UR_BUFS_LEN], bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrS, addrR;
@@ -506,6 +516,16 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 				theSrvrPeer = addrR.sin_addr.s_addr;
 				addrS.sin_addr.s_addr = theSrvrPeer;
 			}
+			int iIgnore;
+			int iActualLastSeqNum = *((uint32_t*)&bufR[PKT_URREQ_TOTALBLOCKS_OFFSET]) - 1;
+			if (*piMaxDataSeqNumProcessed < iActualLastSeqNum) {
+				_account_lostpackets(llLostPkts, *piMaxDataSeqNumProcessed+1, iActualLastSeqNum, &iIgnore, &iIgnore);
+				fprintf(stderr, "WARN:%s: ProcessedMaxDataSeq [%d] < ActualLastSeq[%d], updated\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
+				*piMaxDataSeqNumProcessed = iActualLastSeqNum;
+			} else if (*piMaxDataSeqNumProcessed > iActualLastSeqNum) {
+				fprintf(stderr, "DBUG:%s: ProcessedMaxDataSeq [%d] > ActualLastSeq[%d]\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
+			}
+
 			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
 #ifdef PRG_UR_VERBOSE
 			ll_print_summary(llLostPkts, "LostPackets");
@@ -535,7 +555,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 int snm_ucast_recover(struct snm *me) {
 	int iRet = -1;
 	if ((me->iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
-		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, &me->llLostPkts);
+		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, &me->llLostPkts, &me->iMaxDataSeqNumProcessed);
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
 	}
