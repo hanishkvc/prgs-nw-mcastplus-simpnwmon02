@@ -1,3 +1,4 @@
+#!/bin/bash
 
 function disk_create_base()
 {
