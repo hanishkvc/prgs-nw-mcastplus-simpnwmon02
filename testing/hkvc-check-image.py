@@ -16,8 +16,12 @@ import sys
 import struct
 
 dataSize = 1024
+bDebug = False
 
 f = open(sys.argv[1], 'rb')
+iTotalErrors = 0
+iError = 0
+iStart = 0
 iPrev = -1
 iRef = 0
 while True:
@@ -27,12 +31,24 @@ while True:
 		break
 	iCur = struct.unpack('<I',d[0:4])[0]
 	iDelta = iCur - iPrev
+	iDelta0 = 0 - iPrev
 	if (iCur != iRef):
-		print("E: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
-	elif (iDelta != 1):
+		if (bDebug):
+			print("E: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
+		if (iError == 0):
+			iStart = iRef
+		iError += 1
+	else:
+		if (iError > 0):
+			print("E: {}-{}".format(iStart, iCur-1))
+			iTotalErrors += iError
+			iError = 0
+	if ((iDelta != 1) and (iDelta != iDelta0)):
 		print("W: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
 	if (iRef % (512*1024)) == 0:
 		print("I: {}".format(iCur))
 	iPrev = iRef
 	iRef += 1
+
+print("I:TotalErrors[{}]".format(iTotalErrors))
 
