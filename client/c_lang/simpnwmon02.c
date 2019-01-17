@@ -373,9 +373,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 		}
 		if (iSeqDelta > 1) {
 			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
-			ll_add_sorted_startfrom_lastadded(llLostPkts, iPrevSeq+1, iSeq-1);
-			iDisjointSeqs += 1;
-			iDisjointPktCnt += (iSeqDelta-1);
+			_account_lostpackets(llLostPkts, iPrevSeq+1, iSeq-1, &iDisjointSeqs, &iDisjointPktCnt);
 		}
 		if (fileData != -1) {
 			filedata_save(fileData, &gcBuf[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
@@ -619,6 +617,8 @@ void print_usage(void) {
 	fprintf(stderr, "\t Optional args\n");
 	fprintf(stderr, "\t --context contextfile_to_load # If specified, the list of lost pkt ranges is initialised with its contents\n");
 	fprintf(stderr, "\t --contextbase contextfile_basename_forsaving\n");
+	fprintf(stderr, "\t --runmodes 1|2|4|6|7|65536\n");
+	fprintf(stderr, "\t --nwgroup id\n");
 }
 
 int snm_parse_args(struct snm *me, int argc, char **argv) {
