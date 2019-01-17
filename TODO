@@ -17,15 +17,6 @@ node.
 Main logic
 =============
 
-* if a client is interruped during mcast transfer and then resumed into unicast
-phase (by explicitly forcing the resume into unicast phase, because auto resume
-will go back into mcast phase as required), then the client will have lost all
-packets from the time of interruption till the end of mcast transfer. Currently
-these lost packets can't be identified as lost, if the client is directly
-forced into unicast phase. I have to add total number of packets involved in
-the current transfer, as part of URReq packet from the server; and inturn in
-the client use this info to update the lost packet ranges ll, if required.
-
 * Multicast data packets in UCastRecovery (rather it becomes a kind of
 MCastRecovery) phase.
 
@@ -92,3 +83,17 @@ see if a proper URRes comes or not, before resending the URReq packet again.
 
 Even client side the PI logic resends PIReq packets faster than the configured
 rate, if it recieves unrelated packets. Even this requires to be fixed.
+
+
+DONE  - ONly maintained from 20190117
+===========================================
+
+* if a client is interruped during mcast transfer and then resumed into unicast
+phase (by explicitly forcing the resume into unicast phase, because auto resume
+will go back into mcast phase as required), then the client will have lost all
+packets from the time of interruption till the end of mcast transfer. Currently
+these lost packets can't be identified as lost, if the client is directly
+forced into unicast phase. I have to add total number of packets involved in
+the current transfer, as part of URReq packet from the server; and inturn in
+the client use this info to update the lost packet ranges ll, if required.
+
