@@ -390,6 +390,7 @@ int snm_mcast_recv(struct snm *me) {
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
 		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot);
+		me->iDoneModes |= RUNMODE_MCAST;
 		snm_save_context(me, "mcast");
 	} else {
 		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
