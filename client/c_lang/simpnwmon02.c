@@ -57,6 +57,9 @@ char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 #define SC_MAXDATASEQGOT "MaxDataSeqNumGot"
 #define SC_MAXDATASEQGOTEX "#MaxDataSeqNumGot:"
 #define SC_MAXDATASEQGOTEX_LEN 18
+#define SC_MAXDATASEQPROC "MaxDataSeqNumProc"
+#define SC_MAXDATASEQPROCEX "#MaxDataSeqNumProc:"
+#define SC_MAXDATASEQPROCEX_LEN 19
 #define SC_DONEMODES "DoneModes"
 #define SC_DONEMODESEX "#DoneModes:"
 #define SC_DONEMODESEX_LEN 11
@@ -143,6 +146,8 @@ void snm_save_context(struct snm *me, char *sTag) {
 		return;
 	}
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQGOT, me->iMaxDataSeqNumGot);
+	write(iFile, sTmp, strlen(sTmp));
+	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQPROC, me->iMaxDataSeqNumProcessed);
 	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%d\n", SC_DONEMODES, me->iDoneModes);
 	write(iFile, sTmp, strlen(sTmp));
@@ -580,6 +585,10 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	if (strncmp(sLine, SC_MAXDATASEQGOTEX, SC_MAXDATASEQGOTEX_LEN) == 0) {
 		me->iMaxDataSeqNumGot = strtol(&sLine[SC_MAXDATASEQGOTEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
+	}
+	if (strncmp(sLine, SC_MAXDATASEQPROCEX, SC_MAXDATASEQPROCEX_LEN) == 0) {
+		me->iMaxDataSeqNumProcessed = strtol(&sLine[SC_MAXDATASEQPROCEX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumProcessed [%d]\n", __func__, me->iMaxDataSeqNumProcessed);
 	}
 	if (strncmp(sLine, SC_DONEMODESEX, SC_DONEMODESEX_LEN) == 0) {
 		me->iDoneModes = strtol(&sLine[SC_DONEMODESEX_LEN], NULL, 10);
