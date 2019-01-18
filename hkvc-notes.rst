@@ -503,9 +503,9 @@ This allows one to manually stop and restart mcast transfer, as required.
 nw-send-mcast now has a optional --context argument. If it is specified, and
 inturn if it contains a previously saved mcast context, the mcast transfer will
 continue from where it was left previously. If the specified context file is
-non-existant or empty, then the mcast transfer will start from the beginning
-and inturn if a user forces the program to quit, it will save the context into
-this specified file.
+non-existant or empty, then the mcast transfer will start from the beginning.
+And inturn in either case, if a user forces the program to quit, it will save
+the context into this specified file.
 
 If no context argument is given, and user forces the program to quit using
 SIGINT, then it will save the context into a predefined location
