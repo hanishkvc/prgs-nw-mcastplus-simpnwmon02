@@ -18,6 +18,7 @@ import select
 
 import context
 import network
+import status
 
 
 portMCast = 1111
@@ -55,6 +56,7 @@ def guess_numofattempts(totalBlocksInvolved):
 	return iAttempts
 
 
+status.open()
 nwGroup=0
 N=11
 dataSize=network.dataSize
@@ -196,6 +198,7 @@ def presence_info(clients):
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'LostPkts': -1}
 	for i in range(4):
 		iSilentClients = _presence_info(clients, clientsDB)
+		status.ucast_pi(clientsDB)
 		if (iSilentClients == 0):
 			dprint(9, "INFO:PI: handshaked with all known clients")
 			return

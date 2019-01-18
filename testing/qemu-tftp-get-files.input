@@ -3,6 +3,7 @@ bin
 get simpnwmon02
 get context.py
 get network.py
+get status.py
 get hkvc-nw-send-mcast.py
 get hkvc-nw-recover.py
 get hkvc-check-image.py
