@@ -511,6 +511,10 @@ If no context argument is given, and user forces the program to quit using
 SIGINT, then it will save the context into a predefined location
 /tmp/snm02.srvr.context.mcast
 
+Fixed a oversight wrt 'cnt' during generation of ucast_pi summary status. Also
+now Name and LostPkts info got from clients during PI phase is properly
+captured in the summary status file.
+
 
 v20190118IST1010 -  rc5
 ========================

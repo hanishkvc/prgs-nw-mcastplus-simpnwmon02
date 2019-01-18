@@ -51,7 +51,7 @@ def ucast_pi(clientsDB):
 	_before()
 	_print("MODE:UCAST_PI")
 	for r in clientsDB:
-		_print("IP={}:LP={}:C={}".format(r, clientsDB[r]['LostPkts'], clientsDB[r]['Cnt']))
+		_print("IP={}:LP={}:C={}:N={}".format(r, clientsDB[r]['lostpkts'], clientsDB[r]['cnt'], clientsDB[r]['name']))
 	_after()
 
 
