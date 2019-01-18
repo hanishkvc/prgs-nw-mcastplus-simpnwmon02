@@ -15,9 +15,11 @@ import socket
 import struct
 import select
 import random
+import signal
 
 import network
 import status
+import context
 
 
 DBGLVL = 7
@@ -82,13 +84,15 @@ portMCast, _portServer, _portClient = network.ports_ngupdate(nwGroup)
 if (gsContext != None):
 	dprint(9, "INFO:Context: importing from [{}]".format(gsContext))
 	gContext = context.open(gsContext)
-	pktid, giTotalBlocksInvolved = context.load_mcast(gContext)
-	if (pktid == -1):
-		dprint(9, "ERROR: Invalid Context file, Quiting...")
-		exit(1)
+	tPktid, tTotalBlocksInvolved = context.load_mcast(gContext)
+	if (tPktid == -1):
+		dprint(9, "WARN: No relavent data in Context file...")
+	else:
+		pktid, giTotalBlocksInvolved = tPktid, tTotalBlocksInvolved
 	context.close(gContext)
 else:
-	dprint(9, "INFO:Context: None")
+	gsContext = "/tmp/snm02.srvr.context.mcast"
+	dprint(9, "INFO:Context: None, Will save to [{}]".format(gsContext))
 
 fData=None
 if (sfData != None):
@@ -138,6 +142,15 @@ def simloss_random():
 
 
 
+def handle_sigint(sigNum, sigStack):
+	tContext = context.open(gsContext, "w+")
+	context.save_mcast(tContext, pktid, giTotalBlocksInvolved)
+	context.close(tContext)
+	exit(10)
+
+
+
+signal.signal(signal.SIGINT, handle_sigint)
 if (bSimLossRandom):
 	iSimLossMod, iSimLossRange = simloss_random()
 else:
