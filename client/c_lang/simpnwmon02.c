@@ -32,6 +32,8 @@ const int PKT_SEQNUM_OFFSET=0;
 const int PKT_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;
+const int PKT_PIREQ_NAME_OFFSET=4;
+const int PKT_PIREQ_LOSTPKTS_OFFSET=20;
 
 int gNwGroupMul=5;
 int gPortMCast=1111;
@@ -414,7 +416,7 @@ int snm_mcast_recv(struct snm *me) {
 	return iRet;
 }
 
-int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer) {
+int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts) {
 	int iRet;
 	char bufS[32], bufR[32];
 	struct sockaddr_in addrS, addrR;
@@ -428,10 +430,11 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 		exit(-1);
 	}
 	*(uint32_t *)bufS = PIReqSeqNum;
-	strncpy(&bufS[4], "c_lang seat", 16);
+	strncpy(&bufS[PKT_PIREQ_NAME_OFFSET], "c_lang seat", 16);
+	*(uint32_t *)&bufS[PKT_PIREQ_LOSTPKTS_OFFSET] = iTotalLostPkts;
 
 	for(int i = 0; i < PI_RETRYCNT; i++) {
-		fprintf(stderr, "INFO:%s: PI find peer srvr: try %d\n", __func__, i);
+		fprintf(stderr, "INFO:%s: PI[%s:%d] :find peer srvr: try %d\n", __func__, &bufS[PKT_PIREQ_NAME_OFFSET], iTotalLostPkts, i);
 		iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 		if (iRet == -1) {
 			perror("Failed sending PIReq");
@@ -464,7 +467,7 @@ int snm_ucast_pi(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
-		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer));
+		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer), me->llLostPkts.iTotalFromRanges);
 		if (iRet < 0) {
 			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
 		}
