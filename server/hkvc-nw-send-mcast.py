@@ -108,7 +108,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
 	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
-	status.mcast(pktid, giTotalBlocksInvolved)
+	status.mcast_tx(pktid, giTotalBlocksInvolved)
 	return curTime, pktid
 
 

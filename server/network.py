@@ -9,6 +9,8 @@ import socket
 import struct
 import time
 
+import status
+
 
 maddr="230.0.0.1"
 portMul = 5
@@ -32,6 +34,7 @@ def ports_ngupdate(nwGroup):
 def mcast_stop(sock, addr, port, totalBlocksInvolved, times=120):
 	for i in range(times):
 		if (i%10) == 0:
+			status.mcast_stop(i, times)
 			print("INFO: MCastStop Num[{}] sending".format(i))
 		tmpData = bytes(dataSize-8)
 		curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, totalBlocksInvolved, tmpData)

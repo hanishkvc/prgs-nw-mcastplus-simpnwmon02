@@ -33,10 +33,17 @@ def _after():
 	statusFile.flush()
 
 
-def mcast(iCurBlock, iTotalBlocks):
+def mcast_tx(iCurBlock, iTotalBlocks):
 	_before()
-	_print("MODE:MCAST")
+	_print("MODE:MCAST_TX")
 	_print("{}/{}".format(iCurBlock, iTotalBlocks))
+	_after()
+
+
+def mcast_stop(cur, totalTime):
+	_before()
+	_print("MODE:MCAST_STOP")
+	_print("{}/{}".format(cur, totalTime))
 	_after()
 
 
