@@ -483,8 +483,8 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
-v201901xxxxx - rc5
-=====================
+v20190118IST1010 -  rc5
+========================
 
 URReq packet from server now includes the TotalBlocksInvolved. This ensures
 that If a user interrupts the client in the middle of mcast transfer and then
