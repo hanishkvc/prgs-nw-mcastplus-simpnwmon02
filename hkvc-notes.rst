@@ -483,6 +483,29 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
+v201901xxxxx - rc5
+=====================
+
+URReq packet from server now includes the TotalBlocksInvolved. This ensures
+that If a user interrupts the client in the middle of mcast transfer and then
+forces it to resume into unicast phase, the logic now automatically accounts
+for packets lost from the time of mcast transfer interruption to end of mcast
+transfer.
+
+PIReq packet from the client now also includes the TotalLostPkts wrt the
+client. For now the server just prints out that info, so that the user can get
+a rought idea of how the network has performed in general and wrt each clients.
+In future it could be used for prioritising or deciding mode of recovery or ...
+
+check-image script/program now prints the missing blocks in a testblocks based
+transfer, as ranges of lost blocks, instead of printing id of each individual
+lost block. Also if a block seems to be out of sequence, then a warning line
+will be printed.
+
+A status module added to help with collecting important progress status at a
+predefined location. ucast pi phase uses it.
+
+
 v20190116IST2323 - rc4
 ========================
 
