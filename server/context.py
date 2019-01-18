@@ -46,6 +46,25 @@ def load_clients(fContext):
 	return clients
 
 
+def save_mcast(fContext, iCur, iTotal):
+	fContext.write("MCAST:{}:{}\n".format(iCur, iTotal))
+
+
+def load_mcast(fContext):
+	while True:
+		l = fContext.readline()
+		if (l == ""):
+			break
+		l = l.strip()
+		if (gbSkipEmptyLines):
+			if (l == ""):
+				continue
+		if (l.startswith("MCAST:")):
+			[sCur, sTotal] = l.split(":")[1:3]
+			return int(sCur), int(sTotal)
+	return -1, -1
+
+
 def close(fContext):
 	fContext.close()
 

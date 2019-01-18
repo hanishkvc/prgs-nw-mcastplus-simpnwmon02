@@ -43,6 +43,7 @@ sfData=None
 iTestBlocks=1e6
 bSimLoss=False
 bSimLossRandom=True
+gsContext = None
 
 while iArg < len(sys.argv):
 	if (sys.argv[iArg] == "--nwgroup"):
@@ -71,9 +72,23 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--startblock"):
 		iArg += 1
 		pktid = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--context"):
+		iArg += 1
+		gsContext = sys.argv[iArg]
 	iArg += 1
 
 portMCast, _portServer, _portClient = network.ports_ngupdate(nwGroup)
+
+if (gsContext != None):
+	dprint(9, "INFO:Context: importing from [{}]".format(gsContext))
+	gContext = context.open(gsContext)
+	pktid, giTotalBlocksInvolved = context.load_mcast(gContext)
+	if (pktid == -1):
+		dprint(9, "ERROR: Invalid Context file, Quiting...")
+		exit(1)
+	context.close(gContext)
+else:
+	dprint(9, "INFO:Context: None")
 
 fData=None
 if (sfData != None):
