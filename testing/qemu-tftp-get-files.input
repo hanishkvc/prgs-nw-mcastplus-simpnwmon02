@@ -7,7 +7,7 @@ get status.py
 get hkvc-nw-send-mcast.py
 get hkvc-nw-recover.py
 get hkvc-check-image.py
+get qemu-tftp-get-files.input
 quit
 
 get hkvc-test-logic.sh
-get qemu-tftp-get-files.input
