@@ -68,6 +68,9 @@ while iArg < len(sys.argv):
 		iTestBlocks = int(sys.argv[iArg])
 	elif (sys.argv[iArg] == "--simloss"):
 		bSimLoss=True
+	elif (sys.argv[iArg] == "--startblock"):
+		iArg += 1
+		pktid = int(sys.argv[iArg])
 	iArg += 1
 
 portMCast, _portServer, _portClient = network.ports_ngupdate(nwGroup)
@@ -91,7 +94,7 @@ else:
 
 perPktTime=1/(Bps/dataSize)
 print("maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
-print("TotalBlocksToTransfer [{}]\n".format(giTotalBlocksInvolved))
+print("TotalBlocksToTransfer [{}], StartingBlock [{}]\n".format(giTotalBlocksInvolved, pktid))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
 	print("ERROR: Too large a content size, not supported...")
 	exit(-2)
@@ -125,7 +128,7 @@ if (bSimLossRandom):
 else:
 	iSimLossMod = 10023
 	iSimLossRange = 2
-prevPktid=0
+prevPktid=pktid
 prevTime=time.time()
 curTime=0.0
 prevTimeThrottle=time.time()

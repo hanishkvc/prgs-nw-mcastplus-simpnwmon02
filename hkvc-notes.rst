@@ -491,6 +491,16 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
+v2019011XISTXYZA - rc6
+========================
+
+nw-send-mcast now allows one to specify from where in the overall nw
+test/transfer one should start transfering, i.e from the 0th block or a
+specified (through commandline arg --startblock) Nth block.
+
+This allows one to manually stop and restart mcast transfer, as required.
+
+
 v20190118IST1010 -  rc5
 ========================
 
