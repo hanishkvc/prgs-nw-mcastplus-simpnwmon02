@@ -35,37 +35,34 @@ def _after():
 
 def mcast_tx(iCurBlock, iTotalBlocks):
 	_before()
-	_print("MODE:MCAST_TX")
-	_print("{}/{}".format(iCurBlock, iTotalBlocks))
+	_print("MCAST_TX:{}/{}".format(iCurBlock, iTotalBlocks))
 	_after()
 
 
 def mcast_stop(cur, totalTime):
 	_before()
-	_print("MODE:MCAST_STOP")
-	_print("{}/{}".format(cur, totalTime))
+	_print("MCAST_STOP:{}/{}".format(cur, totalTime))
 	_after()
 
 
 def ucast_pi(clientsDB):
 	_before()
-	_print("MODE:UCAST_PI")
+	_print("MODE:UCAST_PI", 50)
 	for r in clientsDB:
-		_print("IP={}:LP={}:C={}:N={}".format(r, clientsDB[r]['lostpkts'], clientsDB[r]['cnt'], clientsDB[r]['name']))
+		_print("UCAST_PI:IP={}:LP={}:C={}:N={}".format(r, clientsDB[r]['lostpkts'], clientsDB[r]['cnt'], clientsDB[r]['name']))
 	_after()
 
 
 def ucast_ur(client, iCur, iTotal):
 	_before()
-	_print("MODE:UCAST_UR")
-	_print("{}:{}/{}".format(client, iCur, iTotal))
+	_print("UCAST_UR:{}:{}/{}".format(client, iCur, iTotal))
 	_after()
 
 
 def ucast_ur_summary(clientsDB):
 	_before()
-	_print("MODE:UCAST_UR:SUMMARY")
+	_print("MODE:UCAST_UR:SUMMARY", 50)
 	for r in clientsDB:
-		_print("IP={}:LP={}".format(r, clientsDB[r]))
+		_print("UCAST_UR:RC:IP={}:LP={}".format(r, clientsDB[r]))
 	_after()
 

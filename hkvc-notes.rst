@@ -515,6 +515,8 @@ Fixed a oversight wrt 'cnt' during generation of ucast_pi summary status. Also
 now Name and LostPkts info got from clients during PI phase is properly
 captured in the summary status file.
 
+Cleaned up progress update logging in the status file.
+
 
 v20190118IST1010 -  rc5
 ========================
