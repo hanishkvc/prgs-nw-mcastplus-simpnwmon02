@@ -370,6 +370,14 @@ identify the port to be enabled.
 PortUsed = BasePort + 5*NwGroupId
 
 
+status
+-------
+
+In addition to the status prints on the console, the logics also save important
+summary progress update info periodically to /tmp/snm02.srvr.status.log
+
+
+
 Examples
 ==========
 
@@ -506,6 +514,9 @@ A status module added to help with collecting important progress status at a
 predefined location. All phases of the logic i.e mcast transfer, mcast stop,
 ucast pi and ucast ur phases now use status module's related functions to share
 their respective progress updates.
+
+/tmp/snm02.srvr.status.log contains summary progress updates across all phases
+on the server.
 
 
 v20190116IST2323 - rc4
