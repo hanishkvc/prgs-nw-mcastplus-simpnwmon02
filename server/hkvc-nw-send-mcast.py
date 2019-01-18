@@ -17,6 +17,7 @@ import select
 import random
 
 import network
+import status
 
 
 DBGLVL = 7
@@ -25,6 +26,7 @@ def dprint(lvl, msg):
 		print(msg)
 
 
+status.open()
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
@@ -106,6 +108,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
 	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
+	status.mcast(pktid, giTotalBlocksInvolved)
 	return curTime, pktid
 
 

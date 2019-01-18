@@ -18,6 +18,11 @@ def open(sFile=sStatusFile):
 	return statusFile
 
 
+def mcast(iCurBlock, iTotalBlocks):
+	print("MODE:MCAST", file=statusFile)
+	print("{}/{}".format(iCurBlock, iTotalBlocks))
+
+
 def ucast_pi(clientsDB):
 	print("MODE:UCAST_PI", file=statusFile)
 	for r in clientsDB:
