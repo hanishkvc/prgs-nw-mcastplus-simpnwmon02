@@ -238,6 +238,7 @@ def ur_send_packets(client, lostPackets):
 	lpa, iRangesCnt, iLostPkts = gen_lostpackets_array(lostPackets)
 	dprint(9, "\nur_send_packets: client[{}] lostPackets curCount [{}], StillInTotal(Ranges[{}], LostPkts[{}])".format(client, len(lpa), iRangesCnt, iLostPkts))
 	iPkts = len(lpa)
+	status.ucast_ur(client, iPkts, iLostPkts)
 	if (iPkts != 0):
 		send_file_data(client, lpa)
 	return iPkts, iLostPkts
@@ -285,6 +286,7 @@ def ur_client(client):
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
 		if (iCnt > URCLIENT_MAXCHANCES_PERATTEMPT):
+			status.ucast_ur(client, -1, iRemLostPkts)
 			giveupReason = "TooMany LostPackets???"
 			break
 	dprint(9, "UR:WARN: Giving up on [{}] temporarily bcas [{}]".format(client, giveupReason))
@@ -302,7 +304,7 @@ def unicast_recovery(clients):
 	dprint(9, "Remaining clients:")
 	for r in remainingClients:
 		dprint(9, "{} potential RemPkts[{}]".format(r, remClientsDB[r]))
-	status.ucast_ur(remClientsDB)
+	status.ucast_ur_summary(remClientsDB)
 	return remainingClients
 
 

@@ -55,9 +55,16 @@ def ucast_pi(clientsDB):
 	_after()
 
 
-def ucast_ur(clientsDB):
+def ucast_ur(client, iCur, iTotal):
 	_before()
 	_print("MODE:UCAST_UR")
+	_print("{}:{}/{}".format(client, iCur, iTotal))
+	_after()
+
+
+def ucast_ur_summary(clientsDB):
+	_before()
+	_print("MODE:UCAST_UR:SUMMARY")
 	for r in clientsDB:
 		_print("IP={}:LP={}".format(r, clientsDB[r]))
 	_after()
