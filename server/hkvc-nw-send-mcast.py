@@ -102,6 +102,7 @@ if (sfData != None):
 	giTotalBlocksInvolved = int(fileSize/dataSize)
 	if ((fileSize%dataSize) != 0):
 		giTotalBlocksInvolved += 1
+	fData.seek(pktid*dataSize)
 else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
 	giTotalBlocksInvolved = int(iTestBlocks)
