@@ -503,7 +503,9 @@ lost block. Also if a block seems to be out of sequence, then a warning line
 will be printed.
 
 A status module added to help with collecting important progress status at a
-predefined location. mcast transfer, mcast stop and ucast pi phases uses it.
+predefined location. All phases of the logic i.e mcast transfer, mcast stop,
+ucast pi and ucast ur phases now use status module's related functions to share
+their respective progress updates.
 
 
 v20190116IST2323 - rc4

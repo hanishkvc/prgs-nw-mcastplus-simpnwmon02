@@ -58,5 +58,7 @@ def ucast_pi(clientsDB):
 def ucast_ur(clientsDB):
 	_before()
 	_print("MODE:UCAST_UR")
+	for r in clientsDB:
+		_print("IP={}:LP={}".format(r, clientsDB[r]))
 	_after()
 

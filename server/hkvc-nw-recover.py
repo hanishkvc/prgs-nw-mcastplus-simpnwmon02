@@ -301,6 +301,7 @@ def unicast_recovery(clients):
 	dprint(9, "Remaining clients:")
 	for r in remainingClients:
 		dprint(9, "{} potential RemPkts[{}]".format(r, remClientsDB[r]))
+	status.ucast_ur(remClientsDB)
 	return remainingClients
 
 
