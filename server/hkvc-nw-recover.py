@@ -162,8 +162,10 @@ def _presence_info(clients, clientsDB):
 			peer = d[1][0]
 			try:
 				i = clients.index(peer)
+				tLostPkts = struct.unpack("<I16sI8s", dataC)
 				dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
 				clientsDB[peer]['cnt'] += 1
+				clientsDB[peer]['LostPkts'] = tLostPkts
 			except ValueError as e:
 				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
@@ -191,7 +193,7 @@ def _presence_info(clients, clientsDB):
 def presence_info(clients):
 	clientsDB = {}
 	for r in clients:
-		clientsDB[r] = {'type':'known', 'cnt': 0}
+		clientsDB[r] = {'type':'known', 'cnt': 0, 'LostPkts': -1}
 	for i in range(4):
 		iSilentClients = _presence_info(clients, clientsDB)
 		if (iSilentClients == 0):
