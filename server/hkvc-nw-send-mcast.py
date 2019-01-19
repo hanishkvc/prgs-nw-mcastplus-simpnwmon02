@@ -143,11 +143,17 @@ def simloss_random():
 
 
 
-def handle_sigint(sigNum, sigStack):
-	tContext = context.open(gsContext, "w+")
-	context.save_mcast(tContext, pktid, giTotalBlocksInvolved)
+def save_context(sContext, pktid, iTotalBlocks):
+	tContext = context.open(sContext, "w+")
+	context.save_mcast(tContext, pktid, iTotalBlocks)
 	context.close(tContext)
-	dprint(9, "INFO: Saved context to [{}], quiting...".format(gsContext))
+	dprint(9, "INFO: Saved context to [{}]...".format(sContext))
+
+
+
+def handle_sigint(sigNum, sigStack):
+	save_context(gsContext, pktid, giTotalBlocksInvolved)
+	dprint(9, "INFO:sigint: quiting...".format(gsContext))
 	exit(10)
 
 
@@ -200,6 +206,7 @@ while True:
 print_throughput(prevTime, pktid, prevPktid)
 
 
+save_context(gsContext, pktid, giTotalBlocksInvolved)
 print("INFO: Done with transfer")
 
 network.mcast_stop(sock, maddr, portMCast, giTotalBlocksInvolved, 120)

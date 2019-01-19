@@ -663,6 +663,8 @@ Print cur Ref/Block count as part of the periodic check-image's progress print.
 Added option to specify a clientID on the client side using --cid argument.
 This will be passed to server thro PIReq packet.
 
+nw-send-mcast now saves the context even on a successful exit.
+
 
 v20190119IST0931 - rc6
 ========================
