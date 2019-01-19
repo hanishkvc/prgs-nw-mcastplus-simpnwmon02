@@ -47,7 +47,7 @@ def mcast_stop(cur, totalTime):
 
 def ucast_pi(clientsDB):
 	_before()
-	_print("MODE:UCAST_PI", 50)
+	_print("SET:UCAST_PI:ClientCnt:{}".format(len(clientsDB)))
 	for r in clientsDB:
 		_print("UCAST_PI:IP={}:LP={}:C={}:N={}".format(r, clientsDB[r]['lostpkts'], clientsDB[r]['cnt'], clientsDB[r]['name']))
 	_after()
@@ -61,7 +61,7 @@ def ucast_ur(client, iCur, iTotal):
 
 def ucast_ur_summary(clientsDB):
 	_before()
-	_print("MODE:UCAST_UR:SUMMARY", 50)
+	_print("SET:UCAST_UR:RemainingClients:{}".format(len(clientsDB)))
 	for r in clientsDB:
 		_print("UCAST_UR:RC:IP={}:LP={}".format(r, clientsDB[r]))
 	_after()
