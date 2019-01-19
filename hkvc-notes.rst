@@ -638,6 +638,19 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
+v20190119IST???? - rc7
+=========================
+
+Fix the oversight wrt unwanted capitalisation of the clientsDB keys in status
+module wrt pi status logging.
+
+Print pktid as part of throughput print during mcast transfer, to better track
+progress for users.
+
+Print cur pktCnt as part of the throughtput print during ucast recovery
+transfers, again to better track progress by users.
+
+
 v20190119IST0931 - rc6
 ========================
 

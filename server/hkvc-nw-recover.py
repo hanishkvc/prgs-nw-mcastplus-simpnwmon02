@@ -196,7 +196,7 @@ def _presence_info(clients, clientsDB):
 def presence_info(clients):
 	clientsDB = {}
 	for r in clients:
-		clientsDB[r] = {'type':'known', 'cnt': 0, 'LostPkts': -1}
+		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
 	for i in range(4):
 		iSilentClients = _presence_info(clients, clientsDB)
 		status.ucast_pi(clientsDB)
@@ -313,7 +313,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	numPkts = pktid - prevPktid
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
+	dprint(8, "Transfer speed [{}]MBps, pktCnt[{}]".format(nwSpeed, pktid))
 	return curTime, pktid
 
 

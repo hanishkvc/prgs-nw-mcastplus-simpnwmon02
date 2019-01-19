@@ -130,7 +130,7 @@ def print_throughput(prevTime, pktid, prevPktid):
 	numPkts = pktid - prevPktid
 	timeDelta = curTime - prevTime
 	nwSpeed= ((numPkts*dataSize)/timeDelta)/1e6
-	dprint(8, "Transfer speed [{}]MBps".format(nwSpeed))
+	dprint(8, "Transfer speed [{}]MBps, pktid [{}]".format(nwSpeed, pktid))
 	status.mcast_tx(pktid, giTotalBlocksInvolved)
 	return curTime, pktid
 
@@ -147,6 +147,7 @@ def handle_sigint(sigNum, sigStack):
 	tContext = context.open(gsContext, "w+")
 	context.save_mcast(tContext, pktid, giTotalBlocksInvolved)
 	context.close(tContext)
+	dprint(9, "INFO: Saved context to [{}], quiting...".format(gsContext))
 	exit(10)
 
 
