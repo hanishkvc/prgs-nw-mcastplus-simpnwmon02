@@ -1,10 +1,16 @@
 ##################################
 Nw Testing/Data transfer logic
 ##################################
-v20190116IST1620
-HanishKVC, 19XY
+:version: v20190119IST0858
+:author: HanishKVC, 19XY
 
+.. contents::
 .. section-numbering::
+
+.. raw:: pdf
+
+   PageBreak
+
 
 
 Logic and Usage
@@ -36,8 +42,20 @@ the clients one by one and gets their list of lost packets, a small part at a
 time, and helps them recover those by resending it thro unicast.
 
 
+MulticastTransfer
+~~~~~~~~~~~~~~~~~~
+
+In this phase either auto generated test blocks or contents of a specified file
+are blindly sent (i.e without checking who all are actively listening and
+neither worrying about when clients join into this multicast channel and when
+they leave) over the specified multicast channel at the specified byterate.
+
+And at the end a stop command is sent on the multicast channel to inform the
+clients that the multicast transfer is over.
+
+
 PI Phase
-----------
+~~~~~~~~~~
 
 If the PI phase fails to handshake between the server and the clients, the
 server has the possibility of using a predefined list of clients to work with,
@@ -51,9 +69,12 @@ come out of it and get into ucast recovery thro PIPhase+URPhase. After this
 mcast stop retry the server logic will go back to waiting for PIReqs from known
 clients (well as well as any new clients).
 
+Client informs the Server about the total lost packets it has to recover as
+part of the PIResp packet.
+
 
 UnicastRecovery
------------------
+~~~~~~~~~~~~~~~~~
 If a client stops responding in the middle of unicast error recovery or has
 used up too many attempts and has still not fully recovered its lost packets,
 then the server side logic will gracefully keep that client aside, and go to
@@ -115,6 +136,49 @@ such group of server+clients should be given unique NwGroup Ids.
 
 This also allows a single machine to run multiple instances of server or
 multiple instances of client logic if required.
+
+
+Content Length
+----------------
+
+Client comes to know about the total length of the test blocks / file being
+transfered based on one of the following events.
+
+* During mcast transfer phase each recieved packet could potentially be the
+  last packet wrt the content transfer. There is no seperate marker to indicate
+  that it is the last packet.
+
+* McastStop command contains info about the total number of blocks involved in
+  the current content transfer.
+
+* URReq command/packet contains info about the total number of blocks involved.
+
+Thus the client can known about the total blocks involved in the transfer and
+inturn thus identify any lost packets towards the end of the transfer from
+either the mcast phase or the ucast phase.
+
+
+Save Resume logics
+-------------------
+
+In multicast phase both server and client side have logics to save context if
+they are forced to quit using SIGINT. And inturn if restarted along with
+specifying the saved context file to use, they will restart from where they
+left off.
+
+In unicast phase, the client side has logic to save context if forced to quit.
+And inturn logic to load a previously saved context and continue from where
+things were left off, if asked to do so.
+
+In unicast phase, the server side has a simple save context logic of saving the
+list of clients it knows about. Similarly it has logic to load a list of known
+clients, if provided by the user.
+
+
+.. raw:: pdf
+
+   PageBreak
+
 
 
 Client
@@ -317,6 +381,11 @@ So we could use a helper script like this
    done
 
 
+.. raw:: pdf
+
+   PageBreak
+
+
 
 Server
 ========
@@ -375,6 +444,11 @@ status
 
 In addition to the status prints on the console, the logics also save important
 summary progress update info periodically to /tmp/snm02.srvr.status.log
+
+
+.. raw:: pdf
+
+   PageBreak
 
 
 
@@ -484,6 +558,10 @@ Client> ./simpnwmon02 --maddr 230.0.0.1 --local 0 10.0.2.11 --file /dev/null --b
 
 The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
+
+.. raw:: pdf
+
+   PageBreak
 
 
 
