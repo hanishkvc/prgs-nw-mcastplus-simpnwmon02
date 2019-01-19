@@ -1,7 +1,7 @@
 ##################################
 Nw Testing/Data transfer logic
 ##################################
-:version: v20190119IST0947
+:version: v20190119IST1350
 :author: HanishKVC, 19XY
 
 .. contents::
@@ -646,7 +646,7 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
-v20190119IST???? - rc7
+v20190119IST1344 - rc7
 =========================
 
 Fix the oversight wrt unwanted capitalisation of the clientsDB keys in status
