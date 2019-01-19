@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190118IST1010
+    v20190119IST1322
     HanishKVC, GPL, 19XY
  */
 
@@ -54,6 +54,8 @@ int giDataSize=(1024+4);
 char gcBuf[BUF_MAXSIZE];
 #define MAIN_FPATH_LEN 256
 char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
+#define CID_MAXLEN 16
+char gsCID[CID_MAXLEN] = "v20190119whoAMi";
 
 // Saved SNM Contexts
 #define SC_MAXDATASEQGOT "MaxDataSeqNumGot"
@@ -87,6 +89,7 @@ struct snm {
 	int iMaxDataSeqNumGot;
 	int iDoneModes;
 	int iMaxDataSeqNumProcessed;
+	char *sCID;
 };
 struct snm snmCur;
 
@@ -122,6 +125,7 @@ void snm_init(struct snm *me) {
 	me->iMaxDataSeqNumGot = -1;
 	me->iDoneModes = 0;
 	me->iMaxDataSeqNumProcessed = -1;
+	me->sCID = gsCID;
 }
 
 void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
@@ -416,7 +420,7 @@ int snm_mcast_recv(struct snm *me) {
 	return iRet;
 }
 
-int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts) {
+int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts, char *sCID) {
 	int iRet;
 	char bufS[32], bufR[32];
 	struct sockaddr_in addrS, addrR;
@@ -430,7 +434,7 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 		exit(-1);
 	}
 	*(uint32_t *)bufS = PIReqSeqNum;
-	strncpy(&bufS[PKT_PIREQ_NAME_OFFSET], "c_lang seat", 16);
+	strncpy(&bufS[PKT_PIREQ_NAME_OFFSET], sCID, CID_MAXLEN);
 	*(uint32_t *)&bufS[PKT_PIREQ_LOSTPKTS_OFFSET] = iTotalLostPkts;
 
 	for(int i = 0; i < PI_RETRYCNT; i++) {
@@ -467,7 +471,7 @@ int snm_ucast_pi(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
-		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer), me->llLostPkts.iTotalFromRanges);
+		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer), me->llLostPkts.iTotalFromRanges, me->sCID);
 		if (iRet < 0) {
 			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
 		}
@@ -644,6 +648,7 @@ void signal_handler(int arg) {
 #define ARG_CONTEXTBASE "--contextbase"
 #define ARG_RUNMODES "--runmodes"
 #define ARG_NWGROUP "--nwgroup"
+#define ARG_CID "--cid"
 
 void print_usage(void) {
 	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr>\n");
@@ -652,6 +657,7 @@ void print_usage(void) {
 	fprintf(stderr, "\t --contextbase contextfile_basename_forsaving\n");
 	fprintf(stderr, "\t --runmodes 1|2|4|6|7|65536\n");
 	fprintf(stderr, "\t --nwgroup id\n");
+	fprintf(stderr, "\t --cid theClientID_limitTo15Chars\n");
 }
 
 int snm_parse_args(struct snm *me, int argc, char **argv) {
@@ -692,6 +698,10 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 			iArg += 1;
 			me->iNwGroup = strtol(argv[iArg], NULL, 0);
 		}
+		if (strcmp(argv[iArg], ARG_CID) == 0) {
+			iArg += 1;
+			me->sCID = argv[iArg];
+		}
 		if (iArg >= argc) {
 			print_usage();
 			exit(-1);
@@ -702,6 +712,7 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 		print_usage();
 		exit(-1);
 	}
+	fprintf(stderr, "INFO:CID:%s\n", me->sCID);
 	return 0;
 }
 

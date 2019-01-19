@@ -69,8 +69,8 @@ come out of it and get into ucast recovery thro PIPhase+URPhase. After this
 mcast stop retry the server logic will go back to waiting for PIReqs from known
 clients (well as well as any new clients).
 
-Client informs the Server about the total lost packets it has to recover as
-part of the PIResp packet.
+Client informs the Server about its name/clientId and the total lost packets it
+has to recover as part of the PIReq packet it sends.
 
 
 UnicastRecovery
@@ -109,6 +109,10 @@ LinkedListRanges
 
 One of the core driving force for the client side logic is a double linked list
 of ranges, which is used to maintain the list of lost packets of the client.
+
+As packets are recieved from server during mcast transfer, any packets lost are
+stored into this ll as ranges. Inturn as packets are recovered during ucast
+recovery, those specific packet/block id's are removed from the ll.
 
 At the top level, the linked list will maintain reference to the
 
@@ -193,11 +197,12 @@ Client
 
 The client side logic is implemented in a single program.
 
-./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit --runmodes 7
+./simpnwmon02 --maddr 230.0.0.1 --local 0 127.0.0.1 --file /dev/null --bcast 127.0.0.255 --nwgroup 2 --contextbase /tmp/newnow --context /tmp/whatelse.lostpackets.quit --runmodes 7 --cid whome
 
 NOTE: In the above example, the client is run on a non default network group id
 of 2. So there should be a corresponding server instance running with the
 nwgroup id of 2.
+
 
 the Arguments
 --------------
@@ -212,7 +217,7 @@ Mandatory arguments
 
 Optional arguments
 
-[--contextbase pathANDbasename_forcontext2save --context context2load_ifany --nwgroup id --runmodes runmodes]
+[--contextbase pathANDbasename_forcontext2save --context context2load_ifany --nwgroup id --runmodes runmodes --cid clientID]
 
 the local_nwif means the ethernet or wifi interface which connects to the
 network on which we want to run the test/data transfer logic.
@@ -266,6 +271,9 @@ one phase requires to be run. Default value is 7 (i.e run all the 3 phases).
   based on DoneModes saved in context file being loaded. If no DoneModes in
   context file then runmodes will be set to 7.
 
+clientID is a string representing any given specific client. It is 16 chars
+long over the network. However don't assign a id/name larger than 15 chars.
+This is passed on to the server as part of the PIReq packet from the client.
 
 
 Client's context
@@ -651,6 +659,9 @@ Print cur pktCnt as part of the throughtput print during ucast recovery
 transfers, again to better track progress by users.
 
 Print cur Ref/Block count as part of the periodic check-image's progress print.
+
+Added option to specify a clientID on the client side using --cid argument.
+This will be passed to server thro PIReq packet.
 
 
 v20190119IST0931 - rc6
