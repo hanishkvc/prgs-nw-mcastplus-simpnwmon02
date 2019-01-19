@@ -1,7 +1,7 @@
 ##################################
 Nw Testing/Data transfer logic
 ##################################
-:version: v20190119IST0858
+:version: v20190119IST0947
 :author: HanishKVC, 19XY
 
 .. contents::
@@ -107,10 +107,13 @@ recovery.
 LinkedListRanges
 -----------------
 
-The linked list will maintain reference to the
+One of the core driving force for the client side logic is a double linked list
+of ranges, which is used to maintain the list of lost packets of the client.
 
-* start,
-* end
+At the top level, the linked list will maintain reference to the
+
+* start/first node in the list
+* end/last node in the list
 
 as well as
 
@@ -120,6 +123,10 @@ as well as
 It also maintains a count of total number of nodes and inturn the total/actual
 number of values stored/represented in the list indirectly in the shortened
 form of ranges.
+
+At the individual node level it maintains the start and end values
+respresenting the range being stored in that node. As well as the prev and next
+links to the nodes before and after it.
 
 
 NwGroups
@@ -235,8 +242,8 @@ nw_bcast_ip is the network broadcast address into which PIReq packets should be
 sent.
 
 context2load_ifany is a optional parameter. This is required to be given, if
-one wants the program to resume a previously broken in ucast recovery phase
-transfer. Ideally It should be the file into which the program had saved the
+one wants the program to resume a previously broken transfer in ucast or mcast
+phases. Ideally It should be the file into which the program had saved the
 context, when it was force exited previously by sending a SIGINT (ctrl+c)
 signal. Default value is NULL (ie dont load any context)
 
@@ -268,6 +275,10 @@ It contains
 
 * list of lost packet ranges
 
+* MaxDataSeqNumGot & MaxDataSeqNumProcessed
+
+* DoneModes
+
 Two context files
 
 * When ever the program is asked to quit thro SIGINT
@@ -288,7 +299,9 @@ will come to know about the total blocks involved in this file/test transfer.
 Next the client tries to notify any server that may be listening, about the
 client's presence in the network, as well as to know who the server is. Even
 thou both server and client go thro the PI phase, the logics are setup such
-that a failure in PI phase doesn't impact the over all flow.
+that a failure in PI phase doesn't impact the over all flow. The total of
+number of lost packets wrt the client is also informed to the server as part of
+the PIReq packet.
 
 The logic goes into a unicast recovery phase, where it listens for any requests
 from server about lost packets. In turn when the server requests, the client
@@ -296,7 +309,8 @@ sends the top N number of lost packet ranges it has. Parallely if it recieves
 any data packets, which it didn't have before, it will save the same into the
 data file. The total number of lost packet ranges and inturn the total number
 of lost packets represented thro these ranges is also sent to the server as
-part of the URAck packet.
+part of the URAck packet. The server informs about the total number of blocks
+involved in the current transfer to the client as part of URReq packet.
 
 
 Save & Resume
@@ -392,13 +406,19 @@ Server
 
 The server side logic is implemented as part of two different programs.
 
-mcast phase
--------------
+the Programs
+--------------
 
-The first takes care of the multicast phases.
+mcast phase
+~~~~~~~~~~~~
+
+The first takes care of the multicast phases. This program can be stopped and
+restarted, provided one uses --startblock to explicitly specify where to start
+in the overall transfer or use --context to specify the saved context generated
+when the program was stopped.
 
 ucast phase
--------------
+~~~~~~~~~~~~
 
 The second takes care of the unicast phases. If required this unicast related
 script can be called more than once, provided a context file is passed to it,
@@ -412,9 +432,58 @@ packets; and if they are not running, the server will automatically timeout wrt
 such clients (the program will take more time than ideal, otherwise no other
 issues).
 
+the Arguments
+~~~~~~~~~~~~~~
+
+common arguments
+''''''''''''''''''
+
+--maddr
+
+--file
+
+--testblocks
+
+--Bps
+
+--context
+
+--nwgroup
+
+--dim
+
+--datasize
+
+
+mcast specific arguments
+'''''''''''''''''''''''''
+
+--startblock
+
+--simloss
+
+ucast specific arguments
+'''''''''''''''''''''''''
+
+--laddr
+
+--slow
+
+
 
 the Context file
 ------------------
+
+mcast phase
+~~~~~~~~~~~~
+
+The context file identifies that it relates to mcast and contains the last
+packet/block id sent as well as the total number of content blocks involved.
+
+MCAST:LastSent:TotalInvolved
+
+ucast phase
+~~~~~~~~~~~~~
 
 THis is a file used by the unicast phase server program, to get the list of
 clients it should try to help wrt recovering their lost packets.
@@ -569,7 +638,7 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
-v2019011XISTXYZA - rc6
+v20190119IST0931 - rc6
 ========================
 
 nw-send-mcast now allows one to specify from where in the overall nw
@@ -594,6 +663,8 @@ now Name and LostPkts info got from clients during PI phase is properly
 captured in the summary status file.
 
 Cleaned up progress update logging in the status file.
+
+Notes updates and cleanups.
 
 
 v20190118IST1010 -  rc5
