@@ -46,7 +46,7 @@ while True:
 	if ((iDelta != 1) and (iDelta != iDelta0)):
 		print("W: C[{}], R[{}] d[{}]".format(iCur, iRef, iDelta))
 	if (iRef % (512*1024)) == 0:
-		print("I: {}".format(iCur))
+		print("I: {}, {}".format(iCur, iRef))
 	iPrev = iRef
 	iRef += 1
 

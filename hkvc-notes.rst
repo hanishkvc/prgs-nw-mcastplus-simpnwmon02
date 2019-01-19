@@ -650,6 +650,8 @@ progress for users.
 Print cur pktCnt as part of the throughtput print during ucast recovery
 transfers, again to better track progress by users.
 
+Print cur Ref/Block count as part of the periodic check-image's progress print.
+
 
 v20190119IST0931 - rc6
 ========================
