@@ -646,7 +646,7 @@ Notes / Thoughts during some of the releases
 #############################################
 
 
-v20190119IST1344 - rc7
+v20190119IST1542 - v1.0
 =========================
 
 Fix the oversight wrt unwanted capitalisation of the clientsDB keys in status
