@@ -23,6 +23,7 @@
 #include <LinkedListRange.h>
 
 const int STATS_TIMEDELTA=20;
+const int MCASTREJOIN_TIMEDELTA=300;
 const int MCASTSLOWEXIT_CNT=3;		// 20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
 const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
@@ -162,38 +163,28 @@ void snm_save_context(struct snm *me, char *sTag) {
 }
 
 #define ENABLE_MULTICAST_ALL 1
-int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
-{
+int sock_mcast_join(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAddr) {
 	int iRet;
-	int sockMCast = -1;
 	struct ip_mreqn mreqn;
-	struct sockaddr_in myAddr;
-
-	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sockMCast == -1) {
-		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockMCast);
-		perror("Failed socket");
-		exit(-1);
-	}
 
 	iRet = inet_aton(sMCastAddr, &mreqn.imr_multiaddr);
 	if (iRet == 0) {
-		fprintf(stderr, "ERROR:%s:4JoinMCast: Failed to set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
-		exit(-1);
+		fprintf(stderr, "ERROR:%s: Failed to understand MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
+		return -1;
 	}
-	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP set MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
+	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP use MCastAddr[%s], ret=[%d]\n", __func__, sMCastAddr, iRet);
 	iRet = inet_aton(sLocalAddr, &mreqn.imr_address);
 	if (iRet == 0) {
-		fprintf(stderr, "ERROR:%s:4JoinMCast: Failed to set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
-		exit(-1);
+		fprintf(stderr, "ERROR:%s: Failed to understand localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
+		return -2;
 	}
-	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP set localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
+	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP use localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
 	mreqn.imr_ifindex = ifIndex;
 	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreqn, sizeof(mreqn));
 	if (iRet != 0) {
-		fprintf(stderr, "ERROR:%s: Failed joining group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sMCastAddr, sLocalAddr, ifIndex, iRet);
+		fprintf(stderr, "ERROR:%s: sockMCast [%d] Failed joining group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sockMCast, sMCastAddr, sLocalAddr, ifIndex, iRet);
 		perror("Failed joining group:");
-		exit(-1);
+		return -3;
 	}
 	fprintf(stderr, "INFO:%s: sockMCast [%d] joined [%s] on (LocalAddr [%s] & ifIndex [%d]), ret=[%d]\n", __func__, sockMCast, sMCastAddr, sLocalAddr, ifIndex, iRet);
 
@@ -203,10 +194,40 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	if (iRet != 0) {
 		fprintf(stderr, "ERROR:%s: Failed Enabling MulticastALL, ret=[%d]\n", __func__, iRet);
 		perror("Failed MulticastALL:");
-		exit(-1);
+		return -4;
 	}
 	fprintf(stderr, "INFO:%s: Enabled MulticastALL, ret=[%d]\n", __func__, iRet);
 #endif
+	return 0;
+}
+
+int snm_sock_mcast_join(struct snm *me) {
+	int iRet;
+
+	iRet = sock_mcast_join(me->sockMCast, me->iLocalIFIndex, me->sMCastAddr, me->sLocalAddr);
+	if (iRet < 0) {
+		fprintf(stderr, "ERROR:%s: [%d] couldn't join [%s] throu [%d] [%s]\n", __func__, me->sockMCast, me->sMCastAddr, me->iLocalIFIndex, me->sLocalAddr);
+	}
+	return iRet;
+}
+
+int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
+{
+	int iRet;
+	int sockMCast = -1;
+	struct sockaddr_in myAddr;
+
+	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockMCast == -1) {
+		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockMCast);
+		perror("Failed socket");
+		exit(-1);
+	}
+
+	iRet = sock_mcast_join(sockMCast, ifIndex, sMCastAddr, sLocalAddr);
+	if (iRet < 0) {
+		exit(-1);
+	}
 
 	myAddr.sin_family=AF_INET;
 	myAddr.sin_port=htons(port);
@@ -320,6 +341,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 	int iSeqDelta;
 	time_t prevSTime, curSTime;
 	time_t prevDTime, curDTime;
+	time_t deltaSTime, deltaDTime;
 	int iPrevPktCnt = 0;
 	int iRecvdStop = 0;
 	int iPrevRecvdStop = -1;
@@ -335,11 +357,14 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 	prevDTime = prevSTime;
 	curDTime = prevDTime;
 	gbDoMCast = 1;
+	deltaDTime = -1;
 	while (gbDoMCast) {
 
 		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
 		curSTime = time(NULL);
-		if ((curSTime-prevSTime) > STATS_TIMEDELTA) {
+		deltaSTime = curSTime - prevSTime;
+		if (deltaSTime > STATS_TIMEDELTA) {
+			deltaDTime = curSTime - curDTime;
 			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
@@ -361,6 +386,10 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 		if (iRet == -1) {
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 				usleep(MCAST_USLEEP);
+				if (deltaDTime > MCASTREJOIN_TIMEDELTA) {
+					deltaDTime = -1;
+					// snm_sock_mcast_join(me)
+				}
 			} else {
 				perror("WARN:mcast_recv:revfrom failed:");
 			}
