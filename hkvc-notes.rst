@@ -649,8 +649,22 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
 
 
-Notes / Thoughts during some of the releases
-#############################################
+Release Notes / Thoughts during some of the releases
+#####################################################
+
+v20190128IST1259
+==================
+
+Have added mcast rejoin (i.e drop first followed by join) functionality to
+mcast phase logic on the client side, which gets triggered if there is no mcast
+data for a predefined time (currently it will trigger once every 5 to 6 minutes
+of inactivity).
+
+Also this mcast drop and join, even if it fails, it will log the same info and
+continue remaining in mcast phase. THis is to hopefully help ensure that even
+if the network is down when the client tries to rejoin, it should continue to
+remain in mcast phase. IN this case, after waiting for another additional 5 to
+6 minutes of inactivity, it will try to rejoin again.
 
 
 v20190119IST1542 - v1.0
