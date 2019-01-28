@@ -301,6 +301,13 @@ The 1st phase of the logic consists of mcast transfer. During this phase it
 keeps track of the recieved and lost packets in sequence, as well as saving the
 recieved data into corresponding location in the data file specified.
 
+If no packets are recieved for a predefined long time, then the client will
+rejoin the mcast group (i.e drop and join) just to be on safe side. This is
+done in case if one is on a wifi network and the connection drops and
+reconnects, and this if in turn triggers the access point to drop the client
+from its mcast group client list. In this case the rejoining should make the ap
+re-add the client to the mcast group client list.
+
 If and when it recieves a mcast stop command, it exits the mcast phase. It also
 will come to know about the total blocks involved in this file/test transfer.
 

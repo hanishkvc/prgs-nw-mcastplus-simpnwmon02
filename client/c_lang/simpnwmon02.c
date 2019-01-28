@@ -163,9 +163,20 @@ void snm_save_context(struct snm *me, char *sTag) {
 }
 
 #define ENABLE_MULTICAST_ALL 1
-int sock_mcast_join(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAddr) {
+#define MCAST_JOIN 0
+#define MCAST_DROP 1
+int sock_mcast_ctrl(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAddr, int mode) {
 	int iRet;
 	struct ip_mreqn mreqn;
+	char *sReason;
+
+	if ((mode == MCAST_JOIN) || (mode == IP_ADD_MEMBERSHIP)) {
+		sReason = "join";
+		mode = IP_ADD_MEMBERSHIP;
+	} else {
+		sReason = "drop";
+		mode = IP_DROP_MEMBERSHIP;
+	}
 
 	iRet = inet_aton(sMCastAddr, &mreqn.imr_multiaddr);
 	if (iRet == 0) {
@@ -180,33 +191,42 @@ int sock_mcast_join(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAd
 	}
 	//fprintf(stderr, "INFO:%s: for IP_ADD_MEMBERSHIP use localAddr[%s], ret=[%d]\n", __func__, sLocalAddr, iRet);
 	mreqn.imr_ifindex = ifIndex;
-	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreqn, sizeof(mreqn));
+	iRet = setsockopt(sockMCast, IPPROTO_IP, mode, &mreqn, sizeof(mreqn));
 	if (iRet != 0) {
-		fprintf(stderr, "ERROR:%s: sockMCast [%d] Failed joining group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sockMCast, sMCastAddr, sLocalAddr, ifIndex, iRet);
-		perror("Failed joining group:");
+		fprintf(stderr, "ERROR:%s: sockMCast [%d] Failed to %s group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sockMCast, sReason, sMCastAddr, sLocalAddr, ifIndex, iRet);
+		perror("Failed join/drop group:");
 		return -3;
 	}
-	fprintf(stderr, "INFO:%s: sockMCast [%d] joined [%s] on (LocalAddr [%s] & ifIndex [%d]), ret=[%d]\n", __func__, sockMCast, sMCastAddr, sLocalAddr, ifIndex, iRet);
+	fprintf(stderr, "INFO:%s: sockMCast [%d] %sed [%s] on (LocalAddr [%s] & ifIndex [%d]), ret=[%d]\n", __func__, sockMCast, sReason, sMCastAddr, sLocalAddr, ifIndex, iRet);
 
 #ifdef ENABLE_MULTICAST_ALL
-	uint8_t iEnable = 1;
-	iRet = setsockopt(sockMCast, IPPROTO_IP, IP_MULTICAST_ALL, &iEnable, sizeof(iEnable));
-	if (iRet != 0) {
-		fprintf(stderr, "ERROR:%s: Failed Enabling MulticastALL, ret=[%d]\n", __func__, iRet);
-		perror("Failed MulticastALL:");
-		return -4;
+	if (mode == IP_ADD_MEMBERSHIP) {
+		uint8_t iEnable = 1;
+		iRet = setsockopt(sockMCast, IPPROTO_IP, IP_MULTICAST_ALL, &iEnable, sizeof(iEnable));
+		if (iRet != 0) {
+			fprintf(stderr, "ERROR:%s: Failed Enabling MulticastALL, ret=[%d]\n", __func__, iRet);
+			perror("Failed MulticastALL:");
+			return -4;
+		}
+		fprintf(stderr, "INFO:%s: Enabled MulticastALL, ret=[%d]\n", __func__, iRet);
 	}
-	fprintf(stderr, "INFO:%s: Enabled MulticastALL, ret=[%d]\n", __func__, iRet);
 #endif
 	return 0;
 }
 
-int snm_sock_mcast_join(struct snm *me) {
+int snm_sock_mcast_ctrl(struct snm *me, int mode) {
 	int iRet;
+	char *sReason;
 
-	iRet = sock_mcast_join(me->sockMCast, me->iLocalIFIndex, me->sMCastAddr, me->sLocalAddr);
+	if ((mode == MCAST_JOIN) || (mode == IP_ADD_MEMBERSHIP)) {
+		sReason = "join";
+	} else {
+		sReason = "drop";
+	}
+
+	iRet = sock_mcast_ctrl(me->sockMCast, me->iLocalIFIndex, me->sMCastAddr, me->sLocalAddr, mode);
 	if (iRet < 0) {
-		fprintf(stderr, "ERROR:%s: [%d] couldn't join [%s] throu [%d] [%s]\n", __func__, me->sockMCast, me->sMCastAddr, me->iLocalIFIndex, me->sLocalAddr);
+		fprintf(stderr, "ERROR:%s: [%d] couldn't %s [%s] throu [%d] [%s]\n", __func__, me->sockMCast, sReason, me->sMCastAddr, me->iLocalIFIndex, me->sLocalAddr);
 	}
 	return iRet;
 }
@@ -224,7 +244,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 		exit(-1);
 	}
 
-	iRet = sock_mcast_join(sockMCast, ifIndex, sMCastAddr, sLocalAddr);
+	iRet = sock_mcast_ctrl(sockMCast, ifIndex, sMCastAddr, sLocalAddr, IP_ADD_MEMBERSHIP);
 	if (iRet < 0) {
 		exit(-1);
 	}
@@ -393,7 +413,8 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 					prevMTime = curSTime;
 					if (me != NULL) {
 						fprintf(stderr, "INFO:%s: silent mcast channel, rejoining again\n", __func__);
-						snm_sock_mcast_join(me);
+						snm_sock_mcast_ctrl(me, IP_DROP_MEMBERSHIP);
+						snm_sock_mcast_ctrl(me, IP_ADD_MEMBERSHIP);
 					} else {
 						fprintf(stderr, "INFO:%s: silent mcast channel, simply continuing to wait\n", __func__);
 					}
