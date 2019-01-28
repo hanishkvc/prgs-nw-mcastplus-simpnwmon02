@@ -341,7 +341,8 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 	int iSeqDelta;
 	time_t prevSTime, curSTime;
 	time_t prevDTime, curDTime;
-	time_t deltaSTime, deltaDTime;
+	time_t deltaSTime;
+	time_t prevMTime, deltaMTime;
 	int iPrevPktCnt = 0;
 	int iRecvdStop = 0;
 	int iPrevRecvdStop = -1;
@@ -356,15 +357,16 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 	prevSTime = time(NULL);
 	prevDTime = prevSTime;
 	curDTime = prevDTime;
+	prevMTime = prevSTime;
 	gbDoMCast = 1;
-	deltaDTime = -1;
+	deltaMTime = -1;
 	while (gbDoMCast) {
 
 		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
 		curSTime = time(NULL);
 		deltaSTime = curSTime - prevSTime;
 		if (deltaSTime > STATS_TIMEDELTA) {
-			deltaDTime = curSTime - curDTime;
+			deltaMTime = curSTime - prevMTime;
 			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
@@ -386,8 +388,9 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 		if (iRet == -1) {
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 				usleep(MCAST_USLEEP);
-				if (deltaDTime > MCASTREJOIN_TIMEDELTA) {
-					deltaDTime = -1;
+				if (deltaMTime > MCASTREJOIN_TIMEDELTA) {
+					deltaMTime = -1;
+					prevMTime = curSTime;
 					if (me != NULL) {
 						fprintf(stderr, "INFO:%s: silent mcast channel, rejoining again\n", __func__);
 						snm_sock_mcast_join(me);
