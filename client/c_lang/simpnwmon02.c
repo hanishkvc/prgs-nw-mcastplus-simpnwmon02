@@ -329,7 +329,7 @@ void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDi
 	*piDisjointPktCnt += (end-start+1);
 }
 
-int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot, int *piMaxDataSeqNumProcessed) {
+int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot, int *piMaxDataSeqNumProcessed, struct snm *me) {
 
 	int iRet;
 	int iPrevSeq = *piMaxDataSeqNumGot - 1;
@@ -388,7 +388,12 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 				usleep(MCAST_USLEEP);
 				if (deltaDTime > MCASTREJOIN_TIMEDELTA) {
 					deltaDTime = -1;
-					// snm_sock_mcast_join(me)
+					if (me != NULL) {
+						fprintf(stderr, "INFO:%s: silent mcast channel, rejoining again\n", __func__);
+						snm_sock_mcast_join(me);
+					} else {
+						fprintf(stderr, "INFO:%s: silent mcast channel, simply continuing to wait\n", __func__);
+					}
 				}
 			} else {
 				perror("WARN:mcast_recv:revfrom failed:");
@@ -439,7 +444,7 @@ int snm_mcast_recv(struct snm *me) {
 	int iRet = -1;
 
 	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot, &me->iMaxDataSeqNumProcessed);
+		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot, &me->iMaxDataSeqNumProcessed, me);
 		me->iDoneModes |= RUNMODE_MCAST;
 		snm_save_context(me, "mcast");
 	} else {
