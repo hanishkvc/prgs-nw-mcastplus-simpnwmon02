@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190119IST1322
+    v20190129IST1627
     HanishKVC, GPL, 19XY
  */
 
@@ -488,8 +488,12 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 	iRet = inet_aton(sPINwBCast, &addrS.sin_addr);
 	if (iRet == 0) {
 		fprintf(stderr, "ERROR:%s: Failed to convert [%s] to nw addr, ret=[%d]\n", __func__, sPINwBCast, iRet);
-		perror("sPINwBCast aton failed");
+		perror("WARN:ucast_pi: sPINwBCast aton failed, PIPhase will be ignored");
+#ifdef EXITON_NWERROR
 		exit(-1);
+#else
+		return;
+#endif
 	}
 	*(uint32_t *)bufS = PIReqSeqNum;
 	strncpy(&bufS[PKT_PIREQ_NAME_OFFSET], sCID, CID_MAXLEN);
@@ -499,8 +503,13 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 		fprintf(stderr, "INFO:%s: PI[%s:%d] :find peer srvr: try %d\n", __func__, &bufS[PKT_PIREQ_NAME_OFFSET], iTotalLostPkts, i);
 		iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 		if (iRet == -1) {
-			perror("Failed sending PIReq");
+			perror("WARN:ucast_pi: Failed sending PIReq, may try again");
+#ifdef EXITON_NWERROR
 			exit(-1);
+#else
+			usleep(UCAST_PI_USLEEP);
+			continue;
+#endif
 		}
 		unsigned int iAddrLen = sizeof(addrR);
 		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
@@ -602,8 +611,10 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 #endif
 			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 			if (iRet == -1) {
-				perror("Failed sending URAck");
+				perror("WARN:ucast_recover: Failed sending URAck currently");
+#ifdef EXITON_NWERROR
 				exit(-1);
+#endif
 			} else {
 				fprintf(stderr, "INFO:%s: URAck [%d]records", __func__, iRecords);
 			}
