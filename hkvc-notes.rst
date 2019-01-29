@@ -656,7 +656,15 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
-v20190129IST1647 - v1.2
+v20190130ISTXYZA - v1.03
+=========================
+
+Now mcast Rejoin only if no mcast packets for predefined interval, by default.
+However if one requires the logic to rejoin always once every predefined
+interval period then one can pass a compile time define to enable the same.
+
+
+v20190129IST1647 - v1.02
 ==========================
 
 Unicast recovery phase now ignores network errors and continues with the logic
@@ -674,8 +682,9 @@ quit pi phase and go into ucast recover phase.This is fine, as long as the
 server nw-recover script is started with a context file containing all clients
 in the network.
 
-v20190128IST1259 - v1.1
-========================
+
+v20190128IST1259 - v1.01
+=========================
 
 Have added mcast rejoin (i.e drop first followed by join) functionality to
 mcast phase logic on the client side, which gets triggered if there is no mcast
@@ -697,7 +706,7 @@ will no longer forward multicast packets to it. This is the reason why this
 rejoin logic is required.
 
 
-v20190119IST1542 - v1.0
+v20190119IST1542 - v1.00
 =========================
 
 Fix the oversight wrt unwanted capitalisation of the clientsDB keys in status
