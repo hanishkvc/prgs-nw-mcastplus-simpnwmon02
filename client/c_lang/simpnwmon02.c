@@ -408,6 +408,9 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 			continue;
 		}
 		curDTime = time(NULL);
+#ifndef MCASTREJOIN_ALWAYS
+		prevMTime = curDTime;
+#endif
 		iPktCnt += 1;
 		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
 		if (iSeq == MCASTSTOPSeqNum) {
