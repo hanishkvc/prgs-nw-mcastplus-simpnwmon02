@@ -652,8 +652,8 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
-v20190128IST1259
-==================
+v20190128IST1259 - v1.1
+========================
 
 Have added mcast rejoin (i.e drop first followed by join) functionality to
 mcast phase logic on the client side, which gets triggered if there is no mcast
@@ -665,6 +665,14 @@ continue remaining in mcast phase. THis is to hopefully help ensure that even
 if the network is down when the client tries to rejoin, it should continue to
 remain in mcast phase. IN this case, after waiting for another additional 5 to
 6 minutes of inactivity, it will try to rejoin again.
+
+A WiFi AP will normally drop a client from the multicast group client list, if
+the client disconnects from the AP. When the client's network manager
+reconnects to the AP, it wont get re-added back automatically to the multicast
+group client list by the AP. So even thou a multicast client logic is still
+active and running, it will no longer recieve multicast packets, because the AP
+will no longer forward multicast packets to it. This is the reason why this
+rejoin logic is required.
 
 
 v20190119IST1542 - v1.0
