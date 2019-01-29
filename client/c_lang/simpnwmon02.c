@@ -492,7 +492,7 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 #ifdef EXITON_NWERROR
 		exit(-1);
 #else
-		return;
+		return -1;
 #endif
 	}
 	*(uint32_t *)bufS = PIReqSeqNum;
