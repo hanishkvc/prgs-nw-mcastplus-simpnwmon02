@@ -149,7 +149,7 @@ void snm_save_context(struct snm *me, char *sTag) {
 	strncat(sFName, sTag, MAIN_FPATH_LEN);
 	iFile = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (iFile == -1) {
-		perror("ERROR:save_context:Open");
+		perror("ERRR:save_context: Open");
 		return;
 	}
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQGOT, me->iMaxDataSeqNumGot);
@@ -194,7 +194,7 @@ int sock_mcast_ctrl(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAd
 	iRet = setsockopt(sockMCast, IPPROTO_IP, mode, &mreqn, sizeof(mreqn));
 	if (iRet != 0) {
 		fprintf(stderr, "ERROR:%s: sockMCast [%d] Failed to %s group[%s] with localAddr[%s] & ifIndex[%d], ret=[%d]\n", __func__, sockMCast, sReason, sMCastAddr, sLocalAddr, ifIndex, iRet);
-		perror("Failed join/drop group:");
+		perror("ERRR:mcast_ctrl: Failed join/drop group");
 		return -3;
 	}
 	fprintf(stderr, "INFO:%s: sockMCast [%d] %sed [%s] on (LocalAddr [%s] & ifIndex [%d]), ret=[%d]\n", __func__, sockMCast, sReason, sMCastAddr, sLocalAddr, ifIndex, iRet);
@@ -205,7 +205,7 @@ int sock_mcast_ctrl(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAd
 		iRet = setsockopt(sockMCast, IPPROTO_IP, IP_MULTICAST_ALL, &iEnable, sizeof(iEnable));
 		if (iRet != 0) {
 			fprintf(stderr, "ERROR:%s: Failed Enabling MulticastALL, ret=[%d]\n", __func__, iRet);
-			perror("Failed MulticastALL:");
+			perror("ERRR:mcast_ctrl: Failed MulticastALL");
 			return -4;
 		}
 		fprintf(stderr, "INFO:%s: Enabled MulticastALL, ret=[%d]\n", __func__, iRet);
@@ -240,7 +240,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockMCast == -1) {
 		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockMCast);
-		perror("Failed socket");
+		perror("ERRR:mcast_init: Failed socket");
 		exit(-1);
 	}
 
@@ -255,7 +255,7 @@ int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr
 	iRet = bind(sockMCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
 	if (iRet < 0) {
 		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, port, iRet);
-		perror("Failed bind:");
+		perror("ERRR:mcast_init: Failed bind");
 		exit(-1);
 	}
 	fprintf(stderr, "INFO:%s: sockMCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockMCast, INADDR_ANY, port, iRet);
@@ -276,7 +276,7 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 	sockUCast = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockUCast == -1) {
 		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockUCast);
-		perror("Failed socket");
+		perror("ERRR:ucast_init: Failed socket");
 		exit(-1);
 	}
 
@@ -285,7 +285,7 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 	iRet = setsockopt(sockUCast, SOL_SOCKET, SO_BROADCAST, &iEnable, sizeof(iEnable));
 	if (iRet != 0) {
 		fprintf(stderr, "ERROR:%s: Failed Enabling Broadcast, ret=[%d]\n", __func__, iRet);
-		perror("Failed enabling Broadcast:");
+		perror("ERRR:ucast_init: Failed enabling Broadcast");
 		exit(-1);
 	}
 	fprintf(stderr, "INFO:%s: Enabled Broadcast, ret=[%d]\n", __func__, iRet);
@@ -297,7 +297,7 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 	iRet = bind(sockUCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
 	if (iRet < 0) {
 		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, port, iRet);
-		perror("Failed bind:");
+		perror("ERRR:ucast_init: Failed bind");
 		exit(-1);
 	}
 	fprintf(stderr, "INFO:%s: sockUCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockUCast, INADDR_ANY, port, iRet);
@@ -319,12 +319,12 @@ int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
 	}
 	iRet64 = lseek64(fileData, (off64_t)iBlockOffset*iExpectedDataLen, SEEK_SET);
 	if (iRet64 == -1) {
-		perror("WARN:filedata_save:lseek failed:");
+		perror("WARN:filedata_save: lseek failed");
 		return -1;
 	}
 	iRet = write(fileData, buf, len);
 	if (iRet == -1) {
-		perror("WARN:filedata_save:write failed:");
+		perror("WARN:filedata_save: write failed");
 		return -1;
 	}
 	if (iRet != len) {
@@ -420,7 +420,7 @@ int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDa
 					}
 				}
 			} else {
-				perror("WARN:mcast_recv:revfrom failed:");
+				perror("WARN:mcast_recv: revfrom failed");
 			}
 			continue;
 		}
@@ -517,7 +517,7 @@ int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrP
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 				usleep(UCAST_PI_USLEEP);
 			} else {
-				perror("WARN:ucast_pi:revfrom failed:");
+				perror("WARN:ucast_pi: revfrom failed");
 			}
 			continue;
 		}
@@ -583,7 +583,7 @@ int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portSer
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 				usleep(UCAST_UR_USLEEP);
 			} else {
-				perror("WARN:ucast_recover:revfrom failed:");
+				perror("WARN:ucast_recover: revfrom failed");
 			}
 			continue;
 		}
@@ -648,7 +648,7 @@ int snm_datafile_open(struct snm *me) {
 	me->fileData = open(me->sDataFile, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // Do I need truncate to think later. Also if writing to device files, then have to re-evaluate the flags
 	if (me->fileData == -1) {
 		fprintf(stderr, "WARN:%s: Failed to open data file [%s], saving data will be skipped\n", __func__, me->sDataFile);
-		perror("Failed datafile open");
+		perror("ERRR:datafile_open: Failed datafile open");
 	} else {
 		fprintf(stderr, "INFO:%s: opened data file [%s]\n", __func__, me->sDataFile);
 	}
@@ -791,7 +791,7 @@ int main(int argc, char **argv) {
 	snm_parse_args(&snmCur, argc, argv);
 
 	if (signal(SIGINT, &signal_handler) == SIG_ERR) {
-		perror("WARN:main:Failed setting SIGINT handler");
+		perror("WARN:main: Failed setting SIGINT handler");
 	}
 
 	snm_args_process_p1(&snmCur);
