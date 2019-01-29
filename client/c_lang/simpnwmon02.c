@@ -232,44 +232,8 @@ int snm_sock_mcast_ctrl(struct snm *me, int mode) {
 	return iRet;
 }
 
-int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
-{
-	int iRet;
-	int sockMCast = -1;
-	struct sockaddr_in myAddr;
-
-	sockMCast = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sockMCast == -1) {
-		fprintf(stderr, "ERROR:%s: Failed to create socket, ret=[%d]\n", __func__, sockMCast);
-		perror("ERRR:mcast_init: Failed socket");
-		exit(-1);
-	}
-
-	iRet = sock_mcast_ctrl(sockMCast, ifIndex, sMCastAddr, sLocalAddr, IP_ADD_MEMBERSHIP);
-	if (iRet < 0) {
-		exit(-1);
-	}
-
-	myAddr.sin_family=AF_INET;
-	myAddr.sin_port=htons(port);
-	myAddr.sin_addr.s_addr=htonl(INADDR_ANY);
-	iRet = bind(sockMCast, (struct sockaddr*)&myAddr, sizeof(myAddr));
-	if (iRet < 0) {
-		fprintf(stderr, "ERROR:%s: Failed bind localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, INADDR_ANY, port, iRet);
-		perror("ERRR:mcast_init: Failed bind");
-		exit(-1);
-	}
-	fprintf(stderr, "INFO:%s: sockMCast [%d] bound to localAddr[0x%X] & port[%d], ret=[%d]\n", __func__, sockMCast, INADDR_ANY, port, iRet);
-	return sockMCast;
-}
-
-int snm_sock_mcast_init(struct snm *me) {
-	me->sockMCast = sock_mcast_init_ex(me->iLocalIFIndex, me->sMCastAddr, me->portMCast, me->sLocalAddr);
-	return me->sockMCast;
-}
-
 #define ENABLE_BROADCAST 1
-int sock_ucast_init(char *sLocalAddr, int port) {
+int sock_ucast_init(char *sLocalAddr, int port, int bcastEnable) {
 	int iRet;
 	int sockUCast = -1;
 	struct sockaddr_in myAddr;
@@ -281,16 +245,16 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 		exit(-1);
 	}
 
-#ifdef ENABLE_BROADCAST
-	int iEnable = 1;
-	iRet = setsockopt(sockUCast, SOL_SOCKET, SO_BROADCAST, &iEnable, sizeof(iEnable));
-	if (iRet != 0) {
-		fprintf(stderr, "ERROR:%s: Failed Enabling Broadcast, ret=[%d]\n", __func__, iRet);
-		perror("ERRR:ucast_init: Failed enabling Broadcast");
-		exit(-1);
+	if (bcastEnable != 0) {
+		int iEnable = 1;
+		iRet = setsockopt(sockUCast, SOL_SOCKET, SO_BROADCAST, &iEnable, sizeof(iEnable));
+		if (iRet != 0) {
+			fprintf(stderr, "ERROR:%s: Failed Enabling Broadcast, ret=[%d]\n", __func__, iRet);
+			perror("ERRR:ucast_init: Failed enabling Broadcast");
+			exit(-1);
+		}
+		fprintf(stderr, "INFO:%s: Enabled Broadcast, ret=[%d]\n", __func__, iRet);
 	}
-	fprintf(stderr, "INFO:%s: Enabled Broadcast, ret=[%d]\n", __func__, iRet);
-#endif
 
 	myAddr.sin_family=AF_INET;
 	myAddr.sin_port=htons(port);
@@ -306,8 +270,26 @@ int sock_ucast_init(char *sLocalAddr, int port) {
 }
 
 int snm_sock_ucast_init(struct snm *me) {
-	me->sockUCast = sock_ucast_init(me->sLocalAddr, me->portClient);
+	me->sockUCast = sock_ucast_init(me->sLocalAddr, me->portClient, ENABLE_BROADCAST);
 	return me->sockUCast;
+}
+
+int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)
+{
+	int iRet;
+	int sockMCast = -1;
+
+	sockMCast = sock_ucast_init(sLocalAddr, port, ENABLE_BROADCAST);
+	iRet = sock_mcast_ctrl(sockMCast, ifIndex, sMCastAddr, sLocalAddr, IP_ADD_MEMBERSHIP);
+	if (iRet < 0) {
+		exit(-1);
+	}
+	return sockMCast;
+}
+
+int snm_sock_mcast_init(struct snm *me) {
+	me->sockMCast = sock_mcast_init_ex(me->iLocalIFIndex, me->sMCastAddr, me->portMCast, me->sLocalAddr);
+	return me->sockMCast;
 }
 
 int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {
