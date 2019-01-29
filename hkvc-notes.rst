@@ -327,6 +327,10 @@ of lost packets represented thro these ranges is also sent to the server as
 part of the URAck packet. The server informs about the total number of blocks
 involved in the current transfer to the client as part of URReq packet.
 
+NOTE: During ucast phase, by default the logic is implemented to ignore nw
+errors and inturn continue in a suitable manner, which doesn't impact the
+overall logic/flow much.
+
 
 Save & Resume
 ---------------
@@ -651,6 +655,24 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
 Release Notes / Thoughts during some of the releases
 #####################################################
+
+v20190129IST1647 - v1.2
+==========================
+
+Unicast recovery phase now ignores network errors and continues with the logic
+in a suitable manner by default.
+
+This version removes the nw error related exits in the unicast recovery phase.
+So even if the network connection fails during this phase, the logic will
+continue to persist, with the hope that network connection will be restored by
+the client system's network managing logic.
+
+Multicast ALL property is no longer set for the multicast socket.
+
+NOTE: If network fails during PI phase for more than 10 minutes, the logic will
+quit pi phase and go into ucast recover phase.This is fine, as long as the
+server nw-recover script is started with a context file containing all clients
+in the network.
 
 v20190128IST1259 - v1.1
 ========================
