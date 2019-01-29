@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190129IST1627
+    v20190129IST1647
     HanishKVC, GPL, 19XY
  */
 
@@ -162,7 +162,8 @@ void snm_save_context(struct snm *me, char *sTag) {
 	close(iFile);
 }
 
-#define ENABLE_MULTICAST_ALL 1
+//#define ENABLE_MULTICAST_ALL 1
+#undef ENABLE_MULTICAST_ALL
 #define MCAST_JOIN 0
 #define MCAST_DROP 1
 int sock_mcast_ctrl(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAddr, int mode) {
