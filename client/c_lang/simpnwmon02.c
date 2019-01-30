@@ -35,7 +35,6 @@ const int PKT_TOTALBLOCKS_OFFSET=12;
 const int PKT_DATA_OFFSET=16;
 const int PKT_URACK_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
-const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;
 const int PKT_PIREQ_NAME_OFFSET=4;
 const int PKT_PIREQ_LOSTPKTS_OFFSET=20;
 
@@ -334,142 +333,17 @@ void print_stat(const char *sTag, int iPktCnt, int iPrevPktCnt, int iSeq, time_t
 			sTag, iPktCnt, iSeq, (curSTime-curDTime), iDisjointSeqs, iDisjointPktCnt, iOldSeqs, iDataBytesPerSec);
 }
 
-void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDisjointSeqs, int *piDisjointPktCnt) {
-	ll_add_sorted_startfrom_lastadded(llrLostPkts, start, end);
-	*piDisjointSeqs += 1;
-	*piDisjointPktCnt += (end-start+1);
-}
+void print_gap_ifseq(int iSeq, char *sMsg) {
+	static int iOldSeqs = 0;
+	static int iPrevSeq = 0;
 
-int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot, int *piMaxDataSeqNumProcessed, struct snm *me) {
-
-	int iRet;
-	int iPrevSeq = *piMaxDataSeqNumGot - 1;
-	int iSeq = *piMaxDataSeqNumGot;
-	int iPktCnt = 0;
-	int iOldSeqs = 0;
-	int iDisjointSeqs = 0;
-	int iDisjointPktCnt = 0;
-	int iSeqDelta;
-	time_t prevSTime, curSTime;
-	time_t prevDTime, curDTime;
-	time_t deltaSTime;
-	time_t prevMTime, deltaMTime;
-	int iPrevPktCnt = 0;
-	int iRecvdStop = 0;
-	int iPrevRecvdStop = -1;
-	int iMCastSlowExit = 0;
-	int iActualLastSeqNum = -1;
-
-	if (iPrevSeq == -2) {
-		iPrevSeq = -1;
-		iSeq = -1;
+	int iSeqDelta = iSeq - iPrevSeq;
+	if (iSeqDelta <= 0) {
+		iOldSeqs += 1;
 	}
-
-	prevSTime = time(NULL);
-	prevDTime = prevSTime;
-	curDTime = prevDTime;
-	prevMTime = prevSTime;
-	gbDoMCast = 1;
-	deltaMTime = -1;
-	while (gbDoMCast) {
-
-		iRet = recvfrom(sockMCast, gcBuf, giDataSize, MSG_DONTWAIT, NULL, NULL);
-		curSTime = time(NULL);
-		deltaSTime = curSTime - prevSTime;
-		if (deltaSTime > STATS_TIMEDELTA) {
-			deltaMTime = curSTime - prevMTime;
-			print_stat(__func__, iPktCnt, iPrevPktCnt, iSeq, curSTime, curDTime, prevDTime, iDisjointSeqs, iDisjointPktCnt, iOldSeqs);
-			prevSTime = curSTime;
-			iPrevPktCnt = iPktCnt;
-			prevDTime = curDTime;
-			if (iRecvdStop > 0) {
-				fprintf(stderr, "INFO:%s: In MCastStop phase... (LastPkt Got[%d] Actual[%d]) ", __func__, *piMaxDataSeqNumGot, iActualLastSeqNum);
-				if (iRecvdStop == iPrevRecvdStop) {
-					fprintf(stderr, ": No New MCastStop Packets\n");
-					iMCastSlowExit += 1;
-					if (iMCastSlowExit > MCASTSLOWEXIT_CNT) {
-						gbDoMCast = 0;
-					}
-				} else {
-					fprintf(stderr, ": Still MCastStop Packets coming\n");
-				}
-				iPrevRecvdStop = iRecvdStop;
-			}
-		}
-		if (iRet == -1) {
-			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-				usleep(MCAST_USLEEP);
-				if (deltaMTime > MCASTREJOIN_TIMEDELTA) {
-					deltaMTime = -1;
-					prevMTime = curSTime;
-					if (me != NULL) {
-						fprintf(stderr, "INFO:%s: silent mcast channel, rejoining again\n", __func__);
-						snm_sock_mcast_ctrl(me, IP_DROP_MEMBERSHIP);
-						snm_sock_mcast_ctrl(me, IP_ADD_MEMBERSHIP);
-					} else {
-						fprintf(stderr, "INFO:%s: silent mcast channel, simply continuing to wait\n", __func__);
-					}
-				}
-			} else {
-				perror("WARN:mcast_recv: revfrom failed");
-			}
-			continue;
-		}
-		curDTime = time(NULL);
-#ifndef MCASTREJOIN_ALWAYS
-		prevMTime = curDTime;
-#endif
-		iPktCnt += 1;
-		iSeq = *((uint32_t*)&gcBuf[PKT_SEQNUM_OFFSET]);
-		if (iSeq == MCASTSTOPSeqNum) {
-			iActualLastSeqNum = *((uint32_t*)&gcBuf[PKT_MCASTSTOP_TOTALBLOCKS_OFFSET]) - 1;
-			if (iRecvdStop == 0) {
-				if (*piMaxDataSeqNumGot != iActualLastSeqNum) {
-					_account_lostpackets(llLostPkts, *piMaxDataSeqNumGot+1, iActualLastSeqNum, &iDisjointSeqs, &iDisjointPktCnt);
-					if (*piMaxDataSeqNumProcessed < iActualLastSeqNum) {
-						fprintf(stderr, "WARN:%s: ProcessedMaxDataSeq [%d] < ActualLastSeq[%d], updated\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
-						*piMaxDataSeqNumProcessed = iActualLastSeqNum;
-					} else {
-						fprintf(stderr, "DBUG:%s: ProcessedMaxDataSeq [%d] >= ActualLastSeq[%d]\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
-					}
-				}
-			}
-			iRecvdStop += 1;
-			continue;
-		}
-		iSeqDelta = iSeq - iPrevSeq;
-		if (iSeqDelta <= 0) {
-			iOldSeqs += 1;
-			continue;
-		}
-		*piMaxDataSeqNumGot = iSeq;
-		*piMaxDataSeqNumProcessed = iSeq;
-		if (iSeqDelta > 1) {
-			//fprintf(stderr, "DEBUG:%s: iSeq[%d] iPrevSeq[%d] iSeqDelta[%d] iDisjointSeqs[%d] iDisjointPktCnt[%d]\n", __func__, iSeq, iPrevSeq, iSeqDelta, iDisjointSeqs, iDisjointPktCnt);
-			_account_lostpackets(llLostPkts, iPrevSeq+1, iSeq-1, &iDisjointSeqs, &iDisjointPktCnt);
-		}
-		if (fileData != -1) {
-			filedata_save(fileData, &gcBuf[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
-		}
-		iPrevSeq = iSeq;
-
+	if (iSeqDelta > 1) {
+		fprintf(stderr, "INFO:%s: gap [%d - %d]\n", sMsg, iPrevSeq+1, iSeq-1);
 	}
-
-	return 0;
-}
-
-int snm_mcast_recv(struct snm *me) {
-	int iRet = -1;
-
-	if ((me->iRunModes & RUNMODE_MCAST) == RUNMODE_MCAST) {
-		iRet = mcast_recv(me->sockMCast, me->fileData, &me->llLostPkts, &me->iMaxDataSeqNumGot, &me->iMaxDataSeqNumProcessed, me);
-		me->iDoneModes |= RUNMODE_MCAST;
-		snm_save_context(me, "mcast");
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping mcast:recv...\n", __func__);
-	}
-	me->iDoneModes |= RUNMODE_MCAST;
-	return iRet;
 }
 
 int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts, char *sCID) {
@@ -545,98 +419,6 @@ int snm_ucast_pi(struct snm *me) {
 
 #define UR_BUFS_LEN 800
 #define UR_BUFR_LEN 1500
-int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts, int *piMaxDataSeqNumProcessed) {
-	int iRet;
-	char bufS[UR_BUFS_LEN], bufR[UR_BUFR_LEN];
-	struct sockaddr_in addrS, addrR;
-	time_t prevSTime, curSTime;
-	int iPktCnt, iPrevPktCnt;
-
-	addrS.sin_family=AF_INET;
-	addrS.sin_port=htons(portServer);
-	addrS.sin_addr.s_addr = theSrvrPeer;
-	*(uint32_t *)bufS = URAckSeqNum;
-
-	iPrevPktCnt = 0;
-	iPktCnt = 0;
-	prevSTime = time(NULL);
-	int bUCastRecover = 1;
-	while(bUCastRecover) {
-		curSTime = time(NULL);
-		int iDeltaTimeSecs = curSTime - prevSTime;
-		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
-			int iDeltaPkts = iPktCnt - iPrevPktCnt;
-			int iDataBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] DataBPS[%d]\n", __func__, iPktCnt, iDataBytesPerSec);
-			prevSTime = curSTime;
-			iPrevPktCnt = iPktCnt;
-		}
-		unsigned int iAddrLen = sizeof(addrR);
-		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
-		if (iRet == -1) {
-			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-				usleep(UCAST_UR_USLEEP);
-			} else {
-				perror("WARN:ucast_recover: revfrom failed");
-			}
-			continue;
-		}
-		iPktCnt += 1;
-		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
-		if (iSeq == URReqSeqNum) {
-			if (theSrvrPeer != addrR.sin_addr.s_addr) {
-				fprintf(stderr, "WARN:%s: prev peer srvr[0x%X] cmdGot from[0x%X], adjusting...\n", __func__, theSrvrPeer, addrR.sin_addr.s_addr);
-				theSrvrPeer = addrR.sin_addr.s_addr;
-				addrS.sin_addr.s_addr = theSrvrPeer;
-			}
-			int iIgnore;
-			int iActualLastSeqNum = *((uint32_t*)&bufR[PKT_URREQ_TOTALBLOCKS_OFFSET]) - 1;
-			if (*piMaxDataSeqNumProcessed < iActualLastSeqNum) {
-				_account_lostpackets(llLostPkts, *piMaxDataSeqNumProcessed+1, iActualLastSeqNum, &iIgnore, &iIgnore);
-				fprintf(stderr, "WARN:%s: ProcessedMaxDataSeq [%d] < ActualLastSeq[%d], updated\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
-				*piMaxDataSeqNumProcessed = iActualLastSeqNum;
-			} else if (*piMaxDataSeqNumProcessed > iActualLastSeqNum) {
-				fprintf(stderr, "DBUG:%s: ProcessedMaxDataSeq [%d] > ActualLastSeq[%d]\n", __func__, *piMaxDataSeqNumProcessed, iActualLastSeqNum);
-			}
-
-			int iRecords = ll_getdata(llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
-#ifdef PRG_UR_VERBOSE
-			ll_print_summary(llLostPkts, "LostPackets");
-#endif
-			iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
-			if (iRet == -1) {
-				perror("WARN:ucast_recover: Failed sending URAck currently");
-#ifdef EXITON_NWERROR
-				exit(-1);
-#endif
-			} else {
-				fprintf(stderr, "INFO:%s: URAck [%d]records", __func__, iRecords);
-			}
-			fprintf(stderr, ": Lost Ranges[%d] Pkts[%d]\n", llLostPkts->iNodeCnt, llLostPkts->iTotalFromRanges);
-		} else {
-			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
-				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
-				continue;
-			}
-			ll_delete(llLostPkts, iSeq);
-			if (fileData != -1) {
-				filedata_save(fileData, &bufR[PKT_DATA_OFFSET], iSeq, iRet-PKT_DATA_OFFSET);
-			}
-		}
-	}
-	return -1;
-}
-
-int snm_ucast_recover(struct snm *me) {
-	int iRet = -1;
-	if ((me->iRunModes & RUNMODE_UCASTUR) == RUNMODE_UCASTUR) {
-		iRet = ucast_recover(me->sockUCast, me->fileData, me->theSrvrPeer, me->portServer, &me->llLostPkts, &me->iMaxDataSeqNumProcessed);
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping ucast:ur...\n", __func__);
-	}
-	me->iDoneModes |= RUNMODE_UCASTUR;
-	return iRet;
-}
 
 int snm_handle_urreq(struct snm *me, struct sockaddr_in *addrR) {
 	struct sockaddr_in addrS;
@@ -686,20 +468,21 @@ int snm_run(struct snm *me) {
 	char bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrR;
 	int iDataCnt, iPktCnt, iPrevPktCnt;
-	time_t prevSTime, curSTime;
+	time_t prevSTime, curSTime, prevMTime;
 
 	iPktCnt = 0;
 	iPrevPktCnt = 0;
 	iDataCnt = 0;
 	gbSNMRun = 1;
 	prevSTime = time(NULL);
+	prevMTime = prevSTime;
 	while(gbSNMRun) {
 		curSTime = time(NULL);
 		int iDeltaTimeSecs = curSTime - prevSTime;
 		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
 			int iDeltaPkts = iPktCnt - iPrevPktCnt;
 			int iBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] PktBPS[%d]\n", __func__, iPktCnt, iDataCnt, iBytesPerSec);
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] iSeqNo[%d] PktBPS[%d]\n", __func__, iPktCnt, iDataCnt, me->iMaxDataSeqNumGot, iBytesPerSec);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
 		}
@@ -714,14 +497,24 @@ int snm_run(struct snm *me) {
 			continue;
 		}
 		if (iRet == 0) {
-			// Handle MCast ReJoin, when required
+			int deltaMTime = curSTime - prevMTime;
+			if (deltaMTime > MCASTREJOIN_TIMEDELTA) {
+				prevMTime = curSTime;
+				fprintf(stderr, "INFO:%s: silent mcast channel, rejoining again\n", __func__);
+				snm_sock_mcast_ctrl(me, IP_DROP_MEMBERSHIP);
+				snm_sock_mcast_ctrl(me, IP_ADD_MEMBERSHIP);
+			}
 			continue;
 		}
 		// UCast commands / data get priority
 		if (FD_ISSET(me->sockUCast, &socks)) {
 			sock = me->sockUCast;
+#ifndef MCASTREJOIN_ALWAYS
+			prevMTime = curSTime;
+#endif
 		} else {
 			sock = me->sockMCast;
+			prevMTime = curSTime;
 		}
 		unsigned int iAddrLen = sizeof(addrR);
 		iRet = recvfrom(sock, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
@@ -755,6 +548,9 @@ int snm_run(struct snm *me) {
 			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
 				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
 				continue;
+			}
+			if (me->iMaxDataSeqNumGot < iSeq) {
+				me->iMaxDataSeqNumGot = iSeq;
 			}
 			iDataCnt += 1;
 			snm_handle_data(me, iSeq, bufR, iRet);
@@ -923,6 +719,7 @@ int main(int argc, char **argv) {
 	snm_sock_ucast_init(&snmCur);
 
 	snm_run(&snmCur);
+	snm_save_context(&snmCur, "end");
 
 	ll_print(&snmCur.llLostPkts, "LostPackets before exit");
 	ll_free(&snmCur.llLostPkts);
