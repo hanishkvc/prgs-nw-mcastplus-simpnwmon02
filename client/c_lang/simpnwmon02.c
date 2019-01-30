@@ -667,6 +667,14 @@ int snm_handle_urreq(struct snm *me, struct sockaddr_in *addrR) {
 	return 0;
 }
 
+int snm_handle_data(struct snm *me, int iSeq, char *buf, int len) {
+	ll_delete(&me->llLostPkts, iSeq);
+	if (me->fileData != -1) {
+		filedata_save(me->fileData, &buf[PKT_DATA_OFFSET], iSeq, len-PKT_DATA_OFFSET);
+	}
+	return 0;
+}
+
 #define STATE_DO 0
 #define STATE_DONE 1
 int snm_run(struct snm *me) {
@@ -731,7 +739,12 @@ int snm_run(struct snm *me) {
 #endif
 		} else if (iSeq == PIReqSeqNum) {
 		} else {
+			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
+				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
+				continue;
+			}
 			iDataCnt += 1;
+			snm_handle_data(me, iSeq, bufR, iRet);
 		}
 		if ((me->state == STATE_DO) && (me->llLostPkts.iNodeCnt == 0)) {
 			me->state = STATE_DONE;
