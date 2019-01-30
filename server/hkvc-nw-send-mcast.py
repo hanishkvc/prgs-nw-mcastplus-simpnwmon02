@@ -207,9 +207,5 @@ print_throughput(prevTime, pktid, prevPktid)
 
 
 save_context(gsContext, pktid, giTotalBlocksInvolved)
-print("INFO: Done with transfer")
-
-network.mcast_stop(sock, maddr, portMCast, giTotalBlocksInvolved, 120)
-
-print("INFO: Done sending stops, quiting...")
+print("INFO: Done with mcast transfer, quiting...")
 

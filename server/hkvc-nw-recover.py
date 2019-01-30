@@ -164,17 +164,16 @@ def _presence_info(clients, clientsDB):
 			peer = d[1][0]
 			try:
 				i = clients.index(peer)
-				(tName, tLostPkts) = struct.unpack("<I16sI8s", dataC)[1:3]
-				dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
-				clientsDB[peer]['cnt'] += 1
-				clientsDB[peer]['lostpkts'] = tLostPkts
-				clientsDB[peer]['name'] = tName
+				(tCmd, tName, tLostPkts) = struct.unpack("<I16sI8s", dataC)[0:3]
+				if (tCmd == PIAckSeqNum):
+					dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
+					clientsDB[peer]['cnt'] += 1
+					clientsDB[peer]['lostpkts'] = tLostPkts
+					clientsDB[peer]['name'] = tName
 			except ValueError as e:
 				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
 				clientsDB[peer] = {'type':'new', 'cnt': 1}
-			data=struct.pack("<Is", PIAckSeqNum, bytes("Hello", 'utf8'))
-			sock.sendto(data, (peer, portClient))
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
@@ -197,7 +196,8 @@ def presence_info(clients):
 	clientsDB = {}
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
-	for i in range(4):
+	for i in range(10):
+		network.send_pireq(sock, maddr, portMCast, giTotalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(clients, clientsDB)
 		status.ucast_pi(clientsDB)
 		if (iSilentClients == 0):
@@ -205,7 +205,6 @@ def presence_info(clients):
 			return
 		else:
 			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
-			network.mcast_stop(sock, maddr, portMCast, giTotalBlocksInvolved, 60)
 
 
 def gen_lostpackets_array(lostPackets):

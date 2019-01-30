@@ -45,6 +45,12 @@ def mcast_stop(cur, totalTime):
 	_after()
 
 
+def pireq(addr, piSeqId, i, times):
+	_before()
+	_print("PI_REQ:{}:{}:{}/{}".format(addr, piSeqId, i, times))
+	_after()
+
+
 def ucast_pi(clientsDB):
 	_before()
 	_print("SET:UCAST_PI:ClientCnt:{}".format(len(clientsDB)))

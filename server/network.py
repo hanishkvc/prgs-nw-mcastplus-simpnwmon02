@@ -18,6 +18,7 @@ portMCast = 1111
 portServer = 1112
 portClient = 1113
 
+PIReqSeqNum = 0xffffff00
 MCASTSTOPSeqNum = 0xffffffff
 MCASTSTOPAdditionalCheck = 0xf5a55a5f
 
@@ -31,14 +32,12 @@ def ports_ngupdate(nwGroup):
 	return tPortMCast, tPortServer, tPortClient
 
 
-def mcast_stop(sock, addr, port, totalBlocksInvolved, times=120):
+def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 	for i in range(times):
 		if (i%10) == 0:
-			status.mcast_stop(i, times)
-			print("INFO: MCastStop Num[{}] sending".format(i))
-		tmpData = bytes(dataSize-8)
-		curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, totalBlocksInvolved, tmpData)
-		data=struct.pack("<IIII{}s".format(dataSize), MCASTSTOPSeqNum, totalBlocksInvolved, totalBlocksInvolved, totalBlocksInvolved, curData)
+			status.pireq(addr, piSeqId, i, times)
+			print("INFO: PIReq Num[{}:{}] sending".format(piSeqId, i))
+		data=struct.pack("<IIII5s", PIReqSeqNum, totalBlocksInvolved, totalBlocksInvolved, totalBlocksInvolved, bytes("PIReq", 'utf-8'))
 		sock.sendto(data, (addr, port))
 		time.sleep(1)
 
