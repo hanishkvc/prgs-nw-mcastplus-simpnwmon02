@@ -32,8 +32,8 @@ const int PKT_CTXTID_OFFSET=4;
 const int PKT_TOTALBLOCKS_OFFSET=12;
 const int PKT_DATA_OFFSET=16;
 const int PKT_URACK_DATA_OFFSET=4;
-const int PKT_PIREQ_NAME_OFFSET=4;
-const int PKT_PIREQ_LOSTPKTS_OFFSET=20;
+const int PKT_PIACK_NAME_OFFSET=4;
+const int PKT_PIACK_LOSTPKTS_OFFSET=20;
 
 int gNwGroupMul=5;
 int gPortMCast=1111;
@@ -342,74 +342,26 @@ void print_gap_ifseq(int iSeq, char *sMsg) {
 	}
 }
 
-int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts, char *sCID) {
+int snm_handle_pi(struct snm *me, uint32_t theSrvrPeer) {
 	int iRet;
-	char bufS[32], bufR[32];
-	struct sockaddr_in addrS, addrR;
+	char bufS[32];
+	struct sockaddr_in addrS;
 
 	addrS.sin_family=AF_INET;
-	addrS.sin_port=htons(portServer);
-	iRet = inet_aton(sPINwBCast, &addrS.sin_addr);
-	if (iRet == 0) {
-		fprintf(stderr, "ERROR:%s: Failed to convert [%s] to nw addr, ret=[%d]\n", __func__, sPINwBCast, iRet);
-		perror("WARN:ucast_pi: sPINwBCast aton failed, PIPhase will be ignored");
+	addrS.sin_port=htons(me->portServer);
+	addrS.sin_addr.s_addr = theSrvrPeer;
+	*(uint32_t *)bufS = PIAckSeqNum;
+	strncpy(&bufS[PKT_PIACK_NAME_OFFSET], me->sCID, CID_MAXLEN);
+	*(uint32_t *)&bufS[PKT_PIACK_LOSTPKTS_OFFSET] = me->llLostPkts.iTotalFromRanges;
+
+	fprintf(stderr, "INFO:%s: me [%s, %d], peerSrvr[0x%X]\n", __func__, &bufS[PKT_PIACK_NAME_OFFSET], me->llLostPkts.iTotalFromRanges, theSrvrPeer);
+	iRet = sendto(me->sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
+	if (iRet == -1) {
+		perror("WARN:handle_pi: Failed sending PIAck");
 #ifdef EXITON_NWERROR
 		exit(-1);
-#else
-		return -1;
 #endif
 	}
-	*(uint32_t *)bufS = PIReqSeqNum;
-	strncpy(&bufS[PKT_PIREQ_NAME_OFFSET], sCID, CID_MAXLEN);
-	*(uint32_t *)&bufS[PKT_PIREQ_LOSTPKTS_OFFSET] = iTotalLostPkts;
-
-	for(int i = 0; i < PI_RETRYCNT; i++) {
-		fprintf(stderr, "INFO:%s: PI[%s:%d] :find peer srvr: try %d\n", __func__, &bufS[PKT_PIREQ_NAME_OFFSET], iTotalLostPkts, i);
-		iRet = sendto(sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
-		if (iRet == -1) {
-			perror("WARN:ucast_pi: Failed sending PIReq, may try again");
-#ifdef EXITON_NWERROR
-			exit(-1);
-#else
-			usleep(UCAST_PI_USLEEP);
-			continue;
-#endif
-		}
-		unsigned int iAddrLen = sizeof(addrR);
-		iRet = recvfrom(sockUCast, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
-		if (iRet == -1) {
-			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-				usleep(UCAST_PI_USLEEP);
-			} else {
-				perror("WARN:ucast_pi: revfrom failed");
-			}
-			continue;
-		}
-		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
-		if (iSeq == PIAckSeqNum) {
-			*theSrvrPeer = addrR.sin_addr.s_addr;
-			fprintf(stderr, "INFO:%s: Found peer srver: %s\n", __func__, inet_ntoa(addrR.sin_addr));
-			return 0;
-		} else {
-			fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], check why\n", __func__, iSeq);
-			usleep(UCAST_PI_USLEEP);
-		}
-	}
-	return -1;
-}
-
-int snm_ucast_pi(struct snm *me) {
-	int iRet = -1;
-
-	if ((me->iRunModes & RUNMODE_UCASTPI) == RUNMODE_UCASTPI) {
-		iRet = ucast_pi(me->sockUCast, me->sBCastAddr, me->portServer, &(me->theSrvrPeer), me->llLostPkts.iTotalFromRanges, me->sCID);
-		if (iRet < 0) {
-			fprintf(stderr, "WARN:%s: No Server found during PI Phase, however giving ucast_recover a chance...\n", __func__);
-		}
-	} else {
-		fprintf(stderr, "INFO:%s: Skipping ucast:pi...\n", __func__);
-	}
-	me->iDoneModes |= RUNMODE_UCASTPI;
 	return iRet;
 }
 
@@ -541,6 +493,7 @@ int snm_run(struct snm *me) {
 			}
 #endif
 		} else if (iSeq == PIReqSeqNum) {
+			snm_handle_pi(me, addrR.sin_addr.s_addr);
 		} else {
 			if ((iSeq & SeqNumCmdsCmn) == SeqNumCmdsCmn) {
 				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
