@@ -38,7 +38,7 @@ def mcast_stop(sock, addr, port, totalBlocksInvolved, times=120):
 			print("INFO: MCastStop Num[{}] sending".format(i))
 		tmpData = bytes(dataSize-8)
 		curData = struct.pack("<II{}s".format(dataSize-8), MCASTSTOPAdditionalCheck, totalBlocksInvolved, tmpData)
-		data=struct.pack("<I{}s".format(dataSize), MCASTSTOPSeqNum, curData)
+		data=struct.pack("<IIII{}s".format(dataSize), MCASTSTOPSeqNum, totalBlocksInvolved, totalBlocksInvolved, totalBlocksInvolved, curData)
 		sock.sendto(data, (addr, port))
 		time.sleep(1)
 

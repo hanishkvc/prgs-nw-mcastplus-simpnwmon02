@@ -256,7 +256,7 @@ def ur_client(client):
 	while(deltaTime < URDeltaTimeSecs):
 		if ((iCnt % 30) == 0):
 			dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
-		data=struct.pack("<I4sI", URReqSeqNum, bytes("Helo", 'utf8'), giTotalBlocksInvolved)
+		data=struct.pack("<IIII4s", URReqSeqNum, giTotalBlocksInvolved, giTotalBlocksInvolved, giTotalBlocksInvolved, bytes("Helo", 'utf8'))
 		sock.sendto(data, (client, portClient))
 		try:
 			d = sock.recvfrom(1024)
@@ -336,7 +336,7 @@ def send_file_data(peer, indexList):
 		else:
 			tmpData = bytes(dataSize-4)
 			curData = struct.pack("<I{}s".format(dataSize-4), i, tmpData)
-		data=struct.pack("<I{}s".format(dataSize), i, curData)
+		data=struct.pack("<IIII{}s".format(dataSize), i, giTotalBlocksInvolved, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
 		sock.sendto(data, (peer, portClient))
 		pktid += 1
 		if ((pktid%N) == 0):

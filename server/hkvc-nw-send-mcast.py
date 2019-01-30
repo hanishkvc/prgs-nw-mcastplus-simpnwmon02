@@ -187,7 +187,7 @@ while True:
 			if (bSimLossRandom and ((iRem+1) == iSimLossRange)):
 				iSimLossMod, iSimLossRange = simloss_random()
 			continue
-	data=struct.pack("<I{}s".format(dataSize), pktid, curData)
+	data=struct.pack("<IIII{}s".format(dataSize), pktid, giTotalBlocksInvolved, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
 	sock.sendto(data, (maddr, portMCast))
 	pktid += 1
 	if ((pktid%N) == 0):
