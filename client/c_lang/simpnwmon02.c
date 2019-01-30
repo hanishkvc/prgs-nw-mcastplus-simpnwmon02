@@ -33,6 +33,7 @@ const int PKT_SEQNUM_OFFSET=0;
 const int PKT_CTXTID_OFFSET=4;
 const int PKT_TOTALBLOCKS_OFFSET=12;
 const int PKT_DATA_OFFSET=16;
+const int PKT_URACK_DATA_OFFSET=4;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;
 const int PKT_PIREQ_NAME_OFFSET=4;
@@ -652,7 +653,7 @@ int snm_handle_urreq(struct snm *me, struct sockaddr_in *addrR) {
 		me->theSrvrPeer = addrR->sin_addr.s_addr;
 		addrS.sin_addr.s_addr = me->theSrvrPeer;
 	}
-	int iRecords = ll_getdata(&me->llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
+	int iRecords = ll_getdata(&me->llLostPkts, &bufS[PKT_URACK_DATA_OFFSET], UR_BUFS_LEN-PKT_URACK_DATA_OFFSET, 20);
 #ifdef PRG_UR_VERBOSE
 	ll_print_summary(&me->llLostPkts, "LostPackets");
 #endif
@@ -747,6 +748,7 @@ int snm_run(struct snm *me) {
 			snm_handle_data(me, iSeq, bufR, iRet);
 		}
 		if ((me->state == STATE_DO) && (me->llLostPkts.iNodeCnt == 0)) {
+			fprintf(stderr, "INFO:%s: All data got\n", __func__);
 			me->state = STATE_DONE;
 		}
 	}
