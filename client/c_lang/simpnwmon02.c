@@ -685,12 +685,24 @@ int snm_run(struct snm *me) {
 	int sock;
 	char bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrR;
-	int iDataCnt, iPktCnt;
+	int iDataCnt, iPktCnt, iPrevPktCnt;
+	time_t prevSTime, curSTime;
 
 	iPktCnt = 0;
+	iPrevPktCnt = 0;
 	iDataCnt = 0;
 	gbSNMRun = 1;
+	prevSTime = time(NULL);
 	while(gbSNMRun) {
+		curSTime = time(NULL);
+		int iDeltaTimeSecs = curSTime - prevSTime;
+		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
+			int iDeltaPkts = iPktCnt - iPrevPktCnt;
+			int iBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] PktBPS[%d]\n", __func__, iPktCnt, iDataCnt, iBytesPerSec);
+			prevSTime = curSTime;
+			iPrevPktCnt = iPktCnt;
+		}
 		FD_ZERO(&socks);
 		FD_SET(me->sockMCast, &socks);
 		FD_SET(me->sockUCast, &socks);
