@@ -54,7 +54,7 @@ const int MCASTSTOPSeqNum = 0xffffffff;
 //char *sLocalAddr="0.0.0.0";
 
 #define BUF_MAXSIZE 1600
-int giDataSize=(1024+4);
+int giDataSize=(1024+4*4);
 char gcBuf[BUF_MAXSIZE];
 #define MAIN_FPATH_LEN 256
 char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
