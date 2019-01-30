@@ -71,6 +71,7 @@ char gsCID[CID_MAXLEN] = "v20190130whoAMi";
 
 
 int gbDoMCast = 1;
+int gbSNMRun = 1;
 
 struct snm {
 	int sockMCast, sockUCast;
@@ -628,6 +629,52 @@ int snm_ucast_recover(struct snm *me) {
 	}
 	me->iDoneModes |= RUNMODE_UCASTUR;
 	return iRet;
+}
+
+int snm_run(struct snm *me) {
+	int iRet;
+	fd_set socks;
+	struct timeval tv;
+	int sock;
+	char bufR[UR_BUFR_LEN];
+	struct sockaddr_in addrR;
+
+	gbSNMRun = 1;
+	while(gbSNMRun) {
+		FD_ZERO(&socks);
+		FD_SET(me->sockMCast, &socks);
+		FD_SET(me->sockUCast, &socks);
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+		iRet = select(me->sockUCast+1, &socks, NULL, NULL, &tv);
+		if (iRet == -1) {
+			perror("ERRR:snm_run: select failed");
+			continue;
+		}
+		if (iRet == 0) {
+			// Handle MCast ReJoin, when required
+			continue;
+		}
+		// UCast commands / data get priority
+		if (FD_ISSET(me->sockUCast, &socks)) {
+			sock = me->sockUCast;
+		} else {
+			sock = me->sockMCast;
+		}
+		unsigned int iAddrLen = sizeof(addrR);
+		iRet = recvfrom(sock, bufR, sizeof(bufR), MSG_DONTWAIT, (struct sockaddr *)&addrR, &iAddrLen);
+		if (iRet == -1) {
+			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+				//usleep(SNM_RUN_USLEEP);
+				fprintf(stderr, "WARN:%s: recvfrom EAGAIN/EWOULDBLOCK[%d]\n", __func__, errno);
+			} else {
+				perror("WARN:snm_run: revfrom failed");
+			}
+			continue;
+		}
+		// Handle recieved packet
+	}
+	return 0;
 }
 
 int snm_datafile_open(struct snm *me) {
