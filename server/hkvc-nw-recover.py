@@ -163,8 +163,8 @@ def _presence_info(clients, clientsDB):
 			dataC = d[0]
 			peer = d[1][0]
 			try:
-				i = clients.index(peer)
 				(tCmd, tName, tLostPkts) = struct.unpack("<I16sI8s", dataC)[0:3]
+				i = clients.index(peer)
 				if (tCmd == PIAckSeqNum):
 					dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
 					clientsDB[peer]['cnt'] += 1
@@ -173,7 +173,7 @@ def _presence_info(clients, clientsDB):
 			except ValueError as e:
 				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
-				clientsDB[peer] = {'type':'new', 'cnt': 1}
+				clientsDB[peer] = {'type':'new', 'cnt': 1, 'lostpkts': tLostPkts, 'name': tName}
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
