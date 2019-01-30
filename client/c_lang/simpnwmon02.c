@@ -77,6 +77,7 @@ int gbSNMRun = 1;
 
 struct snm {
 	int state;
+	unsigned int uCtxtId;
 	int sockMCast, sockUCast;
 	int iLocalIFIndex;
 	char *sMCastAddr;
@@ -113,6 +114,7 @@ void _snm_ports_update(struct snm *me) {
 
 void snm_init(struct snm *me) {
 	me->state = 0;
+	me->uCtxtId = -1;
 	me->sockMCast = -1;
 	me->sockUCast = -1;
 	me->iLocalIFIndex = 0;
@@ -686,7 +688,8 @@ int snm_run(struct snm *me) {
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		unsigned int uCTXTId = *((uint32_t*)&bufR[PKT_CTXTID_OFFSET]);
 		unsigned int uTotalBlocks = *((uint32_t*)&bufR[PKT_TOTALBLOCKS_OFFSET]);
-		if ((me->state == STATE_DO) && (me->llLostPkts.iNodeCnt == 0)) {
+		if ((me->state == STATE_DO) && (me->uCtxtId == -1)) {
+			me->uCtxtId = uCTXTId;
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
 		}
 		if (iSeq == URReqSeqNum) {
