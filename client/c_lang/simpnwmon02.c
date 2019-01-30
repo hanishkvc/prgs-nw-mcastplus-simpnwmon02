@@ -478,8 +478,8 @@ int snm_run(struct snm *me) {
 		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
 			int iDeltaPkts = iPktCnt - iPrevPktCnt;
 			int iBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] iSeqNo[%d] iRemainPkts[%d] PktBPS[%d]\n",
-				__func__, iPktCnt, iDataCnt, me->iMaxDataSeqNumGot, me->llLostPkts.iTotalFromRanges, iBytesPerSec);
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] iSeqNo[%d] iDisjoint[%d] iRemainPkts[%d] PktBPS[%d]\n",
+				__func__, iPktCnt, iDataCnt, me->iMaxDataSeqNumGot, me->llLostPkts.iNodeCnt, me->llLostPkts.iTotalFromRanges, iBytesPerSec);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
 		}
