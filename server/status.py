@@ -1,7 +1,7 @@
 
 #
 # A module which consolidates all exported status info
-# v20190119IST1344
+# v20190130IST2335
 # HanishKVC, 19XY
 #
 
