@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190129IST1647
+    v20190130IST2003
     HanishKVC, GPL, 19XY
  */
 
