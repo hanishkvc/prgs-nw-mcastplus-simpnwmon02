@@ -702,6 +702,17 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
+v20190131IST0004
+===================
+
+Basic stateless client logic along with supporting server side code has been
+implemented to get the basic flow working on both server and client side.
+
+However the saving and restoring of context on the client side. Cleanup of
+server and client side logics wrt this new stateless based flow needs to
+be implemented.
+
+
 v20190130ISTXYZA - v1.03
 =========================
 
