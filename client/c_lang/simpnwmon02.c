@@ -59,7 +59,7 @@ char gcBuf[BUF_MAXSIZE];
 #define MAIN_FPATH_LEN 256
 char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 #define CID_MAXLEN 16
-char gsCID[CID_MAXLEN] = "v20190130whoAMi";
+char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 
 // Saved SNM Contexts
 #define SC_MAXDATASEQGOT "MaxDataSeqNumGot"
