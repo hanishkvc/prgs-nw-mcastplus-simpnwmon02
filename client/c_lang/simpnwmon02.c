@@ -637,6 +637,36 @@ int snm_ucast_recover(struct snm *me) {
 	return iRet;
 }
 
+int snm_handle_urreq(struct snm *me, struct sockaddr_in *addrR) {
+	struct sockaddr_in addrS;
+	int iRet;
+	char bufS[UR_BUFS_LEN];
+
+	addrS.sin_family=AF_INET;
+	addrS.sin_port=htons(me->portServer);
+	addrS.sin_addr.s_addr = me->theSrvrPeer;
+	*(uint32_t *)bufS = URAckSeqNum;
+
+	if (me->theSrvrPeer != addrR->sin_addr.s_addr) {
+		fprintf(stderr, "WARN:%s: prev peer srvr[0x%X] cmdGot from[0x%X], adjusting...\n", __func__, me->theSrvrPeer, addrR->sin_addr.s_addr);
+		me->theSrvrPeer = addrR->sin_addr.s_addr;
+		addrS.sin_addr.s_addr = me->theSrvrPeer;
+	}
+	int iRecords = ll_getdata(&me->llLostPkts, &bufS[4], UR_BUFS_LEN-4, 20);
+#ifdef PRG_UR_VERBOSE
+	ll_print_summary(&me->llLostPkts, "LostPackets");
+#endif
+	iRet = sendto(me->sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
+	if (iRet == -1) {
+		perror("WARN:handle_urreq: Failed sending URAck currently");
+		return iRet;
+	} else {
+		fprintf(stderr, "INFO:%s: URAck [%d]records", __func__, iRecords);
+	}
+	fprintf(stderr, ": Lost Ranges[%d] Pkts[%d]\n", me->llLostPkts.iNodeCnt, me->llLostPkts.iTotalFromRanges);
+	return 0;
+}
+
 #define STATE_DO 0
 #define STATE_DONE 1
 int snm_run(struct snm *me) {
@@ -693,6 +723,12 @@ int snm_run(struct snm *me) {
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
 		}
 		if (iSeq == URReqSeqNum) {
+			iRet = snm_handle_urreq(me, &addrR);
+#ifdef EXITON_NWERROR
+			if (iRet != 0) {
+				exit(-1);
+			}
+#endif
 		} else if (iSeq == PIReqSeqNum) {
 		} else {
 			iDataCnt += 1;
