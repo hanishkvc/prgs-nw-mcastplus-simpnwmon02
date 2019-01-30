@@ -13,3 +13,6 @@ testll: $(LL_FILES)
 clean:
 	rm -i simpnwmon02 testll || /bin/true
 
+tag: simpnwmon02.c $(LL_FILES)
+	ctags -R *
+

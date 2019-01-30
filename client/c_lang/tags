@@ -1,0 +1,172 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ARG_BCAST	simpnwmon02.c	701;"	d	file:
+ARG_CID	simpnwmon02.c	706;"	d	file:
+ARG_CONTEXT	simpnwmon02.c	702;"	d	file:
+ARG_CONTEXTBASE	simpnwmon02.c	703;"	d	file:
+ARG_FILE	simpnwmon02.c	699;"	d	file:
+ARG_LOCAL	simpnwmon02.c	700;"	d	file:
+ARG_MADDR	simpnwmon02.c	698;"	d	file:
+ARG_NWGROUP	simpnwmon02.c	705;"	d	file:
+ARG_RUNMODES	simpnwmon02.c	704;"	d	file:
+AUTOADJUST_RUNMODESFROMDONEMODES	simpnwmon02.c	661;"	d	file:
+BUF_MAXSIZE	simpnwmon02.c	53;"	d	file:
+CID_MAXLEN	simpnwmon02.c	58;"	d	file:
+CMN_OPTS	Makefile	/^CMN_OPTS=-Wall -g$/;"	m
+ENABLE_BROADCAST	simpnwmon02.c	235;"	d	file:
+ENABLE_MULTICAST_ALL	simpnwmon02.c	166;"	d	file:
+FU_BUFLEN	fileutils.h	15;"	d
+LLR	LinkedListRange.h	/^struct LLR{$/;"	s
+LL_BUFLEN	LinkedListRange.c	318;"	d	file:
+LL_FILES	Makefile	/^LL_FILES=LinkedListRange.c fileutils.c$/;"	m
+MAIN_FPATH_LEN	simpnwmon02.c	56;"	d	file:
+MCASTREJOIN_TIMEDELTA	simpnwmon02.c	/^const int MCASTREJOIN_TIMEDELTA=300;$/;"	v
+MCASTSLOWEXIT_CNT	simpnwmon02.c	/^const int MCASTSLOWEXIT_CNT=3;		\/\/ 20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command$/;"	v
+MCASTSTOPSeqNum	simpnwmon02.c	/^const int MCASTSTOPSeqNum = 0xffffffff;$/;"	v
+MCAST_DROP	simpnwmon02.c	168;"	d	file:
+MCAST_JOIN	simpnwmon02.c	167;"	d	file:
+MCAST_USLEEP	simpnwmon02.c	/^const int MCAST_USLEEP=1000;$/;"	v
+PIAckSeqNum	simpnwmon02.c	/^const int PIAckSeqNum     = 0xffffff01;$/;"	v
+PIReqSeqNum	simpnwmon02.c	/^const int PIReqSeqNum     = 0xffffff00;$/;"	v
+PI_RETRYCNT	simpnwmon02.c	/^const int PI_RETRYCNT = 600;		\/\/ 600*1e6uSecs = Client will try PI for atleast 600 seconds$/;"	v
+PKT_DATA_OFFSET	simpnwmon02.c	/^const int PKT_DATA_OFFSET=4;$/;"	v
+PKT_MCASTSTOP_TOTALBLOCKS_OFFSET	simpnwmon02.c	/^const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;$/;"	v
+PKT_PIREQ_LOSTPKTS_OFFSET	simpnwmon02.c	/^const int PKT_PIREQ_LOSTPKTS_OFFSET=20;$/;"	v
+PKT_PIREQ_NAME_OFFSET	simpnwmon02.c	/^const int PKT_PIREQ_NAME_OFFSET=4;$/;"	v
+PKT_SEQNUM_OFFSET	simpnwmon02.c	/^const int PKT_SEQNUM_OFFSET=0;$/;"	v
+PKT_URREQ_TOTALBLOCKS_OFFSET	simpnwmon02.c	/^const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;$/;"	v
+RUNMODE_ALL	simpnwmon02.c	101;"	d	file:
+RUNMODE_AUTO	simpnwmon02.c	102;"	d	file:
+RUNMODE_MCAST	simpnwmon02.c	97;"	d	file:
+RUNMODE_UCAST	simpnwmon02.c	100;"	d	file:
+RUNMODE_UCASTPI	simpnwmon02.c	98;"	d	file:
+RUNMODE_UCASTUR	simpnwmon02.c	99;"	d	file:
+SC_DONEMODES	simpnwmon02.c	68;"	d	file:
+SC_DONEMODESEX	simpnwmon02.c	69;"	d	file:
+SC_DONEMODESEX_LEN	simpnwmon02.c	70;"	d	file:
+SC_MAXDATASEQGOT	simpnwmon02.c	62;"	d	file:
+SC_MAXDATASEQGOTEX	simpnwmon02.c	63;"	d	file:
+SC_MAXDATASEQGOTEX_LEN	simpnwmon02.c	64;"	d	file:
+SC_MAXDATASEQPROC	simpnwmon02.c	65;"	d	file:
+SC_MAXDATASEQPROCEX	simpnwmon02.c	66;"	d	file:
+SC_MAXDATASEQPROCEX_LEN	simpnwmon02.c	67;"	d	file:
+STATS_TIMEDELTA	simpnwmon02.c	/^const int STATS_TIMEDELTA=20;$/;"	v
+SeqNumCmdsCmn	simpnwmon02.c	/^const int SeqNumCmdsCmn   = 0xffffff00;$/;"	v
+UCAST_PI_USLEEP	simpnwmon02.c	/^const int UCAST_PI_USLEEP=1000000;$/;"	v
+UCAST_UR_USLEEP	simpnwmon02.c	/^const int UCAST_UR_USLEEP=1000;$/;"	v
+URAckSeqNum	simpnwmon02.c	/^const int URAckSeqNum     = 0xffffff03;$/;"	v
+URReqSeqNum	simpnwmon02.c	/^const int URReqSeqNum     = 0xffffff02;$/;"	v
+UR_BUFR_LEN	simpnwmon02.c	539;"	d	file:
+UR_BUFS_LEN	simpnwmon02.c	538;"	d	file:
+_ADD_FROM_ADD	LinkedListRange.h	34;"	d
+_ADD_FROM_DEL	LinkedListRange.h	35;"	d
+_FILEUTILS_H_	fileutils.h	8;"	d
+_LARGEFILE64_SOURCE	simpnwmon02.c	7;"	d	file:
+_LINKEDLISTRANGE_H_	LinkedListRange.h	8;"	d
+_account_lostpackets	simpnwmon02.c	/^void _account_lostpackets(struct LLR *llrLostPkts, int start, int end, int *piDisjointSeqs, int *piDisjointPktCnt) {$/;"	f
+_ll	LinkedListRange.h	/^struct _ll{$/;"	s
+_ll_add	LinkedListRange.c	/^void _ll_add(struct LLR *me, struct _ll *llCur, struct _ll *llNewNext, int iMode) {$/;"	f
+_ll_alloc	LinkedListRange.c	/^struct _ll *_ll_alloc(int start, int end) {$/;"	f
+_ll_delete	LinkedListRange.c	/^void _ll_delete(struct LLR *me, struct _ll *llDel) {$/;"	f
+_ll_save	LinkedListRange.c	/^int _ll_save(struct LLR *me, int iFSaveTo) {$/;"	f
+_ll_update_end_for_add	LinkedListRange.c	/^void _ll_update_end_for_add(struct LLR *me, struct _ll *new) {$/;"	f
+_save_ll_context	simpnwmon02.c	/^void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {$/;"	f
+_snm_context_load	simpnwmon02.c	/^void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {$/;"	f
+_snm_ports_update	simpnwmon02.c	/^void _snm_ports_update(struct snm *me) {$/;"	f
+buf	fileutils.h	/^	char buf[FU_BUFLEN];$/;"	m	struct:fu
+fileData	simpnwmon02.c	/^	int fileData;$/;"	m	struct:snm	file:
+filedata_save	simpnwmon02.c	/^int filedata_save(int fileData, char *buf, int iBlockOffset, int len) {$/;"	f
+fu	fileutils.h	/^struct fu {$/;"	s
+fu_close	fileutils.c	/^int fu_close(struct fu *me) {$/;"	f
+fu_init	fileutils.c	/^void fu_init(struct fu *me) {$/;"	f
+fu_open	fileutils.c	/^int fu_open(struct fu *me, char *sFName, int flags, int mode) {$/;"	f
+fu_readline	fileutils.c	/^int fu_readline(struct fu *me, char *buf, int bufLen) {$/;"	f
+gNwGroupMul	simpnwmon02.c	/^int gNwGroupMul=5;$/;"	v
+gPortClient	simpnwmon02.c	/^int gPortClient=1113;$/;"	v
+gPortMCast	simpnwmon02.c	/^int gPortMCast=1111;$/;"	v
+gPortServer	simpnwmon02.c	/^int gPortServer=1112;$/;"	v
+gbDoMCast	simpnwmon02.c	/^int gbDoMCast = 1;$/;"	v
+gcBuf	simpnwmon02.c	/^char gcBuf[BUF_MAXSIZE];$/;"	v
+giDataSize	simpnwmon02.c	/^int giDataSize=(1024+4);$/;"	v
+gsCID	simpnwmon02.c	/^char gsCID[CID_MAXLEN] = "v20190130whoAMi";$/;"	v
+gsContextFileBase	simpnwmon02.c	/^char gsContextFileBase[MAIN_FPATH_LEN] = "\/tmp\/snm02";$/;"	v
+iCnt	fileutils.h	/^	int iCnt;$/;"	m	struct:fu
+iDoneModes	simpnwmon02.c	/^	int iDoneModes;$/;"	m	struct:snm	file:
+iFile	fileutils.h	/^	int iFile;$/;"	m	struct:fu
+iLocalIFIndex	simpnwmon02.c	/^	int iLocalIFIndex;$/;"	m	struct:snm	file:
+iMaxDataSeqNumGot	simpnwmon02.c	/^	int iMaxDataSeqNumGot;$/;"	m	struct:snm	file:
+iMaxDataSeqNumProcessed	simpnwmon02.c	/^	int iMaxDataSeqNumProcessed;$/;"	m	struct:snm	file:
+iNodeCnt	LinkedListRange.h	/^	int iNodeCnt;$/;"	m	struct:LLR
+iNwGroup	simpnwmon02.c	/^	int iNwGroup;$/;"	m	struct:snm	file:
+iPos	fileutils.h	/^	int iPos;$/;"	m	struct:fu
+iRunModes	simpnwmon02.c	/^	int iRunModes;$/;"	m	struct:snm	file:
+iTotalFromRanges	LinkedListRange.h	/^	int iTotalFromRanges;$/;"	m	struct:LLR
+llBeforeDel	LinkedListRange.h	/^	struct _ll *llBeforeDel;$/;"	m	struct:LLR	typeref:struct:LLR::_ll
+llEnd	LinkedListRange.h	/^	struct _ll *llEnd;$/;"	m	struct:LLR	typeref:struct:LLR::_ll
+llLastAdded	LinkedListRange.h	/^	struct _ll *llLastAdded;$/;"	m	struct:LLR	typeref:struct:LLR::_ll
+llLostPkts	simpnwmon02.c	/^	struct LLR llLostPkts;$/;"	m	struct:snm	typeref:struct:snm::LLR	file:
+llStart	LinkedListRange.h	/^	struct _ll *llStart;$/;"	m	struct:LLR	typeref:struct:LLR::_ll
+ll_add_sorted	LinkedListRange.h	37;"	d
+ll_add_sorted_startfrom_lastadded	LinkedListRange.c	/^int ll_add_sorted_startfrom_lastadded(struct LLR *me, int start, int end) {$/;"	f
+ll_add_sorted_startfrom_start	LinkedListRange.c	/^int ll_add_sorted_startfrom_start(struct LLR *me, int start, int end) {$/;"	f
+ll_delete	LinkedListRange.h	44;"	d
+ll_delete_core	LinkedListRange.c	/^int ll_delete_core(struct LLR *me, int val, struct _ll *llStartFrom) {$/;"	f
+ll_delete_starthint_beforedel	LinkedListRange.c	/^int ll_delete_starthint_beforedel(struct LLR *me, int val) {$/;"	f
+ll_delete_starthint_start	LinkedListRange.c	/^int ll_delete_starthint_start(struct LLR *me, int val) {$/;"	f
+ll_free	LinkedListRange.c	/^int ll_free(struct LLR *me) {$/;"	f
+ll_getdata	LinkedListRange.c	/^int ll_getdata(struct LLR *me, char *buf, int bufLen, int MaxCnt) {$/;"	f
+ll_init	LinkedListRange.c	/^void ll_init(struct LLR *me) {$/;"	f
+ll_load	LinkedListRange.c	/^int ll_load(struct LLR *me, char *sFName) {$/;"	f
+ll_load_append	LinkedListRange.c	/^int ll_load_append(struct LLR *me, char *sFName) {$/;"	f
+ll_load_append_ex	LinkedListRange.c	/^int ll_load_append_ex(struct LLR *me, char *sFName, char cMarker, marker_callback marker_cb, void *markerContext) {$/;"	f
+ll_print	LinkedListRange.c	/^void ll_print(struct LLR *me, char *sMsg) {$/;"	f
+ll_print_content	LinkedListRange.c	/^void ll_print_content(struct LLR *me, char *sMsg) {$/;"	f
+ll_print_summary	LinkedListRange.c	/^void ll_print_summary(struct LLR *me, char *sMsg) {$/;"	f
+ll_save	LinkedListRange.c	/^int ll_save(struct LLR *me, char *sFName) {$/;"	f
+main	LinkedListRange.c	/^int main(int argc, char **argv) {$/;"	f
+main	simpnwmon02.c	/^int main(int argc, char **argv) {$/;"	f
+marker_callback	LinkedListRange.h	/^typedef void (*marker_callback)(char *sLine, int iLineLength, void *markerContext);$/;"	t
+mcast_recv	simpnwmon02.c	/^int mcast_recv(int sockMCast, int fileData, struct LLR *llLostPkts, int *piMaxDataSeqNumGot, int *piMaxDataSeqNumProcessed, struct snm *me) {$/;"	f
+next	LinkedListRange.h	/^	struct _ll *prev, *next;$/;"	m	struct:_ll	typeref:struct:_ll::
+portClient	simpnwmon02.c	/^	int portMCast, portServer, portClient;$/;"	m	struct:snm	file:
+portMCast	simpnwmon02.c	/^	int portMCast, portServer, portClient;$/;"	m	struct:snm	file:
+portServer	simpnwmon02.c	/^	int portMCast, portServer, portClient;$/;"	m	struct:snm	file:
+prev	LinkedListRange.h	/^	struct _ll *prev, *next;$/;"	m	struct:_ll	typeref:struct:_ll::_ll
+print_stat	simpnwmon02.c	/^void print_stat(const char *sTag, int iPktCnt, int iPrevPktCnt, int iSeq, time_t curSTime, time_t curDTime, time_t prevDTime, int iDisjointSeqs, int iDisjointPktCnt, int iOldSeqs) {$/;"	f
+print_usage	simpnwmon02.c	/^void print_usage(void) {$/;"	f
+rEnd	LinkedListRange.h	/^	int rStart, rEnd;$/;"	m	struct:_ll
+rStart	LinkedListRange.h	/^	int rStart, rEnd;$/;"	m	struct:_ll
+sBCastAddr	simpnwmon02.c	/^	char *sBCastAddr;$/;"	m	struct:snm	file:
+sCID	simpnwmon02.c	/^	char *sCID;$/;"	m	struct:snm	file:
+sContextFile	simpnwmon02.c	/^	char *sContextFile;$/;"	m	struct:snm	file:
+sContextFileBase	simpnwmon02.c	/^	char *sContextFileBase;$/;"	m	struct:snm	file:
+sDataFile	simpnwmon02.c	/^	char *sDataFile;$/;"	m	struct:snm	file:
+sLocalAddr	simpnwmon02.c	/^	char *sLocalAddr;$/;"	m	struct:snm	file:
+sMCastAddr	simpnwmon02.c	/^	char *sMCastAddr;$/;"	m	struct:snm	file:
+signal_handler	simpnwmon02.c	/^void signal_handler(int arg) {$/;"	f
+snm	simpnwmon02.c	/^struct snm {$/;"	s	file:
+snmCur	simpnwmon02.c	/^struct snm snmCur;$/;"	v	typeref:struct:snm
+snm_args_process_p1	simpnwmon02.c	/^void snm_args_process_p1(struct snm *me) {$/;"	f
+snm_context_load	simpnwmon02.c	/^int snm_context_load(struct snm *me) {$/;"	f
+snm_datafile_open	simpnwmon02.c	/^int snm_datafile_open(struct snm *me) {$/;"	f
+snm_init	simpnwmon02.c	/^void snm_init(struct snm *me) {$/;"	f
+snm_mcast_recv	simpnwmon02.c	/^int snm_mcast_recv(struct snm *me) {$/;"	f
+snm_parse_args	simpnwmon02.c	/^int snm_parse_args(struct snm *me, int argc, char **argv) {$/;"	f
+snm_save_context	simpnwmon02.c	/^void snm_save_context(struct snm *me, char *sTag) {$/;"	f
+snm_sock_mcast_ctrl	simpnwmon02.c	/^int snm_sock_mcast_ctrl(struct snm *me, int mode) {$/;"	f
+snm_sock_mcast_init	simpnwmon02.c	/^int snm_sock_mcast_init(struct snm *me) {$/;"	f
+snm_sock_ucast_init	simpnwmon02.c	/^int snm_sock_ucast_init(struct snm *me) {$/;"	f
+snm_ucast_pi	simpnwmon02.c	/^int snm_ucast_pi(struct snm *me) {$/;"	f
+snm_ucast_recover	simpnwmon02.c	/^int snm_ucast_recover(struct snm *me) {$/;"	f
+sockMCast	simpnwmon02.c	/^	int sockMCast, sockUCast;$/;"	m	struct:snm	file:
+sockUCast	simpnwmon02.c	/^	int sockMCast, sockUCast;$/;"	m	struct:snm	file:
+sock_mcast_ctrl	simpnwmon02.c	/^int sock_mcast_ctrl(int sockMCast, int ifIndex, char *sMCastAddr, char *sLocalAddr, int mode) {$/;"	f
+sock_mcast_init_ex	simpnwmon02.c	/^int sock_mcast_init_ex(int ifIndex, char *sMCastAddr, int port, char *sLocalAddr)$/;"	f
+sock_ucast_init	simpnwmon02.c	/^int sock_ucast_init(char *sLocalAddr, int port, int bcastEnable) {$/;"	f
+theSrvrPeer	simpnwmon02.c	/^	uint32_t theSrvrPeer;$/;"	m	struct:snm	file:
+ucast_pi	simpnwmon02.c	/^int ucast_pi(int sockUCast, char *sPINwBCast, int portServer, uint32_t *theSrvrPeer, int iTotalLostPkts, char *sCID) {$/;"	f
+ucast_recover	simpnwmon02.c	/^int ucast_recover(int sockUCast, int fileData, uint32_t theSrvrPeer, int portServer, struct LLR *llLostPkts, int *piMaxDataSeqNumProcessed) {$/;"	f

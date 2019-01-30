@@ -783,14 +783,11 @@ int main(int argc, char **argv) {
 	snm_args_process_p1(&snmCur);
 
 	snm_sock_mcast_init(&snmCur);
-	snm_mcast_recv(&snmCur);
-
-	ll_print(&snmCur.llLostPkts, "LostPackets before UCast");
-
 	snm_sock_ucast_init(&snmCur);
-	snm_ucast_pi(&snmCur);
-	snm_ucast_recover(&snmCur);
 
+	snm_run(&snmCur);
+
+	ll_print(&snmCur.llLostPkts, "LostPackets before exit");
 	ll_free(&snmCur.llLostPkts);
 	return 0;
 }
