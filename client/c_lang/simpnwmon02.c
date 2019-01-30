@@ -24,17 +24,14 @@
 
 const int STATS_TIMEDELTA=20;
 const int MCASTREJOIN_TIMEDELTA=300;
-const int MCASTSLOWEXIT_CNT=3;		// 20*3 = atleast 60secs of No MCast stop commands, after recieving atleast 1 stop command
-const int MCAST_USLEEP=1000;
 const int UCAST_PI_USLEEP=1000000;
 const int PI_RETRYCNT = 600;		// 600*1e6uSecs = Client will try PI for atleast 600 seconds
-const int UCAST_UR_USLEEP=1000;
+const int RUN_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_CTXTID_OFFSET=4;
 const int PKT_TOTALBLOCKS_OFFSET=12;
 const int PKT_DATA_OFFSET=16;
 const int PKT_URACK_DATA_OFFSET=4;
-const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 const int PKT_PIREQ_NAME_OFFSET=4;
 const int PKT_PIREQ_LOSTPKTS_OFFSET=20;
 
@@ -72,7 +69,6 @@ char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 #define SC_DONEMODESEX_LEN 11
 
 
-int gbDoMCast = 1;
 int gbSNMRun = 1;
 
 struct snm {
@@ -482,7 +478,8 @@ int snm_run(struct snm *me) {
 		if (iDeltaTimeSecs > STATS_TIMEDELTA) {
 			int iDeltaPkts = iPktCnt - iPrevPktCnt;
 			int iBytesPerSec = (iDeltaPkts*giDataSize)/iDeltaTimeSecs;
-			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] iSeqNo[%d] PktBPS[%d]\n", __func__, iPktCnt, iDataCnt, me->iMaxDataSeqNumGot, iBytesPerSec);
+			fprintf(stderr, "INFO:%s: iPktCnt[%d] iDataCnt[%d] iSeqNo[%d] iRemainPkts[%d] PktBPS[%d]\n",
+				__func__, iPktCnt, iDataCnt, me->iMaxDataSeqNumGot, me->llLostPkts.iTotalFromRanges, iBytesPerSec);
 			prevSTime = curSTime;
 			iPrevPktCnt = iPktCnt;
 		}
