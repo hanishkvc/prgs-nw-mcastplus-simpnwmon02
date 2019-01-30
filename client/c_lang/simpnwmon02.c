@@ -30,7 +30,9 @@ const int UCAST_PI_USLEEP=1000000;
 const int PI_RETRYCNT = 600;		// 600*1e6uSecs = Client will try PI for atleast 600 seconds
 const int UCAST_UR_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
-const int PKT_DATA_OFFSET=4;
+const int PKT_CTXTID_OFFSET=4;
+const int PKT_TOTALBLOCKS_OFFSET=12;
+const int PKT_DATA_OFFSET=16;
 const int PKT_MCASTSTOP_TOTALBLOCKS_OFFSET=8;
 const int PKT_URREQ_TOTALBLOCKS_OFFSET=8;
 const int PKT_PIREQ_NAME_OFFSET=4;
@@ -74,6 +76,7 @@ int gbDoMCast = 1;
 int gbSNMRun = 1;
 
 struct snm {
+	int state;
 	int sockMCast, sockUCast;
 	int iLocalIFIndex;
 	char *sMCastAddr;
@@ -109,6 +112,7 @@ void _snm_ports_update(struct snm *me) {
 }
 
 void snm_init(struct snm *me) {
+	me->state = 0;
 	me->sockMCast = -1;
 	me->sockUCast = -1;
 	me->iLocalIFIndex = 0;
@@ -631,6 +635,8 @@ int snm_ucast_recover(struct snm *me) {
 	return iRet;
 }
 
+#define STATE_DO 0
+#define STATE_DONE 1
 int snm_run(struct snm *me) {
 	int iRet;
 	fd_set socks;
@@ -638,7 +644,10 @@ int snm_run(struct snm *me) {
 	int sock;
 	char bufR[UR_BUFR_LEN];
 	struct sockaddr_in addrR;
+	int iDataCnt, iPktCnt;
 
+	iPktCnt = 0;
+	iDataCnt = 0;
 	gbSNMRun = 1;
 	while(gbSNMRun) {
 		FD_ZERO(&socks);
@@ -672,7 +681,22 @@ int snm_run(struct snm *me) {
 			}
 			continue;
 		}
+		iPktCnt += 1;
 		// Handle recieved packet
+		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
+		unsigned int uCTXTId = *((uint32_t*)&bufR[PKT_CTXTID_OFFSET]);
+		unsigned int uTotalBlocks = *((uint32_t*)&bufR[PKT_TOTALBLOCKS_OFFSET]);
+		if ((me->state == STATE_DO) && (me->llLostPkts.iNodeCnt == 0)) {
+			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
+		}
+		if (iSeq == URReqSeqNum) {
+		} else if (iSeq == PIReqSeqNum) {
+		} else {
+			iDataCnt += 1;
+		}
+		if ((me->state == STATE_DO) && (me->llLostPkts.iNodeCnt == 0)) {
+			me->state = STATE_DONE;
+		}
 	}
 	return 0;
 }
