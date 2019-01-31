@@ -702,15 +702,41 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
-v20190131IST0004
+v20190131IST0016
 ===================
+
+And the 2019_02xy_v2.x branch, which is the experimental stateless client logic
+and its corresponding server side logic.
 
 Basic stateless client logic along with supporting server side code has been
 implemented to get the basic flow working on both server and client side.
 
-However the saving and restoring of context on the client side. Cleanup of
+The basic core logic has been implemented on both the client and server side,
+so that one could use this to test / transfer files. And basic testing seems to
+indicate it is working as expected.
+
+However it has not been profiled from nw / system performance perspective, as
+well as it has not been fully verified from the perspective of not introducing
+any holes in the file, in remote corner cases. THese aspects require to be
+tested.
+
+Also the saving and restoring of context on the client side. Cleanup of
 server and client side logics wrt this new stateless based flow needs to
-be implemented.
+be done.
+
+Also multiple parallel nw instances related logics have not yet been properly
+updated.
+
+The advantage of this logic is that one could use either mcast or ucast for
+recovery phase, based on the amount of overall losses seen. If losses are too
+many across board (i.e across a lot of clients), then re-run the send-mcast
+script again. However if the losses are relatively low then ucast based
+recovery script is better.
+
+And also this stateless flow makes the over-all logic simpler at one level.
+Also lot of common functionality is now naturally consolidated into a single
+location, among other extensive simplifications wrt state handling and context
+correctness guarenteeing.
 
 
 v20190130ISTXYZA - v1.03
