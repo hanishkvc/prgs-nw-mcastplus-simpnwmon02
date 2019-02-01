@@ -82,6 +82,8 @@ int gbSNMRun = 1;
 char gstDataFile[MAIN_FPATH_LEN];
 char gstContextFile[MAIN_FPATH_LEN];
 
+#define CTXTAUTOLOAD  1
+
 struct snm {
 	int state;
 	unsigned int uCtxtId;
@@ -431,6 +433,9 @@ int snm_handle_data(struct snm *me, int iSeq, char *buf, int len) {
 
 #define STATE_DO 0
 #define STATE_DONE 1
+#define STATE_ERROR 7
+int snm_context_load(struct snm *me, int mode);
+
 int snm_run(struct snm *me) {
 	int iRet;
 	fd_set socks;
@@ -514,11 +519,18 @@ int snm_run(struct snm *me) {
 			fprintf(stderr, "WARN:%s: Switching client context from NwContext [0x%x] to [0x%X]\n", __func__, me->uCtxtId, uCTXTId);
 			snm_save_context(&snmCur, "quit");
 			me->uCtxtId = uCTXTId;
-			snm_context_load(&snmCur, CTXTLOAD_AUTO);
+			int clRet = snm_context_load(&snmCur, CTXTLOAD_AUTO);
+			if (clRet < 0) {
+				fprintf(stderr, "WARN:%s: Issue with NwContext [0x%X] client context loading, skipping\n", __func__, me->uCtxtId);
+				me->state = STATE_ERROR;
+			}
 #else
 			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%x] Expected NwContext [0x%X], Skipping\n", __func__, uCTXTId, me->uCtxtId);
 			continue;
 #endif
+		}
+		if (me->state == STATE_ERROR) {
+			fprintf(stderr, "ERROR:%s: NwContext [0x%X] in error state, skipping\n", __func__, me->uCtxtId);
 		}
 		if (iSeq == URReqSeqNum) {
 			iRet = snm_handle_urreq(me, &addrR);
