@@ -477,8 +477,13 @@ int snm_run(struct snm *me) {
 		unsigned int uCTXTId = *((uint32_t*)&bufR[PKT_CTXTID_OFFSET]);
 		unsigned int uTotalBlocks = *((uint32_t*)&bufR[PKT_TOTALBLOCKS_OFFSET]);
 		if ((me->state == STATE_DO) && (me->uCtxtId == -1)) {
+			fprintf(stderr, "INFO:%s: Starting out on a new NwContext [0x%X]\n", __func__, me->uCtxtId);
 			me->uCtxtId = uCTXTId;
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
+		}
+		if (me->uCtxtId != uCTXTId) {
+			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%x] Expected NwContext [0x%X], Skipping\n", __func__, uCTXTId, me->uCtxtId);
+			continue;
 		}
 		if (iSeq == URReqSeqNum) {
 			iRet = snm_handle_urreq(me, &addrR);
