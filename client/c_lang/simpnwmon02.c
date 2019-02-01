@@ -59,9 +59,9 @@ char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 #define SC_MAXDATASEQGOT "MaxDataSeqNumGot"
 #define SC_MAXDATASEQGOTEX "#MaxDataSeqNumGot:"
 #define SC_MAXDATASEQGOTEX_LEN 18
-#define SC_MAXDATASEQPROC "MaxDataSeqNumProc"
-#define SC_MAXDATASEQPROCEX "#MaxDataSeqNumProc:"
-#define SC_MAXDATASEQPROCEX_LEN 19
+#define SC_THESRVRPEER "TheSrvrPeer"
+#define SC_THESRVRPEEREX "#TheSrvrPeer:"
+#define SC_THESRVRPEEREX_LEN 13
 #define SC_STATE "State"
 #define SC_STATEEX "#State:"
 #define SC_STATEEX_LEN 7
@@ -86,7 +86,6 @@ struct snm {
 	int fileData;
 	uint32_t theSrvrPeer;
 	int iMaxDataSeqNumGot;
-	int iMaxDataSeqNumProcessed;
 	char *sCID;
 };
 struct snm snmCur;
@@ -122,7 +121,6 @@ void snm_init(struct snm *me) {
 	me->theSrvrPeer = 0;
 	ll_init(&me->llLostPkts);
 	me->iMaxDataSeqNumGot = -1;
-	me->iMaxDataSeqNumProcessed = -1;
 	me->sCID = gsCID;
 }
 
@@ -151,7 +149,7 @@ void snm_save_context(struct snm *me, char *sTag) {
 	}
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQGOT, me->iMaxDataSeqNumGot);
 	write(iFile, sTmp, strlen(sTmp));
-	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQPROC, me->iMaxDataSeqNumProcessed);
+	snprintf(sTmp, 128, "#%s:%d\n", SC_THESRVRPEER, me->theSrvrPeer);
 	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%d\n", SC_STATE, me->state);
 	write(iFile, sTmp, strlen(sTmp));
@@ -348,6 +346,11 @@ int snm_handle_pi(struct snm *me, uint32_t theSrvrPeer) {
 	strncpy(&bufS[PKT_PIACK_NAME_OFFSET], me->sCID, CID_MAXLEN);
 	*(uint32_t *)&bufS[PKT_PIACK_LOSTPKTS_OFFSET] = me->llLostPkts.iTotalFromRanges;
 
+	if (me->theSrvrPeer != theSrvrPeer) {
+		fprintf(stderr, "WARN:%s: prev peer srvr[0x%X] cmdGot from[0x%X], adjusting...\n", __func__, me->theSrvrPeer, theSrvrPeer);
+		me->theSrvrPeer = theSrvrPeer;
+	}
+
 	fprintf(stderr, "INFO:%s: me [%s, %d], peerSrvr[0x%X]\n", __func__, &bufS[PKT_PIACK_NAME_OFFSET], me->llLostPkts.iTotalFromRanges, theSrvrPeer);
 	iRet = sendto(me->sockUCast, bufS, sizeof(bufS), 0, (struct sockaddr *)&addrS, sizeof(addrS));
 	if (iRet == -1) {
@@ -525,9 +528,9 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 		me->iMaxDataSeqNumGot = strtol(&sLine[SC_MAXDATASEQGOTEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
 	}
-	if (strncmp(sLine, SC_MAXDATASEQPROCEX, SC_MAXDATASEQPROCEX_LEN) == 0) {
-		me->iMaxDataSeqNumProcessed = strtol(&sLine[SC_MAXDATASEQPROCEX_LEN], NULL, 10);
-		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumProcessed [%d]\n", __func__, me->iMaxDataSeqNumProcessed);
+	if (strncmp(sLine, SC_THESRVRPEEREX, SC_THESRVRPEEREX_LEN) == 0) {
+		me->theSrvrPeer = strtol(&sLine[SC_THESRVRPEEREX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded theSrvrPeer [%d]\n", __func__, me->theSrvrPeer);
 	}
 	if (strncmp(sLine, SC_STATEEX, SC_STATEEX_LEN) == 0) {
 		me->state = strtol(&sLine[SC_STATEEX_LEN], NULL, 10);
