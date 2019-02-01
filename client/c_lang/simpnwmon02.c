@@ -78,7 +78,6 @@ struct snm {
 	char *sLocalAddr;
 	char *sBCastAddr;
 	char *sDataFile;
-	int iRunModes;
 	char *sContextFile;
 	char *sContextFileBase;
 	struct LLR llLostPkts;
@@ -115,7 +114,6 @@ void snm_init(struct snm *me) {
 	me->sLocalAddr = NULL;
 	me->sBCastAddr = NULL;
 	me->sDataFile = NULL;
-	me->iRunModes = RUNMODE_ALL;
 	me->sContextFile = NULL;
 	me->sContextFileBase = gsContextFileBase;
 	me->iNwGroup = 0;
@@ -611,10 +609,6 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 		if (strcmp(argv[iArg], ARG_CONTEXTBASE) == 0) {
 			iArg += 1;
 			me->sContextFileBase = argv[iArg];
-		}
-		if (strcmp(argv[iArg], ARG_RUNMODES) == 0) {
-			iArg += 1;
-			me->iRunModes = strtol(argv[iArg], NULL, 0);
 		}
 		if (strcmp(argv[iArg], ARG_NWGROUP) == 0) {
 			iArg += 1;
