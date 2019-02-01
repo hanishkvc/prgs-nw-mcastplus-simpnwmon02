@@ -75,9 +75,12 @@ char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 #define SC_STATEEX "#State:"
 #define SC_STATEEX_LEN 7
 
+#define CTXTLOAD_INIT 0
+#define CTXTLOAD_AUTO 1
 
 int gbSNMRun = 1;
 char gstDataFile[MAIN_FPATH_LEN];
+char gstContextFile[MAIN_FPATH_LEN];
 
 struct snm {
 	int state;
@@ -142,9 +145,7 @@ void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
 	}
 }
 
-void snm_save_context(struct snm *me, char *sTag) {
-	char sFName[MAIN_FPATH_LEN];
-	int iFile;
+void snm_context_fname(struct snm *me, char *sFName, char *sTag) {
 	char sTmp[128];
 
 	strncpy(sFName, me->sContextFileBase, MAIN_FPATH_LEN);
@@ -152,6 +153,15 @@ void snm_save_context(struct snm *me, char *sTag) {
 	snprintf(sTmp, 128, "%X.", me->uCtxtId);
 	strncat(sFName, sTmp, MAIN_FPATH_LEN);
 	strncat(sFName, sTag, MAIN_FPATH_LEN);
+	fprintf(stderr, "INFO:%s:%s\n", __func__, sFName);
+}
+
+void snm_save_context(struct snm *me, char *sTag) {
+	char sFName[MAIN_FPATH_LEN];
+	int iFile;
+	char sTmp[128];
+
+	snm_context_fname(me, sFName, sTag);
 	iFile = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (iFile == -1) {
 		perror("ERRR:save_context: Open");
@@ -500,8 +510,15 @@ int snm_run(struct snm *me) {
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
 		}
 		if (me->uCtxtId != uCTXTId) {
+#ifdef CTXTAUTOLOAD
+			fprintf(stderr, "WARN:%s: Switching client context from NwContext [0x%x] to [0x%X]\n", __func__, me->uCtxtId, uCTXTId);
+			snm_save_context(&snmCur, "quit");
+			me->uCtxtId = uCTXTId;
+			snm_context_load(&snmCur, CTXTLOAD_AUTO);
+#else
 			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%x] Expected NwContext [0x%X], Skipping\n", __func__, uCTXTId, me->uCtxtId);
 			continue;
+#endif
 		}
 		if (iSeq == URReqSeqNum) {
 			iRet = snm_handle_urreq(me, &addrR);
@@ -577,8 +594,13 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	}
 }
 
-int snm_context_load(struct snm *me) {
+int snm_context_load(struct snm *me, int mode) {
 	int iRet = 0;
+
+	if (mode == CTXTLOAD_AUTO) {
+		snm_context_fname(me, gstContextFile, "quit");
+		me->sContextFile = gstContextFile;
+	}
 
 	if (me->sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load context including lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
@@ -589,7 +611,7 @@ int snm_context_load(struct snm *me) {
 
 void snm_args_process_p1(struct snm *me) {
 	_snm_ports_update(me);
-	if (snm_context_load(me) < 0) {
+	if (snm_context_load(me, CTXTLOAD_INIT) < 0) {
 		exit(2);
 	}
 	if (snm_datafile_open(me) < 0) {
