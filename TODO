@@ -85,6 +85,16 @@ Even client side the PI logic resends PIReq packets faster than the configured
 rate, if it recieves unrelated packets. Even this requires to be fixed.
 
 
+Stateless Logic
+=================
+
+* Save context once every predefined amount of inactivity. Inturn to introduce
+this inactivity which at same time is useful from nw performance monitoring
+perspective, have a fixed PI phase once every X amount of time in the middle
+of MCast transfer. THis fixed PI Phase will attempt pi handshake only for a
+smaller number of times.
+
+
 DONE  - ONly maintained from 20190117
 ===========================================
 
