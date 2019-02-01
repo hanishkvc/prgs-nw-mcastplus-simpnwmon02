@@ -56,6 +56,15 @@ char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 
 // Saved SNM Contexts
+#define SC_CTXTID "CtxtId"
+#define SC_CTXTIDEX "#CtxtId:"
+#define SC_CTXTIDEX_LEN 8
+#define SC_CTXTFILEBASE "CtxtFileBase"
+#define SC_CTXTFILEBASEEX "#CtxtFileBase:"
+#define SC_CTXTFILEBASEEX_LEN 14
+#define SC_DATAFILE "DataFile"
+#define SC_DATAFILEEX "#DataFile:"
+#define SC_DATAFILEEX_LEN 10
 #define SC_MAXDATASEQGOT "MaxDataSeqNumGot"
 #define SC_MAXDATASEQGOTEX "#MaxDataSeqNumGot:"
 #define SC_MAXDATASEQGOTEX_LEN 18
@@ -139,12 +148,20 @@ void snm_save_context(struct snm *me, char *sTag) {
 
 	strncpy(sFName, me->sContextFileBase, MAIN_FPATH_LEN);
 	strncat(sFName, ".context.", MAIN_FPATH_LEN);
+	snprintf(sTmp, 128, "%X.", me->uCtxtId);
+	strncat(sFName, sTmp, MAIN_FPATH_LEN);
 	strncat(sFName, sTag, MAIN_FPATH_LEN);
 	iFile = open(sFName, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (iFile == -1) {
 		perror("ERRR:save_context: Open");
 		return;
 	}
+	snprintf(sTmp, 128, "#%s:%d\n", SC_CTXTID, me->uCtxtId);
+	write(iFile, sTmp, strlen(sTmp));
+	snprintf(sTmp, 128, "#%s:%s\n", SC_CTXTFILEBASE, me->sContextFileBase);
+	write(iFile, sTmp, strlen(sTmp));
+	snprintf(sTmp, 128, "#%s:%s\n", SC_DATAFILE, me->sDataFile);
+	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQGOT, me->iMaxDataSeqNumGot);
 	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%d\n", SC_THESRVRPEER, me->theSrvrPeer);
