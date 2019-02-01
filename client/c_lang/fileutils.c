@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include <fileutils.h>
 
@@ -24,6 +25,7 @@ int fu_open(struct fu *me, char *sFName, int flags, int mode) {
 
 int fu_readline(struct fu *me, char *buf, int bufLen) {
 	int iPos = 0;
+	memset(buf, 0, bufLen);
 	for(; iPos < bufLen; iPos++) {
 		if (me->iCnt == 0) {
 			me->iCnt = read(me->iFile, me->buf, FU_BUFLEN);

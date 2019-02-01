@@ -552,12 +552,14 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	if (strncmp(sLine, SC_DATAFILEEX, SC_DATAFILEEX_LEN) == 0) {
 		gstDataFile[0] = 0;
 		strncpy(gstDataFile, &sLine[SC_DATAFILEEX_LEN], MAIN_FPATH_LEN);
+		gstDataFile[iLineLen-SC_DATAFILEEX_LEN-1] = 0;
 		me->sDataFile = gstDataFile;
 		fprintf(stderr, "INFO:%s: loaded sDataFile [%s]\n", __func__, me->sDataFile);
 	}
 	if (strncmp(sLine, SC_CTXTFILEBASEEX, SC_CTXTFILEBASEEX_LEN) == 0) {
 		gsContextFileBase[0] = 0;
 		strncpy(gsContextFileBase, &sLine[SC_CTXTFILEBASEEX_LEN], MAIN_FPATH_LEN);
+		gsContextFileBase[iLineLen-SC_CTXTFILEBASEEX_LEN-1] = 0;
 		me->sContextFileBase = gsContextFileBase;
 		fprintf(stderr, "INFO:%s: loaded sContextFileBase [%s]\n", __func__, me->sContextFileBase);
 	}
