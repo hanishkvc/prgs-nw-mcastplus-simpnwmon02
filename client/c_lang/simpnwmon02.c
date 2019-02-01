@@ -77,6 +77,7 @@ char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 
 
 int gbSNMRun = 1;
+char gstDataFile[MAIN_FPATH_LEN];
 
 struct snm {
 	int state;
@@ -544,6 +545,22 @@ int snm_datafile_open(struct snm *me) {
 void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	struct snm *me = (struct snm*)meMaya;
 
+	if (strncmp(sLine, SC_CTXTIDEX, SC_CTXTIDEX_LEN) == 0) {
+		me->uCtxtId = strtol(&sLine[SC_CTXTIDEX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded uCtxtId [%d]\n", __func__, me->uCtxtId);
+	}
+	if (strncmp(sLine, SC_DATAFILEEX, SC_DATAFILEEX_LEN) == 0) {
+		gstDataFile[0] = 0;
+		strncpy(gstDataFile, &sLine[SC_DATAFILEEX_LEN], MAIN_FPATH_LEN);
+		me->sDataFile = gstDataFile;
+		fprintf(stderr, "INFO:%s: loaded sDataFile [%s]\n", __func__, me->sDataFile);
+	}
+	if (strncmp(sLine, SC_CTXTFILEBASEEX, SC_CTXTFILEBASEEX_LEN) == 0) {
+		gsContextFileBase[0] = 0;
+		strncpy(gsContextFileBase, &sLine[SC_CTXTFILEBASEEX_LEN], MAIN_FPATH_LEN);
+		me->sContextFileBase = gsContextFileBase;
+		fprintf(stderr, "INFO:%s: loaded sContextFileBase [%s]\n", __func__, me->sContextFileBase);
+	}
 	if (strncmp(sLine, SC_MAXDATASEQGOTEX, SC_MAXDATASEQGOTEX_LEN) == 0) {
 		me->iMaxDataSeqNumGot = strtol(&sLine[SC_MAXDATASEQGOTEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumGot [%d]\n", __func__, me->iMaxDataSeqNumGot);
