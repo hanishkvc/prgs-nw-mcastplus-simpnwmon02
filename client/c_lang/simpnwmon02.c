@@ -76,7 +76,6 @@ struct snm {
 	int iLocalIFIndex;
 	char *sMCastAddr;
 	char *sLocalAddr;
-	char *sBCastAddr;
 	char *sDataFile;
 	char *sContextFile;
 	char *sContextFileBase;
@@ -111,7 +110,6 @@ void snm_init(struct snm *me) {
 	me->iLocalIFIndex = 0;
 	me->sMCastAddr = NULL;
 	me->sLocalAddr = NULL;
-	me->sBCastAddr = NULL;
 	me->sDataFile = NULL;
 	me->sContextFile = NULL;
 	me->sContextFileBase = gsContextFileBase;
@@ -227,7 +225,7 @@ int snm_sock_mcast_ctrl(struct snm *me, int mode) {
 	return iRet;
 }
 
-#define ENABLE_BROADCAST 1
+#define ENABLE_BROADCAST 0
 int sock_ucast_init(char *sLocalAddr, int port, int bcastEnable) {
 	int iRet;
 	int sockUCast = -1;
@@ -566,19 +564,16 @@ void signal_handler(int arg) {
 #define ARG_MADDR "--maddr"
 #define ARG_FILE "--file"
 #define ARG_LOCAL "--local"
-#define ARG_BCAST "--bcast"
 #define ARG_CONTEXT "--context"
 #define ARG_CONTEXTBASE "--contextbase"
-#define ARG_RUNMODES "--runmodes"
 #define ARG_NWGROUP "--nwgroup"
 #define ARG_CID "--cid"
 
 void print_usage(void) {
-	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile> <--bcast pi_nw_bcast_addr>\n");
+	fprintf(stderr, "usage: simpnwmon02 <--maddr mcast_addr> <--local ifIndex4mcast local_addr> <--file datafile>\n");
 	fprintf(stderr, "\t Optional args\n");
 	fprintf(stderr, "\t --context contextfile_to_load # If specified, the list of lost pkt ranges is initialised with its contents\n");
 	fprintf(stderr, "\t --contextbase contextfile_basename_forsaving\n");
-	fprintf(stderr, "\t --runmodes 1|2|4|6|7|65536\n");
 	fprintf(stderr, "\t --nwgroup id\n");
 	fprintf(stderr, "\t --cid theClientID_limitTo15Chars\n");
 }
@@ -600,10 +595,6 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 		if (strcmp(argv[iArg], ARG_FILE) == 0) {
 			iArg += 1;
 			me->sDataFile = argv[iArg];
-		}
-		if (strcmp(argv[iArg], ARG_BCAST) == 0) {
-			iArg += 1;
-			me->sBCastAddr = argv[iArg];
 		}
 		if (strcmp(argv[iArg], ARG_CONTEXT) == 0) {
 			iArg += 1;
@@ -627,7 +618,7 @@ int snm_parse_args(struct snm *me, int argc, char **argv) {
 		}
 		iArg += 1;
 	}
-	if ((me->sMCastAddr == NULL) || (me->sLocalAddr == NULL) || (me->sDataFile == NULL) || (me->sBCastAddr == NULL)) {
+	if ((me->sMCastAddr == NULL) || (me->sLocalAddr == NULL) || (me->sDataFile == NULL)) {
 		print_usage();
 		exit(-1);
 	}
