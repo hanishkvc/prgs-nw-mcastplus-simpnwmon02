@@ -565,6 +565,8 @@ common arguments
 
 --datasize
 
+--ncid
+
 
 mcast specific arguments
 '''''''''''''''''''''''''
@@ -747,6 +749,51 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 
 Release Notes / Thoughts during some of the releases
 #####################################################
+
+v20190201IST2345 - v2.00 alpha
+=================================
+
+Have enabled auto context switching on the client side based on the nw context
+id it recieves in the packets. However this requires that one has already
+created / saved client side context files which correspond to the different nw
+context id's being used in the network. THese client side context files should
+contain DataFile defined such that they map to different unique files
+corresponding to each unique nw context id.
+
+On the server one can use the --ncid argument to specify the nw context id to
+be used for a given test / transfer. It is supported by both the mcast and
+ucast scripts on the server side.
+
+
+v20190201IST1857
+=================
+
+Have updated the stateless client such that it saves its context and loads its
+context properly. This also includes the ContextFileBase and DataFile specified
+when a new context was saved originally.
+
+Inturn when loading a context the value saved in the saved context file
+overrides the ones specified on the commandline.
+
+Also the skeleton to help auto switch context on client side, based on any
+different nw context id seen in the network packet is implemented. However as
+there is a corner case to be fixed wrt the situation where the new nw context
+id seen over the network in the middle of a transfer being a totally new nw
+context, this logic is not enabled by default. Currently any change in nw
+context id without restarting the client logic, will lead to the client
+ignoring those new nw context id related packets.
+
+NOTE: The idea of this logic, is that one could have the client logic
+automatically track different content files / partitions as the server changes
+the nw context id, without the client side having to do anything else at one
+level. So one can transition between multiple context files / partitions
+transparently while at same time handling packet recovery properly
+corresponding to that particular test / transfer content.
+
+Also the old Done/Run Modes and other logics wrt State based Client have been
+removed and logic updated suitably, as Stateless client doesn't use these
+mechanisms, but as alternate semantic.
+
 
 v20190131IST0016
 ===================
