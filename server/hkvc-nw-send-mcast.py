@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-# v20190130IST2335
+# v20190201IST2345
 # HanishKVC, GPL, 19XY
 #
 
@@ -74,6 +74,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--startblock"):
 		iArg += 1
 		pktid = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--ncid"):
+		iArg += 1
+		network.CtxtId = int(sys.argv[iArg], 0)
 	elif (sys.argv[iArg] == "--context"):
 		iArg += 1
 		gsContext = sys.argv[iArg]
@@ -187,7 +190,7 @@ while True:
 			if (bSimLossRandom and ((iRem+1) == iSimLossRange)):
 				iSimLossMod, iSimLossRange = simloss_random()
 			continue
-	data=struct.pack("<IIII{}s".format(dataSize), pktid, giTotalBlocksInvolved, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
+	data=struct.pack("<IIII{}s".format(dataSize), pktid, network.CtxtId, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
 	sock.sendto(data, (maddr, portMCast))
 	pktid += 1
 	if ((pktid%N) == 0):

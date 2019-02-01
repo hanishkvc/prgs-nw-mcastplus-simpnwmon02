@@ -1,7 +1,7 @@
 
 #
 # network.py - A module to support network related logics
-# v20190130IST2335
+# v20190201IST2345
 # HanishKVC, GPL, 19XY
 #
 
@@ -12,6 +12,7 @@ import time
 import status
 
 
+CtxtId=0x5a5aa5a5
 maddr="230.0.0.1"
 portMul = 5
 portMCast = 1111
@@ -37,7 +38,7 @@ def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 		if (i%10) == 0:
 			status.pireq(addr, piSeqId, i, times)
 			print("INFO: PIReq Num[{}:{}] sending".format(piSeqId, i))
-		data=struct.pack("<IIII5s", PIReqSeqNum, totalBlocksInvolved, totalBlocksInvolved, totalBlocksInvolved, bytes("PIReq", 'utf-8'))
+		data=struct.pack("<IIII5s", PIReqSeqNum, CtxtId, totalBlocksInvolved, totalBlocksInvolved, bytes("PIReq", 'utf-8'))
 		sock.sendto(data, (addr, port))
 		time.sleep(1)
 
