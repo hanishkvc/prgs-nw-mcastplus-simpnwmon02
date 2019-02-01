@@ -24,8 +24,6 @@
 
 const int STATS_TIMEDELTA=20;
 const int MCASTREJOIN_TIMEDELTA=300;
-const int UCAST_PI_USLEEP=1000000;
-const int PI_RETRYCNT = 600;		// 600*1e6uSecs = Client will try PI for atleast 600 seconds
 const int RUN_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_CTXTID_OFFSET=4;
@@ -64,9 +62,9 @@ char gsCID[CID_MAXLEN] = "v20190130iAMwho";
 #define SC_MAXDATASEQPROC "MaxDataSeqNumProc"
 #define SC_MAXDATASEQPROCEX "#MaxDataSeqNumProc:"
 #define SC_MAXDATASEQPROCEX_LEN 19
-#define SC_DONEMODES "DoneModes"
-#define SC_DONEMODESEX "#DoneModes:"
-#define SC_DONEMODESEX_LEN 11
+#define SC_STATE "State"
+#define SC_STATEEX "#State:"
+#define SC_STATEEX_LEN 7
 
 
 int gbSNMRun = 1;
@@ -89,7 +87,6 @@ struct snm {
 	int fileData;
 	uint32_t theSrvrPeer;
 	int iMaxDataSeqNumGot;
-	int iDoneModes;
 	int iMaxDataSeqNumProcessed;
 	char *sCID;
 };
@@ -127,7 +124,6 @@ void snm_init(struct snm *me) {
 	me->theSrvrPeer = 0;
 	ll_init(&me->llLostPkts);
 	me->iMaxDataSeqNumGot = -1;
-	me->iDoneModes = 0;
 	me->iMaxDataSeqNumProcessed = -1;
 	me->sCID = gsCID;
 }
@@ -159,7 +155,7 @@ void snm_save_context(struct snm *me, char *sTag) {
 	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%d\n", SC_MAXDATASEQPROC, me->iMaxDataSeqNumProcessed);
 	write(iFile, sTmp, strlen(sTmp));
-	snprintf(sTmp, 128, "#%s:%d\n", SC_DONEMODES, me->iDoneModes);
+	snprintf(sTmp, 128, "#%s:%d\n", SC_STATE, me->state);
 	write(iFile, sTmp, strlen(sTmp));
 	_save_ll_context(&me->llLostPkts, iFile, sTag, sFName);
 	close(iFile);
@@ -535,30 +531,18 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 		me->iMaxDataSeqNumProcessed = strtol(&sLine[SC_MAXDATASEQPROCEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded iMaxDataSeqNumProcessed [%d]\n", __func__, me->iMaxDataSeqNumProcessed);
 	}
-	if (strncmp(sLine, SC_DONEMODESEX, SC_DONEMODESEX_LEN) == 0) {
-		me->iDoneModes = strtol(&sLine[SC_DONEMODESEX_LEN], NULL, 10);
-		fprintf(stderr, "INFO:%s: loaded iDoneModes [%d]\n", __func__, me->iDoneModes);
+	if (strncmp(sLine, SC_STATEEX, SC_STATEEX_LEN) == 0) {
+		me->state = strtol(&sLine[SC_STATEEX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded state [%d]\n", __func__, me->state);
 	}
 }
 
-#define AUTOADJUST_RUNMODESFROMDONEMODES
 int snm_context_load(struct snm *me) {
 	int iRet = 0;
 
 	if (me->sContextFile != NULL) {
 		fprintf(stderr, "INFO:%s: About to load context including lostpacketRanges from [%s]...\n", __func__, me->sContextFile);
 		iRet = ll_load_append_ex(&me->llLostPkts, me->sContextFile, '#', _snm_context_load, me);
-#ifdef AUTOADJUST_RUNMODESFROMDONEMODES
-		if (me->iRunModes == RUNMODE_AUTO) {
-			me->iRunModes = RUNMODE_ALL & ~me->iDoneModes;
-			fprintf(stderr, "INFO:%s: AutoAdjusted RunModes [%d]\n", __func__, me->iRunModes);
-		} else {
-			fprintf(stderr, "INFO:%s: Ignoring DoneModes [%d], RunModes [%d]\n", __func__, me->iDoneModes, me->iRunModes);
-		}
-#endif
-	}
-	if (me->iRunModes == RUNMODE_AUTO) {
-		me->iRunModes = RUNMODE_ALL;
 	}
 	return iRet;
 }
