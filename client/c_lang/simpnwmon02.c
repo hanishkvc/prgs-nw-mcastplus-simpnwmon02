@@ -588,12 +588,12 @@ int snm_context_load(struct snm *me) {
 }
 
 void snm_args_process_p1(struct snm *me) {
-	if (snm_datafile_open(me) < 0) {
-		exit(1);
-	}
 	_snm_ports_update(me);
 	if (snm_context_load(me) < 0) {
 		exit(2);
+	}
+	if (snm_datafile_open(me) < 0) {
+		exit(1);
 	}
 }
 
