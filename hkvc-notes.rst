@@ -784,6 +784,19 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
+v20190203ISTXYZ
+==================
+
+Client and Server updated to manage the 1 Byte Flag entity as required.
+Currently this is inturn used to send save client context request to
+clients from the server, when the server takes a break in the middle of mcast
+transfer, by sending a PIReq packet which has the appropriate flag set.
+
+This ensures that even if the client crashes or is powered off by unknown
+or uncontrolled things, there will always be a periodic client side context
+being saved once every 15 minutes roughly.
+
+
 v20190202IST2336 - v2.00 Beta
 ==============================
 
