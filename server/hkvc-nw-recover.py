@@ -25,12 +25,13 @@ portMCast = 1111
 portServer = 1112
 portClient = 1113
 
+PITotalAttempts = 10
 URDeltaTimeSecs = int(1.5*60)
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
 URCLIENT_MAXCHANCES_PERATTEMPT = 512
 URATTEMPTS_MIN = 4
-giNumOfAttempts = URATTEMPTS_MIN
+giNumOfURAttempts = URATTEMPTS_MIN
 iTestBlocks=1e6
 
 
@@ -40,7 +41,7 @@ def dprint(lvl, msg):
 		print(msg)
 
 
-def guess_numofattempts(totalBlocksInvolved):
+def guess_numofurattempts(totalBlocksInvolved):
 	dLossPercent = 0.08
 	dBuffer = 1.5
 	iAvgNumOfPacketsPerRange = 8
@@ -125,7 +126,7 @@ else:
 	print("MODE:TestBlocks:{}".format(iTestBlocks))
 	giTotalBlocksInvolved = int(iTestBlocks)
 
-giNumOfAttempts = guess_numofattempts(giTotalBlocksInvolved)
+giNumOfURAttempts = guess_numofurattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
 dprint(9, "laddr [{}]".format(laddr))
@@ -136,7 +137,7 @@ if (sPIMode == "SLOW"):
 dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
 dprint(9, " sPIMode=[{}], PITime4Clients=[{}]\n".format(sPIMode, network.PITime4Clients))
 
-dprint(9, "giTotalBlocksInvolved [{}], URCLIENT_MAXCHANCES_PERATTEMPT [{}] giNumOfAttempts [{}]\n".format(giTotalBlocksInvolved, URCLIENT_MAXCHANCES_PERATTEMPT, giNumOfAttempts))
+dprint(9, "giTotalBlocksInvolved [{}], URCLIENT_MAXCHANCES_PERATTEMPT [{}] giNumOfURAttempts [{}]\n".format(giTotalBlocksInvolved, URCLIENT_MAXCHANCES_PERATTEMPT, giNumOfURAttempts))
 
 socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -299,9 +300,9 @@ def send_file_data(peer, indexList):
 
 
 dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
-network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, 10)
-for i in range(giNumOfAttempts):
-	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfAttempts))
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PITotalAttempts)
+for i in range(giNumOfURAttempts):
+	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfURAttempts))
 	gClients = unicast_recovery(gClients)
 	if(len(gClients) == 0):
 		break
