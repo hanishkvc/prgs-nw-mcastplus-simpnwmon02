@@ -782,7 +782,7 @@ v20190202IST2336 - v2.00 Beta
 ==============================
 
 Made PI phase more aggressive by reducing the time the server waits after
-sending PIReq and inturn use the gained time to increasing the number of times
+sending PIReq and inturn use the gained time to increase the number of times
 PIReq is sent. Practically found that 30 clients were responding to PIReq
 within a 1 second window, so reduced the default wait from 120 seconds to 30
 seconds now.
@@ -814,11 +814,13 @@ that given Nw Context Id's content and the new content with matching
 NwContextId recvd over the network. If both match, then the nw session is
 continued, else the client will assume that user / server wants to send a
 new version of the given Nw Context Id's content and handle the same as
-required.
+required. NOTE: At same time the context auto loading logic could also
+parallely trigger, which inturn also leads into this immidiately after the
+context id related switch is done.
 
 With this the client side logic is capable of switching between predefined
 content id's as well as new versions of the same automatically without
-required any intervention from the user on the client side. The only thing
+requiring any intervention from the user on the client side. The only thing
 that is required is that the Client side context for each of these predefined
 NwContextId's be predefined on the client side once.
 
