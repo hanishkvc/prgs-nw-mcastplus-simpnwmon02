@@ -778,8 +778,8 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
-v20190202ISTXYZ
-===================
+v20190202IST2336 - v2.00 Beta
+==============================
 
 Made PI phase more aggressive by reducing the time the server waits after
 sending PIReq and inturn use the gained time to increasing the number of times
@@ -805,6 +805,22 @@ Now one can explicitly specify which local interface should be used for mcast
 sending on the server side by passing a --laddrms argument. This interface
 inturn could be different from the local interface used for recieving udp
 packets.
+
+Added support for NwContext Versioning. One can specify the version of the
+Nw Context Id content being currently tested / transfered over the network,
+by using the --ncver argument on the server side. In turn the client will
+verify that the version hasn't changed between the last time it handled
+that given Nw Context Id's content and the new content with matching
+NwContextId recvd over the network. If both match, then the nw session is
+continued, else the client will assume that user / server wants to send a
+new version of the given Nw Context Id's content and handle the same as
+required.
+
+With this the client side logic is capable of switching between predefined
+content id's as well as new versions of the same automatically without
+required any intervention from the user on the client side. The only thing
+that is required is that the Client side context for each of these predefined
+NwContextId's be predefined on the client side once.
 
 
 v20190201IST2345 - v2.00 alpha
