@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190201IST2340
+    v20190202IST2336
     HanishKVC, GPL, 19XY
  */
 
@@ -27,6 +27,7 @@ const int MCASTREJOIN_TIMEDELTA=300;
 const int RUN_USLEEP=1000;
 const int PKT_SEQNUM_OFFSET=0;
 const int PKT_CTXTID_OFFSET=4;
+const int PKT_CTXTVER_OFFSET=8;
 const int PKT_TOTALBLOCKS_OFFSET=12;
 const int PKT_DATA_OFFSET=16;
 const int PKT_URACK_DATA_OFFSET=4;
@@ -59,6 +60,9 @@ char gsCID[CID_MAXLEN] = "v20190201iAMwho";
 #define SC_CTXTID "CtxtId"
 #define SC_CTXTIDEX "#CtxtId:"
 #define SC_CTXTIDEX_LEN 8
+#define SC_CTXTVER "CtxtVer"
+#define SC_CTXTVEREX "#CtxtVer:"
+#define SC_CTXTVEREX_LEN 9
 #define SC_CTXTFILEBASE "CtxtFileBase"
 #define SC_CTXTFILEBASEEX "#CtxtFileBase:"
 #define SC_CTXTFILEBASEEX_LEN 14
@@ -86,7 +90,7 @@ char gstContextFile[MAIN_FPATH_LEN];
 
 struct snm {
 	int state;
-	unsigned int uCtxtId;
+	unsigned int uCtxtId, uCtxtVer;
 	int sockMCast, sockUCast;
 	int iLocalIFIndex;
 	char *sMCastAddr;
@@ -120,6 +124,7 @@ void _snm_ports_update(struct snm *me) {
 void snm_init(struct snm *me) {
 	me->state = 0;
 	me->uCtxtId = -1;
+	me->uCtxtVer = -1;
 	me->sockMCast = -1;
 	me->sockUCast = -1;
 	me->iLocalIFIndex = 0;
@@ -135,6 +140,13 @@ void snm_init(struct snm *me) {
 	ll_init(&me->llLostPkts);
 	me->iMaxDataSeqNumGot = -1;
 	me->sCID = gsCID;
+}
+
+void snm_reuse_new_nwctxtver(struct snm *me, unsigned int uNewVer) {
+	ll_free(&me->llLostPkts);
+	me->state = 0;
+	me->uCtxtVer = uNewVer;
+	me->iMaxDataSeqNumGot = -1;
 }
 
 void _save_ll_context(struct LLR *meLLR, int iFile, char *sTag, char *sFName) {
@@ -170,6 +182,8 @@ void snm_save_context(struct snm *me, char *sTag) {
 		return;
 	}
 	snprintf(sTmp, 128, "#%s:%d\n", SC_CTXTID, me->uCtxtId);
+	write(iFile, sTmp, strlen(sTmp));
+	snprintf(sTmp, 128, "#%s:%d\n", SC_CTXTVER, me->uCtxtVer);
 	write(iFile, sTmp, strlen(sTmp));
 	snprintf(sTmp, 128, "#%s:%s\n", SC_CTXTFILEBASE, me->sContextFileBase);
 	write(iFile, sTmp, strlen(sTmp));
@@ -508,29 +522,40 @@ int snm_run(struct snm *me) {
 		// Handle recieved packet
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		unsigned int uCTXTId = *((uint32_t*)&bufR[PKT_CTXTID_OFFSET]);
+		unsigned int uCTXTVer = *((uint32_t*)&bufR[PKT_CTXTVER_OFFSET]);
 		unsigned int uTotalBlocks = *((uint32_t*)&bufR[PKT_TOTALBLOCKS_OFFSET]);
 		if ((me->state == STATE_DO) && (me->uCtxtId == -1)) {
-			fprintf(stderr, "INFO:%s: Starting out on a new NwContext [0x%X]\n", __func__, me->uCtxtId);
+			fprintf(stderr, "INFO:%s:Runtime Hitched: Starting out on new NwContext [0x%X:0x%X]\n", __func__, uCTXTId, uCTXTVer);
 			me->uCtxtId = uCTXTId;
+			me->uCtxtVer = uCTXTVer;
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
 		}
 		if (me->uCtxtId != uCTXTId) {
 #ifdef CTXTAUTOLOAD
-			fprintf(stderr, "WARN:%s: Switching client context from NwContext [0x%x] to [0x%X]\n", __func__, me->uCtxtId, uCTXTId);
+			fprintf(stderr, "WARN:%s: Switching client context from NwContext [0x%X:0x%X] to [0x%X:0x%X]\n", __func__, me->uCtxtId, me->uCtxtVer, uCTXTId, uCTXTVer);
 			snm_save_context(&snmCur, "quit");
 			me->uCtxtId = uCTXTId;
 			int clRet = snm_context_load(&snmCur, CTXTLOAD_AUTO);
 			if (clRet < 0) {
-				fprintf(stderr, "WARN:%s: Issue with NwContext [0x%X] client context loading, skipping\n", __func__, me->uCtxtId);
+				fprintf(stderr, "WARN:%s: Issue with NwContext [0x%X]'s client context loading, skipping\n", __func__, me->uCtxtId);
 				me->state = STATE_ERROR;
+			} else {
+				if (me->uCtxtVer != uCTXTVer) {
+					fprintf(stderr, "WARN:%s:NwCtxtVer: Ver in LoadedContextFile [0x%X] doesnt match Ver in Pkt [0x%x]\n", __func__, me->uCtxtVer, uCTXTVer);
+					fprintf(stderr, "WARN:%s:NwCtxtVer: Will assume full data needs to be recvd/recoverd\n", __func__);
+					snm_reuse_new_nwctxtver(me, uCTXTVer);
+					ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
+				} else {
+					fprintf(stderr, "INFO:%s:NwCtxtVer:0x%X\n", __func__, uCTXTVer);
+				}
 			}
 #else
-			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%x] Expected NwContext [0x%X], Skipping\n", __func__, uCTXTId, me->uCtxtId);
+			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%X:0x%X], Expected NwContext [0x%X:0x%X], Skipping\n", __func__, uCTXTId, uCTXTVer, me->uCtxtId, me->uCtxtVer);
 			continue;
 #endif
 		}
 		if (me->state == STATE_ERROR) {
-			fprintf(stderr, "ERROR:%s: NwContext [0x%X] in error state, skipping\n", __func__, me->uCtxtId);
+			fprintf(stderr, "ERROR:%s: NwContext [0x%X:0x%X] in error state, skipping\n", __func__, me->uCtxtId, me->uCtxtVer);
 		}
 		if (iSeq == URReqSeqNum) {
 			iRet = snm_handle_urreq(me, &addrR);
@@ -546,6 +571,7 @@ int snm_run(struct snm *me) {
 				fprintf(stderr, "DEBG:%s: Unexpected command [0x%X], skipping, check why\n", __func__, iSeq);
 				continue;
 			}
+			// TODO: If State is DONE, I can ignore
 			if (me->iMaxDataSeqNumGot < iSeq) {
 				me->iMaxDataSeqNumGot = iSeq;
 			}
@@ -577,6 +603,10 @@ void _snm_context_load(char *sLine, int iLineLen, void *meMaya) {
 	if (strncmp(sLine, SC_CTXTIDEX, SC_CTXTIDEX_LEN) == 0) {
 		me->uCtxtId = strtol(&sLine[SC_CTXTIDEX_LEN], NULL, 10);
 		fprintf(stderr, "INFO:%s: loaded uCtxtId [%d]\n", __func__, me->uCtxtId);
+	}
+	if (strncmp(sLine, SC_CTXTVEREX, SC_CTXTVEREX_LEN) == 0) {
+		me->uCtxtVer = strtol(&sLine[SC_CTXTVEREX_LEN], NULL, 10);
+		fprintf(stderr, "INFO:%s: loaded uCtxtVer [%d]\n", __func__, me->uCtxtVer);
 	}
 	if (strncmp(sLine, SC_DATAFILEEX, SC_DATAFILEEX_LEN) == 0) {
 		gstDataFile[0] = 0;

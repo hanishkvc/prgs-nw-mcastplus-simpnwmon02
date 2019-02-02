@@ -206,7 +206,9 @@ int ll_free(struct LLR *me) {
 		llNext = llNext->next;
 		me->iTotalFromRanges -= (llTemp->rEnd-llTemp->rStart+1);
 		me->iNodeCnt -= 1;
-		// The below logic is just to keep the structure always consistant. But technically this is not required, as this will be freeing up the full ll.
+		// OldNote: The below logic is just to keep the structure always consistant.
+		// 	    But technically this is not required, as this will be freeing up the full ll.
+		// NewNote: If reusing the llr context after freeing it, then this helps avoid having to reinit it.
 		me->llStart = llNext;
 		if (llNext != NULL) {
 			llNext->prev = NULL;
@@ -218,6 +220,14 @@ int ll_free(struct LLR *me) {
 			me->llBeforeDel = NULL;
 		}
 		free(llTemp);
+	}
+	if (me->iNodeCnt != 0) {
+		fprintf(stderr, "DBUG:%s: After freeing NodeCnt [%d] not 0 ???, Forcing to 0\n", __func__, me->iNodeCnt);
+		me->iNodeCnt = 0;
+	}
+	if (me->iTotalFromRanges != 0) {
+		fprintf(stderr, "DBUG:%s: After freeing TotalFromRanges [%d] not 0 ???, Forcing to 0\n", __func__, me->iTotalFromRanges);
+		me->iTotalFromRanges = 0;
 	}
 	me->llEnd = NULL;
 	return 0;
