@@ -34,6 +34,10 @@ const int PKT_URACK_DATA_OFFSET=4;
 const int PKT_PIACK_NAME_OFFSET=4;
 const int PKT_PIACK_LOSTPKTS_OFFSET=20;
 
+const unsigned int FV_FLAGMASK          = 0xFF000000;
+const unsigned int FV_CTXTVERMASK       = 0x00FFFFFF;
+const unsigned int FV_FLAG_SAVECLNTCTXT = 0x80000000;
+
 int gNwGroupMul=5;
 int gPortMCast=1111;
 int gPortServer=1112;
@@ -523,12 +527,25 @@ int snm_run(struct snm *me) {
 		int iSeq = *((uint32_t*)&bufR[PKT_SEQNUM_OFFSET]);
 		unsigned int uCTXTId = *((uint32_t*)&bufR[PKT_CTXTID_OFFSET]);
 		unsigned int uCTXTVer = *((uint32_t*)&bufR[PKT_CTXTVER_OFFSET]);
+		unsigned int uFlag = uCTXTVer & FV_FLAGMASK;
+		uCTXTVer = uCTXTVer & FV_CTXTVERMASK;
 		unsigned int uTotalBlocks = *((uint32_t*)&bufR[PKT_TOTALBLOCKS_OFFSET]);
 		if ((me->state == STATE_DO) && (me->uCtxtId == -1)) {
 			fprintf(stderr, "INFO:%s:Runtime Hitched: Starting out on new NwContext [0x%X:0x%X]\n", __func__, uCTXTId, uCTXTVer);
 			me->uCtxtId = uCTXTId;
 			me->uCtxtVer = uCTXTVer;
 			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
+		}
+		// The Client side context is currently saved before responding to the packet which had this flag set
+		// which means that there will be a variable delay across the clients before they respond back.
+		// It doesn't matter if the flag was set as part of a data packet or URReq or PIReq.
+		// If one wants this to trigger only during PIReq, then move the below "if uFlag == FV_FLAG_SAVECLNTCTXT" block
+		// to within the "iSeq == PIReqSeqNum"
+		// If PIReqSeqNum is sent N num of times one after the other, with the SAVECLNTCTXT flag set, then it will lead
+		// to saving of the Client side context N number of times.
+		if (uFlag == FV_FLAG_SAVECLNTCTXT) {
+			fprintf(stderr, "INFO:%s: Saving Client Context, based on request from server\n", __func__);
+			snm_save_context(&snmCur, "quit");
 		}
 		if (me->uCtxtId != uCTXTId) {
 #ifdef CTXTAUTOLOAD
