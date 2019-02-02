@@ -85,6 +85,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--ncid"):
 		iArg += 1
 		network.CtxtId = int(sys.argv[iArg], 0)
+	elif (sys.argv[iArg] == "--ncver"):
+		iArg += 1
+		network.CtxtVer = int(sys.argv[iArg], 0)
 	elif (sys.argv[iArg] == "--context"):
 		iArg += 1
 		gsContext = sys.argv[iArg]
@@ -206,7 +209,7 @@ while True:
 			if (bSimLossRandom and ((iRem+1) == iSimLossRange)):
 				iSimLossMod, iSimLossRange = simloss_random()
 			continue
-	data=struct.pack("<IIII{}s".format(dataSize), pktid, network.CtxtId, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
+	data=struct.pack("<IIII{}s".format(dataSize), pktid, network.CtxtId, network.CtxtVer, giTotalBlocksInvolved, curData)
 	sock.sendto(data, (maddr, portMCast))
 	pktid += 1
 	if ((pktid%N) == 0):

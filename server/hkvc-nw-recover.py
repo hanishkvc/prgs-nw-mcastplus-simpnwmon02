@@ -98,6 +98,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--ncid"):
 		iArg += 1
 		network.CtxtId = int(sys.argv[iArg], 0)
+	elif (sys.argv[iArg] == "--ncver"):
+		iArg += 1
+		network.CtxtVer = int(sys.argv[iArg], 0)
 	elif (sys.argv[iArg] == "--context"):
 		iArg += 1
 		gsContext = sys.argv[iArg]
@@ -203,7 +206,7 @@ def ur_client(client):
 	while(deltaTime < URDeltaTimeSecs):
 		if ((iCnt % 30) == 0):
 			dprint(8, "UR:{}_{}".format(iCnt,deltaTime))
-		data=struct.pack("<IIII4s", URReqSeqNum, network.CtxtId, giTotalBlocksInvolved, giTotalBlocksInvolved, bytes("Helo", 'utf8'))
+		data=struct.pack("<IIII4s", URReqSeqNum, network.CtxtId, network.CtxtVer, giTotalBlocksInvolved, bytes("Helo", 'utf8'))
 		sock.sendto(data, (client, portClient))
 		try:
 			d = sock.recvfrom(1024)
@@ -283,7 +286,7 @@ def send_file_data(peer, indexList):
 		else:
 			tmpData = bytes(dataSize-4)
 			curData = struct.pack("<I{}s".format(dataSize-4), i, tmpData)
-		data=struct.pack("<IIII{}s".format(dataSize), i, network.CtxtId, giTotalBlocksInvolved, giTotalBlocksInvolved, curData)
+		data=struct.pack("<IIII{}s".format(dataSize), i, network.CtxtId, network.CtxtVer, giTotalBlocksInvolved, curData)
 		sock.sendto(data, (peer, portClient))
 		pktid += 1
 		if ((pktid%N) == 0):
