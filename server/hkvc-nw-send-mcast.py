@@ -25,7 +25,7 @@ import context
 PIInitTotalAttempts = 10
 PIInitTime4Clients = 10
 PIInBtwTotalAttempts = 2
-PIInBtwInterval = 30*60
+PIInBtwInterval = 15*60
 PIInBtwTime4Clients = 30
 
 
@@ -227,7 +227,11 @@ while True:
 		prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
 		deltaPITime = curTime-prevPITime
 		if (deltaPITime > PIInBtwInterval):
+			savedFlag = network.CurFlag
+			network.CurFlag = network.FV_FLAG_SAVECLNTCTXT
 			network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
+			network.CurFlag = savedFlag
+			prevPITime = curTime
 
 print_throughput(prevTime, pktid, prevPktid)
 

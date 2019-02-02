@@ -199,9 +199,9 @@ URReqSeqNum, NwContextId, dummy, TotalBlocksInvolved, ...
 New
 ~~~~
 
-PIReqSeqNum, NwContextId, Ctxtver, TotalBlocksInvolved, [savecontext flag/dont care], ...
-DataSeqNum,  NwContextId, Ctxtver, TotalBlocksInvolved, data
-URReqSeqNum, NwContextId, Ctxtver, TotalBlocksInvolved, ...
+PIReqSeqNum, NwContextId, 8BitFlag|24BitCtxtver, TotalBlocksInvolved, ...
+DataSeqNum,  NwContextId, 8BitFlag|24BitCtxtver, TotalBlocksInvolved, data
+URReqSeqNum, NwContextId, 8BitFlag|24BitCtxtver, TotalBlocksInvolved, ...
 
 Client has to use the context version number to decide, whether it should
 continue from a previous saved client side context for that nw context id, or
@@ -209,6 +209,12 @@ assume that all data it has for that nw context id is no longer valid (bcas new
 version) and inturn start recieving full content wrt that nw context id, i.e by
 discarding any existing lostpkts info and start with a new lostpkts list which
 tells full content is missing.
+
+24BitCtxtVer is as the name suggests 24bit wide and occupy the Lower 3 bytes of
+the total 4 byte space available for Flag+CtxtVer.
+
+8BitFlag for now could be None or SaveClientContext. If SaveClientContext is
+set then the client on receiving such a packet will save the client context.
 
 savecontext flag should be used by client to save the client side context for
 the current session.
