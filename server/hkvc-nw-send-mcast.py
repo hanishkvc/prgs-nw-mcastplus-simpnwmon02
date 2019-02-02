@@ -22,6 +22,12 @@ import status
 import context
 
 
+PIInitTotalAttempts = 5
+PIInBtwTotalAttempts = 2
+PIInBtwInterval = 30*60
+PIInBtwTime4Clients = 30
+
+
 DBGLVL = 7
 def dprint(lvl, msg):
 	if (lvl > DBGLVL):
@@ -162,6 +168,8 @@ def handle_sigint(sigNum, sigStack):
 
 
 signal.signal(signal.SIGINT, handle_sigint)
+gClients = []
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts)
 if (bSimLossRandom):
 	iSimLossMod, iSimLossRange = simloss_random()
 else:
@@ -170,6 +178,7 @@ else:
 prevPktid=pktid
 prevTime=time.time()
 curTime=0.0
+prevPITime=0.0
 prevTimeThrottle=time.time()
 while True:
 	if (fData != None):
@@ -206,6 +215,10 @@ while True:
 		prevTimeThrottle = time.time()
 	if ((pktid%(N*N*256)) == 0):
 		prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
+		deltaPITime = curTime-prevPITime
+		if (deltaPITime > PIInBtwInterval):
+			network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
+
 print_throughput(prevTime, pktid, prevPktid)
 
 

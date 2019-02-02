@@ -89,8 +89,6 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 		if (clientsDB[r]['cnt'] == 0):
 			iSilentClients += 1
 	dprint(9, "PI:END: Clients list")
-	for r in clients:
-		dprint(9, r)
 	return iSilentClients
 
 
@@ -99,10 +97,12 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
 	for i in range(attempts):
-		dprint(9, "INFO:PI: Attempt [{}]...".format(i))
+		dprint(9, "INFO:PI: Attempt [{}/{}], time4Clients[{}]...".format(i, attempts, time4Clients))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
+		for r in clients:
+			dprint(9, r)
 		if (iSilentClients == 0):
 			dprint(9, "INFO:PI: handshaked with all known clients")
 			return
