@@ -47,7 +47,6 @@ def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 
 def _presence_info(sock, clients, clientsDB):
 	sock.settimeout(10.0)
-	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
@@ -61,14 +60,15 @@ def _presence_info(sock, clients, clientsDB):
 				(tCmd, tName, tLostPkts) = struct.unpack("<I16sI8s", dataC)[0:3]
 				i = clients.index(peer)
 				if (tCmd == PIAckSeqNum):
-					dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
+					dprint(5, "Rcvd from known client:{}:{}".format(peer, dataC))
 					clientsDB[peer]['cnt'] += 1
 					clientsDB[peer]['lostpkts'] = tLostPkts
 					clientsDB[peer]['name'] = tName
 			except ValueError as e:
-				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
+				dprint(5, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
 				clientsDB[peer] = {'type':'new', 'cnt': 1, 'lostpkts': tLostPkts, 'name': tName}
+			dprint(9, "Rcvd from client:{}:{}".format(peer, dataC))
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
@@ -87,11 +87,12 @@ def _presence_info(sock, clients, clientsDB):
 	return iSilentClients
 
 
-def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients):
+def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts):
 	clientsDB = {}
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
-	for i in range(10):
+	for i in range(attempts):
+		dprint(9, "INFO:PI: Attempt [{}]...".format(i))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(sock, clients, clientsDB)
 		status.ucast_pi(clientsDB)
@@ -99,5 +100,5 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients):
 			dprint(9, "INFO:PI: handshaked with all known clients")
 			return
 		else:
-			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
+			dprint(9, "WARN:PI: [{}] known clients didnt talk...".format(iSilentClients))
 

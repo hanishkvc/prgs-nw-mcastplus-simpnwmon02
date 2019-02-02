@@ -298,7 +298,8 @@ def send_file_data(peer, indexList):
 
 
 
-presence_info(gClients)
+dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients)
 for i in range(giNumOfAttempts):
 	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfAttempts))
 	gClients = unicast_recovery(gClients)
