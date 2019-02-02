@@ -19,13 +19,20 @@ portMCast = 1111
 portServer = 1112
 portClient = 1113
 
-PITotalTimeSecs = 2*60
+PIDefaultAttempts=2
+PITime4Clients = 2*60
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
 MCASTSTOPSeqNum = 0xffffffff
 MCASTSTOPAdditionalCheck = 0xf5a55a5f
 
 dataSize=1024
+
+
+DBGLVL = 7
+def dprint(lvl, msg):
+	if (lvl > DBGLVL):
+		print(msg)
 
 
 def ports_ngupdate(nwGroup):
@@ -45,12 +52,12 @@ def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 		time.sleep(1)
 
 
-def _presence_info(sock, clients, clientsDB):
+def _presence_info(sock, clients, clientsDB, time4Clients):
 	sock.settimeout(10.0)
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
-	while(deltaTime < PITotalTimeSecs):
+	while(deltaTime < time4Clients):
 		dprint(8, "PI:{}_{}".format(iCnt,deltaTime))
 		try:
 			d = sock.recvfrom(128)
@@ -87,14 +94,14 @@ def _presence_info(sock, clients, clientsDB):
 	return iSilentClients
 
 
-def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts):
+def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts=PIDefaultAttempts, time4Clients=PITime4Clients):
 	clientsDB = {}
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
 	for i in range(attempts):
 		dprint(9, "INFO:PI: Attempt [{}]...".format(i))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
-		iSilentClients = _presence_info(sock, clients, clientsDB)
+		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
 		if (iSilentClients == 0):
 			dprint(9, "INFO:PI: handshaked with all known clients")

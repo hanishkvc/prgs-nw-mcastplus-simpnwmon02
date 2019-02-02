@@ -132,9 +132,9 @@ dprint(9, "laddr [{}]".format(laddr))
 dprint(9, "maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
 
 if (sPIMode == "SLOW"):
-	PITotalTimeSecs=10*60
+	network.PITime4Clients=10*60
 dprint(9, " portServer [{}], portClient [{}]".format(portServer, portClient))
-dprint(9, " sPIMode=[{}], PITotalTimeSecs=[{}]\n".format(sPIMode, PITotalTimeSecs))
+dprint(9, " sPIMode=[{}], PITime4Clients=[{}]\n".format(sPIMode, network.PITime4Clients))
 
 dprint(9, "giTotalBlocksInvolved [{}], URCLIENT_MAXCHANCES_PERATTEMPT [{}] giNumOfAttempts [{}]\n".format(giTotalBlocksInvolved, URCLIENT_MAXCHANCES_PERATTEMPT, giNumOfAttempts))
 
@@ -299,7 +299,7 @@ def send_file_data(peer, indexList):
 
 
 dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
-network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients)
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, 10)
 for i in range(giNumOfAttempts):
 	dprint(9, "INFO: UCastRecovery Global Attempt [{} of {}]".format(i, giNumOfAttempts))
 	gClients = unicast_recovery(gClients)
