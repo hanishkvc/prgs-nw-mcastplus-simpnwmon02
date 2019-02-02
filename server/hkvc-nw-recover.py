@@ -25,9 +25,6 @@ portMCast = 1111
 portServer = 1112
 portClient = 1113
 
-PITotalTimeSecs = 2*60
-PIReqSeqNum = 0xffffff00
-PIAckSeqNum = 0xffffff01
 URDeltaTimeSecs = int(1.5*60)
 URReqSeqNum = 0xffffff02
 URAckSeqNum = 0xffffff03
@@ -150,64 +147,6 @@ sock.bind((laddr, portServer))
 
 dprint(9, "Will start in 10 secs...")
 time.sleep(10)
-
-
-def _presence_info(clients, clientsDB):
-	global sock
-	sock.settimeout(10.0)
-	dprint(9, "PresenceInfo: Listening on [{}:{}]".format(laddr, portServer))
-	startTime = time.time()
-	deltaTime = 0
-	iCnt = 0
-	while(deltaTime < PITotalTimeSecs):
-		dprint(8, "PI:{}_{}".format(iCnt,deltaTime))
-		try:
-			d = sock.recvfrom(128)
-			dataC = d[0]
-			peer = d[1][0]
-			try:
-				(tCmd, tName, tLostPkts) = struct.unpack("<I16sI8s", dataC)[0:3]
-				i = clients.index(peer)
-				if (tCmd == PIAckSeqNum):
-					dprint(9, "Rcvd from known client:{}:{}".format(peer, dataC))
-					clientsDB[peer]['cnt'] += 1
-					clientsDB[peer]['lostpkts'] = tLostPkts
-					clientsDB[peer]['name'] = tName
-			except ValueError as e:
-				dprint(9, "Rcvd from new client:{}:{}".format(peer, dataC))
-				clients.append(peer)
-				clientsDB[peer] = {'type':'new', 'cnt': 1, 'lostpkts': tLostPkts, 'name': tName}
-		except socket.timeout as e:
-			d = None
-			dprint(7, ".")
-		curTime = time.time()
-		deltaTime = int(curTime - startTime)
-		iCnt += 1
-	dprint(9, "PI:END: Status:")
-	iSilentClients = 0
-	for r in clientsDB:
-		dprint(9, "{} = {}".format(r, clientsDB[r]))
-		if (clientsDB[r]['cnt'] == 0):
-			iSilentClients += 1
-	dprint(9, "PI:END: Clients list")
-	for r in clients:
-		dprint(9, r)
-	return iSilentClients
-
-
-def presence_info(clients):
-	clientsDB = {}
-	for r in clients:
-		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
-	for i in range(10):
-		network.send_pireq(sock, maddr, portMCast, giTotalBlocksInvolved, i, 1)
-		iSilentClients = _presence_info(clients, clientsDB)
-		status.ucast_pi(clientsDB)
-		if (iSilentClients == 0):
-			dprint(9, "INFO:PI: handshaked with all known clients")
-			return
-		else:
-			dprint(9, "WARN:PI: [{}] known clients didnt talk, trying again [{}]...".format(iSilentClients, i))
 
 
 def gen_lostpackets_array(lostPackets):
