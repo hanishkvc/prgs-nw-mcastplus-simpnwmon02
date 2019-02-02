@@ -8,6 +8,7 @@
 import socket
 import struct
 import time
+import enum
 
 import status
 
@@ -92,8 +93,13 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 	return iSilentClients
 
 
+PIModes=enum.Enum("PIModes", "BLIND, KNOWN")
 def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts=PIDefaultAttempts, time4Clients=PITime4Clients):
 	clientsDB = {}
+	if (len(clients) == 0):
+		mode = PIModes.BLIND
+	else:
+		mode = PIModes.KNOWN
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
 	for i in range(attempts):
@@ -103,9 +109,10 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		status.ucast_pi(clientsDB)
 		for r in clients:
 			dprint(9, r)
-		if (iSilentClients == 0):
-			dprint(9, "INFO:PI: handshaked with all known clients")
-			return
-		else:
-			dprint(9, "WARN:PI: [{}] known clients didnt talk...".format(iSilentClients))
+		if (mode == PIModes.KNOWN):
+			if (iSilentClients == 0):
+				dprint(9, "INFO:PI: handshaked with all known clients")
+				return
+			else:
+				dprint(9, "WARN:PI: [{}] known clients didnt talk...".format(iSilentClients))
 
