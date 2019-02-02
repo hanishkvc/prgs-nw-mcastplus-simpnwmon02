@@ -186,6 +186,34 @@ list of clients it knows about. Similarly it has logic to load a list of known
 clients, if provided by the user.
 
 
+The Packet structure
+----------------------
+
+cur
+~~~~
+
+PIReqSeqNum, NwContextId, dummy, TotalBlocksInvolved, ....
+DataSeqNum,  NwContextId, dummy, TotalBlocksInvolved, data
+URReqSeqNum, NwContextId, dummy, TotalBlocksInvolved, ...
+
+New
+~~~~
+
+PIReqSeqNum, NwContextId, ver, TotalBlocksInvolved, [savecontext flag/dont care], ...
+DataSeqNum,  NwContextId, ver, TotalBlocksInvolved, data
+URReqSeqNum, NwContextId, ver, TotalBlocksInvolved, ...
+
+Client has to use the version number to decide, whether it should continue from
+a previous saved client side context for that nw context id, or assume that all
+data it has for that nw context id is no longer valid (bcas new version) and
+inturn start recieving full content wrt that nw context id, i.e by discarding
+any existing lostpkts info and start with a new lostpkts list which tells full
+content is missing.
+
+savecontext flag should be used by client to save the client side context for
+the current session.
+
+
 .. raw:: pdf
 
    PageBreak
