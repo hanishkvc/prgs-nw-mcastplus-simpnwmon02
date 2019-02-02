@@ -540,14 +540,7 @@ int snm_run(struct snm *me) {
 				fprintf(stderr, "WARN:%s: Issue with NwContext [0x%X]'s client context loading, skipping\n", __func__, me->uCtxtId);
 				me->state = STATE_ERROR;
 			} else {
-				if (me->uCtxtVer != uCTXTVer) {
-					fprintf(stderr, "WARN:%s:NwCtxtVer: Ver in LoadedContextFile [0x%X] doesnt match Ver in Pkt [0x%x]\n", __func__, me->uCtxtVer, uCTXTVer);
-					fprintf(stderr, "WARN:%s:NwCtxtVer: Will assume full data needs to be recvd/recoverd\n", __func__);
-					snm_reuse_new_nwctxtver(me, uCTXTVer);
-					ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
-				} else {
-					fprintf(stderr, "INFO:%s:NwCtxtVer:0x%X\n", __func__, uCTXTVer);
-				}
+				fprintf(stderr, "INFO:%s:Loaded NwCtxt [0x%X:0x%X] from ClientSideSavedContext\n", __func__, me->uCtxtId, me->uCtxtVer);
 			}
 #else
 			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%X:0x%X], Expected NwContext [0x%X:0x%X], Skipping\n", __func__, uCTXTId, uCTXTVer, me->uCtxtId, me->uCtxtVer);
@@ -555,7 +548,13 @@ int snm_run(struct snm *me) {
 #endif
 		}
 		if (me->state == STATE_ERROR) {
-			fprintf(stderr, "ERROR:%s: NwContext [0x%X:0x%X] in error state, skipping\n", __func__, me->uCtxtId, me->uCtxtVer);
+			fprintf(stderr, "ERROR:%s: NwContext [?0x%X?:?0x%X?] in error state, skipping\n", __func__, me->uCtxtId, me->uCtxtVer);
+		}
+		if (me->uCtxtVer != uCTXTVer) {
+			fprintf(stderr, "WARN:%s:NwCtxtVer: Ver being handled [0x%X:0x%X] doesnt match Ver in Pkt [0x%X:0x%X]\n", __func__, me->uCtxtId, me->uCtxtVer, uCTXTId, uCTXTVer);
+			fprintf(stderr, "WARN:%s:NwCtxtVer: Will assume new full data needs to be recvd/recoverd\n", __func__);
+			snm_reuse_new_nwctxtver(me, uCTXTVer);
+			ll_add_sorted_startfrom_lastadded(&me->llLostPkts, 0, uTotalBlocks-1);
 		}
 		if (iSeq == URReqSeqNum) {
 			iRet = snm_handle_urreq(me, &addrR);
