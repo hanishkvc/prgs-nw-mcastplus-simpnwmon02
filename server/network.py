@@ -21,7 +21,7 @@ portServer = 1112
 portClient = 1113
 
 PIDefaultAttempts=2
-PITime4Clients = 2*60
+PITime4Clients = 30
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
 MCASTSTOPSeqNum = 0xffffffff

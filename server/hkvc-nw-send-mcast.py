@@ -22,7 +22,8 @@ import status
 import context
 
 
-PIInitTotalAttempts = 5
+PIInitTotalAttempts = 10
+PIInitTime4Clients = 10
 PIInBtwTotalAttempts = 2
 PIInBtwInterval = 30*60
 PIInBtwTime4Clients = 30
@@ -169,7 +170,7 @@ def handle_sigint(sigNum, sigStack):
 
 signal.signal(signal.SIGINT, handle_sigint)
 gClients = []
-network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts)
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients)
 if (bSimLossRandom):
 	iSimLossMod, iSimLossRange = simloss_random()
 else:
