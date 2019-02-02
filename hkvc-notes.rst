@@ -778,6 +778,35 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
+v20190202ISTXYZ
+===================
+
+Made PI phase more aggressive by reducing the time the server waits after
+sending PIReq and inturn use the gained time to increasing the number of times
+PIReq is sent. Practically found that 30 clients were responding to PIReq
+within a 1 second window, so reduced the default wait from 120 seconds to 30
+seconds now.
+
+Added PI Phase to mcast phase logic also. Initially before starting mcast
+phase, the logic will do a medium length PI phase. And later in the middle of
+mcast phase, once every predefined amount of time it will trigger a small less
+aggressive pi phase.
+
+PI phase logic now instead of doing only 1 attempt, if no client list is
+provided, will try for the maximum number of times specified. While if a client
+list is given, then similar to before, once all clients have handshaked, it
+will come out of PI phase.
+
+PI Phase function, is more controllable now by the caller, wrt its logic,
+interms of how many attempts should be tried and how much time to wait during
+each attempt for clients to handshake back.
+
+Now one can explicitly specify which local interface should be used for mcast
+sending on the server side by passing a --laddrms argument. This interface
+inturn could be different from the local interface used for recieving udp
+packets.
+
+
 v20190201IST2345 - v2.00 alpha
 =================================
 
