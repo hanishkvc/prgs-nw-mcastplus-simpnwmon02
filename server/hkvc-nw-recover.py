@@ -60,6 +60,7 @@ N=11
 dataSize=network.dataSize
 Bps=2e6
 laddr="0.0.0.0"
+laddrms="0.0.0.0"
 maddr=network.maddr
 sfData=None
 sPIMode="NORMAL"
@@ -82,6 +83,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--laddr"):
 		iArg += 1
 		laddr = sys.argv[iArg]
+	elif (sys.argv[iArg] == "--laddrms"):
+		iArg += 1
+		laddrms = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--maddr"):
 		iArg += 1
 		maddr = sys.argv[iArg]
@@ -130,7 +134,7 @@ giNumOfURAttempts = guess_numofurattempts(giTotalBlocksInvolved)
 
 perPktTime=1/(Bps/dataSize)
 dprint(9, "laddr [{}]".format(laddr))
-dprint(9, "maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
+dprint(9, "maddr [{}], portMCast [{}], laddrms [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, laddrms, N, dataSize, Bps, perPktTime))
 
 if (sPIMode == "SLOW"):
 	network.PITime4Clients=10*60
@@ -143,7 +147,7 @@ socket.setdefaulttimeout(1)
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
-sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(laddr))
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(laddrms))
 dprint(9, "Listening on [{}:{}]".format(laddr, portServer))
 sock.bind((laddr, portServer))
 

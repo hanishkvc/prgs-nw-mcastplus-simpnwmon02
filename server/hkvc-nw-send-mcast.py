@@ -36,9 +36,6 @@ def dprint(lvl, msg):
 
 
 status.open()
-sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-ttl_bin = struct.pack('@i', 1)
-sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
 
 nwGroup=0
 pktid=0
@@ -47,6 +44,7 @@ portMCast=1111
 N=11
 dataSize=network.dataSize
 Bps=2e6
+laddrms="0.0.0.0"
 maddr=network.maddr
 sfData=None
 iTestBlocks=1e6
@@ -67,6 +65,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--Bps"):
 		iArg += 1
 		Bps = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--laddrms"):
+		iArg += 1
+		laddrms = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--maddr"):
 		iArg += 1
 		maddr = sys.argv[iArg]
@@ -123,11 +124,16 @@ else:
 	print("Simulate losses is Disabled")
 
 perPktTime=1/(Bps/dataSize)
-print("maddr [{}], portMCast [{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, N, dataSize, Bps, perPktTime))
+print("maddr [{}], portMCast [{}], laddrms[{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, laddrms, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}], StartingBlock [{}]\n".format(giTotalBlocksInvolved, pktid))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
 	print("ERROR: Too large a content size, not supported...")
 	exit(-2)
+
+sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+ttl_bin = struct.pack('@i', 1)
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(laddrms))
 
 print("Will start in 10 secs...")
 time.sleep(10)
