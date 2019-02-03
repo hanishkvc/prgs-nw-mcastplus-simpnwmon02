@@ -241,7 +241,7 @@ while True:
 			prevPITime = curTime
 
 print_throughput(prevTime, pktid, prevPktid)
-
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
 
 save_context(gsContext, pktid, giTotalBlocksInvolved)
 print("INFO: Done with mcast transfer, quiting...")
