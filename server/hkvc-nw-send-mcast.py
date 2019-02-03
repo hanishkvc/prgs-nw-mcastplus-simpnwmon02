@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-# v20190203IST1654
+PRGVER="v20190204IST0252"
 # HanishKVC, GPL, 19XY
 #
 
@@ -36,6 +36,7 @@ def dprint(lvl, msg):
 
 
 status.open()
+status._print("PRGVER:nw-send-mcast:{}".format(PRGVER))
 
 nwGroup=0
 pktid=0

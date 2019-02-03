@@ -799,6 +799,18 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
+v20190204IST0244
+===================
+
+Introduce a minimal PI even at the end of mcast transfer.
+
+More refined PI status & console logging.
+
+Client understands if a SaveClientContext request from server is a fresh one or
+a repeat, as part of trying to communicate with non-responsive clients. And
+inturn only save context if it is a fresh one.
+
+
 v20190203IST1704
 ==================
 
