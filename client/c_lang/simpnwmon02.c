@@ -1,6 +1,6 @@
 /*
     Simple Network Monitor 02 - C version
-    v20190202IST2336
+    v20190203IST0447
     HanishKVC, GPL, 19XY
  */
 
@@ -58,7 +58,7 @@ char gcBuf[BUF_MAXSIZE];
 #define MAIN_FPATH_LEN 256
 char gsContextFileBase[MAIN_FPATH_LEN] = "/tmp/snm02";
 #define CID_MAXLEN 16
-char gsCID[CID_MAXLEN] = "v20190202iAMwho";
+char gsCID[CID_MAXLEN] = "v20190203iAMwho";
 
 // Saved SNM Contexts
 #define SC_CTXTID "CtxtId"

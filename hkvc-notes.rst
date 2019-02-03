@@ -784,17 +784,26 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
-v20190203ISTXYZ
+v20190203IST1704
 ==================
 
-Client and Server updated to manage the 1 Byte Flag entity as required.
-Currently this is inturn used to send save client context request to
-clients from the server, when the server takes a break in the middle of mcast
-transfer, by sending a PIReq packet which has the appropriate flag set.
+Client and Server updated to manage a 1 Byte Flag sent from srvr to client.
 
-This ensures that even if the client crashes or is powered off by unknown
-or uncontrolled things, there will always be a periodic client side context
-being saved once every 15 minutes roughly.
+Currently this is inturn used to send save client context request to clients
+from the server, when the server takes a 1 minute relax break in the middle of
+mcast transfer, by sending a PIReq packet which has the appropriate flag set.
+
+This ensures that even if the client crashes or is powered off unknowingly or
+by uncontrolled things, there will always be a periodic client side context
+being saved once every 15 minutes roughly. So the client will only loss any
+data it had recieved in a window of max 15 minutes, which either way it will
+recover, when the client is resumed (by asking server to resend those pkts,
+as part of recovery process).
+
+Fix a oversight in mcast transfer program, wrt binding of socket to local port
+to recv PIAcks.
+
+Cleanedup PI logging.
 
 
 v20190202IST2336 - v2.00 Beta
