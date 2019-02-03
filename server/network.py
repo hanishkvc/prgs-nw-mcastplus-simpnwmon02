@@ -70,7 +70,8 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 	deltaTime = 0
 	iCnt = 0
 	while(deltaTime < time4Clients):
-		dprint(8, "PI:{}_{}".format(iCnt,deltaTime))
+		if (time4Clients > 10):
+			dprint(8, "PI:{}_{}".format(iCnt,deltaTime))
 		try:
 			d = sock.recvfrom(128)
 			dataC = d[0]
@@ -88,7 +89,7 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 				clients.append(peer)
 				clientsDB[peer] = {'type':'new', 'cnt': 1, 'lostpkts': tLostPkts, 'name': tName}
 			if (time4Clients > 10):
-				dprint(6, "Rcvd from client:{}:{}".format(peer, clientsDB[peer]))
+				dprint(8, "Rcvd from client:{}:{}".format(peer, clientsDB[peer]))
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
@@ -118,9 +119,9 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
-		dprint(9, "PI: Clients list")
+		dprint(7, "PI: Clients list")
 		for r in clients:
-			dprint(9, r)
+			dprint(7, r)
 		if (mode == PIModes.KNOWN):
 			if (iSilentClients == 0):
 				dprint(9, "INFO:PI: handshaked with all known clients")
