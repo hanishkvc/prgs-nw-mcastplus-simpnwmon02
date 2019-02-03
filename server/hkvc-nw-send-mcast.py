@@ -44,6 +44,7 @@ portMCast=1111
 N=11
 dataSize=network.dataSize
 Bps=2e6
+laddr="0.0.0.0"
 laddrms="0.0.0.0"
 maddr=network.maddr
 sfData=None
@@ -65,6 +66,9 @@ while iArg < len(sys.argv):
 	elif (sys.argv[iArg] == "--Bps"):
 		iArg += 1
 		Bps = int(sys.argv[iArg])
+	elif (sys.argv[iArg] == "--laddr"):
+		iArg += 1
+		laddr = sys.argv[iArg]
 	elif (sys.argv[iArg] == "--laddrms"):
 		iArg += 1
 		laddrms = sys.argv[iArg]
@@ -93,7 +97,7 @@ while iArg < len(sys.argv):
 		gsContext = sys.argv[iArg]
 	iArg += 1
 
-portMCast, _portServer, _portClient = network.ports_ngupdate(nwGroup)
+portMCast, portServer, _portClient = network.ports_ngupdate(nwGroup)
 
 if (gsContext != None):
 	dprint(9, "INFO:Context: importing from [{}]".format(gsContext))
@@ -127,6 +131,7 @@ else:
 	print("Simulate losses is Disabled")
 
 perPktTime=1/(Bps/dataSize)
+dprint(9, "laddr [{}]".format(laddr))
 print("maddr [{}], portMCast [{}], laddrms[{}]\n sqmat-dim [{}]\n dataSize [{}]\n Bps [{}], perPktTime [{}]\n".format(maddr, portMCast, laddrms, N, dataSize, Bps, perPktTime))
 print("TotalBlocksToTransfer [{}], StartingBlock [{}]\n".format(giTotalBlocksInvolved, pktid))
 if (giTotalBlocksInvolved > (dataSize*2e9)):
@@ -137,6 +142,8 @@ sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ttl_bin = struct.pack('@i', 1)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(laddrms))
+dprint(9, "Listening on [{}:{}]".format(laddr, portServer))
+sock.bind((laddr, portServer))
 
 print("Will start in 10 secs...")
 time.sleep(10)

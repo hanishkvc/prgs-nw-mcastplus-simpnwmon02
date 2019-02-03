@@ -156,6 +156,7 @@ sock.bind((laddr, portServer))
 
 dprint(9, "Will start in 10 secs...")
 time.sleep(10)
+print("Started")
 
 
 def gen_lostpackets_array(lostPackets):

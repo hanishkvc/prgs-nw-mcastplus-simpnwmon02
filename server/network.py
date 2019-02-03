@@ -87,7 +87,8 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 				dprint(5, "Rcvd from new client:{}:{}".format(peer, dataC))
 				clients.append(peer)
 				clientsDB[peer] = {'type':'new', 'cnt': 1, 'lostpkts': tLostPkts, 'name': tName}
-			dprint(9, "Rcvd from client:{}:{}".format(peer, dataC))
+			if (time4Clients > 10):
+				dprint(6, "Rcvd from client:{}:{}".format(peer, clientsDB[peer]))
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
@@ -100,7 +101,6 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 		dprint(9, "{} = {}".format(r, clientsDB[r]))
 		if (clientsDB[r]['cnt'] == 0):
 			iSilentClients += 1
-	dprint(9, "PI:END: Clients list")
 	return iSilentClients
 
 
@@ -118,6 +118,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
+		dprint(9, "PI: Clients list")
 		for r in clients:
 			dprint(9, r)
 		if (mode == PIModes.KNOWN):
