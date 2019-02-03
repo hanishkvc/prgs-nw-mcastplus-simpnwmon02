@@ -43,12 +43,6 @@ packets could be somewhere other than the start of the lost packets list.
 This ll_delete_starthint_beforedel helps handle this situation in a efficient
 way.
 
-* Also may be make the client side logic stateless.
-
-i.e the client side logic should be written such that at the same time it is
-listenning for either mcast data/stop phase packets or PI phase packets or UR
-phase packets.
-
 * Reduce the total time that server waits during ucast recover phase for client
 to respond to its repeated URReq commands/packets.
 
@@ -85,16 +79,6 @@ Even client side the PI logic resends PIReq packets faster than the configured
 rate, if it recieves unrelated packets. Even this requires to be fixed.
 
 
-Stateless Logic
-=================
-
-* Save context once every predefined amount of inactivity. Inturn to introduce
-this inactivity which at same time is useful from nw performance monitoring
-perspective, have a fixed PI phase once every X amount of time in the middle
-of MCast transfer. THis fixed PI Phase will attempt pi handshake only for a
-smaller number of times.
-
-
 DONE  - ONly maintained from 20190117
 ===========================================
 
@@ -106,4 +90,19 @@ these lost packets can't be identified as lost, if the client is directly
 forced into unicast phase. I have to add total number of packets involved in
 the current transfer, as part of URReq packet from the server; and inturn in
 the client use this info to update the lost packet ranges ll, if required.
+
+Stateless Logic
+-------------------
+
+* Also may be make the client side logic stateless.
+
+i.e the client side logic should be written such that at the same time it is
+listenning for either mcast data/stop phase packets or PI phase packets or UR
+phase packets.
+
+* Save context once every predefined amount of inactivity. Inturn to introduce
+this inactivity which at same time is useful from nw performance monitoring
+perspective, have a fixed PI phase once every X amount of time in the middle
+of MCast transfer. THis fixed PI Phase will attempt pi handshake only for a
+smaller number of times.
 
