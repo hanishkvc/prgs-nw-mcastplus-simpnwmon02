@@ -62,12 +62,27 @@ server has the possibility of using a predefined list of clients to work with,
 which is given to it, thro its context option.  While the client eitherway will
 now respond to any server which requests it for list of lost packets.
 
-Also if some known clients (passed to server logic thro its context argument)
-don't send PIReq packets during PI phase, then the server will send mcast stop
-commands to ensure that if any clients are still in mcast phase, then they can
-come out of it and get into ucast recovery thro PIPhase+URPhase. After this
-mcast stop retry the server logic will go back to waiting for PIReqs from known
-clients (well as well as any new clients).
+A PI handshake consists of Server sending the PIReq (mcasted) and inturn
+waiting for ucast PIAcks from the clients. The server waits for a predefined
+time to give all clients enough time to respond. However if some known clients
+have still not responded, then server will try PI handshake again, till a given
+maximum number of attempts. Also if the server is not preovided with a known
+client list, then the server will keep trying PI handshake for the specified
+number of times, irrespective of any client responded to a given handshake or
+not.
+
+The MCast Transfer involves a medium duration PI phase at the beginning. It
+uses this to build a list of known clients, which inturn it uses for the
+periodic minimal PI phases which it triggers spread across the mcast transfer
+based on the predefined interval. The periodic minimal PI queries help server
+get a feel of how the clients are performing from transfer perspective, as well
+as the server uses this to request the clients to save their context during
+this time. This ensures that even if there is a unexpected failure on the
+client side, the transfer till that point is not fully lost. A context save is
+even requested almost immidiately after the mcast transfer as started.
+
+Wrt UCast recovery, a PI phase is triggered at the beginning, before the actual
+UCast recovery is attempted.
 
 Client informs the Server about its name/clientId and the total lost packets it
 has to recover as part of the PIReq packet it sends.
