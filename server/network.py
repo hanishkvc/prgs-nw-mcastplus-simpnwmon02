@@ -57,7 +57,6 @@ def mkfv(ctxtVer):
 def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 	for i in range(times):
 		if (i%10) == 0:
-			status.pireq(addr, piSeqId, i, times)
 			print("INFO: PIReq Num[{}:{}] sending".format(piSeqId, i))
 		data=struct.pack("<IIII5s", PIReqSeqNum, CtxtId, mkfv(CtxtVer), totalBlocksInvolved, bytes("PIReq", 'utf-8'))
 		sock.sendto(data, (addr, port))
@@ -121,6 +120,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 	for i in range(attempts):
 		dprint(9, "INFO:PI: Attempt [{}/{}], time4Clients[{}]...".format(i, attempts, time4Clients))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
+		status.pireq(maddr, i, attempts, time4Clients)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
 

@@ -45,9 +45,9 @@ def mcast_stop(cur, totalTime):
 	_after()
 
 
-def pireq(addr, piSeqId, i, times):
+def pireq(addr, attempt, attempts, time4Clients):
 	_before()
-	_print("PI_REQ:{}:{}:{}/{}".format(addr, piSeqId, i, times))
+	_print("PI_REQ:{}:{}/{}:{}".format(addr, attempt, attempts, time4Clients))
 	_after()
 
 
