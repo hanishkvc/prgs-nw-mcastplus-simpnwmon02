@@ -105,6 +105,10 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 	return iSilentClients
 
 
+def p100(val, valMax):
+	return int((val/valMax)*100)
+
+
 PIModes=enum.Enum("PIModes", "BLIND, KNOWN")
 def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts=PIDefaultAttempts, time4Clients=PITime4Clients):
 	clientsDB = {}
@@ -119,9 +123,25 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
 		status.ucast_pi(clientsDB)
+
+		lpMin = 1e9
+		lpMax = -1e9
+		lpTotal = 0
 		dprint(7, "PI: Clients list")
 		for r in clients:
+			lpCur = clientsDB[r]['lostpkts']
+			if (lpMin > lpCur):
+				lpMin = lpCur
+			if (lpMax < lpCur):
+				lpMax = lpCur
+			lpTotal += lpCur
 			dprint(7, r)
+		numClients = len(clients)
+		lpAvg = lpTotal/numClients
+		dprint(9, "INFO:PI:CurSummary: iSilent={}/{}:lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, lpMin, lpAvg, lpMax, lpTotal))
+		tbi = totalBlocksInvolved
+		dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
+
 		if (mode == PIModes.KNOWN):
 			if (iSilentClients == 0):
 				dprint(9, "INFO:PI: handshaked with all known clients")
