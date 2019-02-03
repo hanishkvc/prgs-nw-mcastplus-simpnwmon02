@@ -139,11 +139,9 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		numClients = len(clients)
 		if (numClients > 0):
 			lpAvg = lpTotal/numClients
-		else:
-			lpAvg = 0
-		dprint(9, "INFO:PI:CurSummary: iSilent={}/{}:lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, lpMin, lpAvg, lpMax, lpTotal))
-		tbi = totalBlocksInvolved
-		dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
+			dprint(9, "INFO:PI:CurSummary: iSilent={}/{}:lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, lpMin, lpAvg, lpMax, lpTotal))
+			tbi = totalBlocksInvolved
+			dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
 
 		if (mode == PIModes.KNOWN):
 			if (iSilentClients == 0):
