@@ -463,9 +463,13 @@ int snm_run(struct snm *me) {
 	struct sockaddr_in addrR;
 	int iDataCnt, iPktCnt, iPrevPktCnt;
 	time_t prevSTime, curSTime, prevMTime;
+	unsigned int uSavedCtxtIdPI;
+	int iSavedPktCntPI;
 
 	iPktCnt = 0;
 	iPrevPktCnt = 0;
+	iSavedPktCntPI = -2;
+	uSavedCtxtIdPI = -1;
 	iDataCnt = 0;
 	gbSNMRun = 1;
 	prevSTime = time(NULL);
@@ -544,8 +548,14 @@ int snm_run(struct snm *me) {
 		// If PIReqSeqNum is sent N num of times one after the other, with the SAVECLNTCTXT flag set, then it will lead
 		// to saving of the Client side context N number of times.
 		if (uFlag == FV_FLAG_SAVECLNTCTXT) {
-			fprintf(stderr, "INFO:%s: Saving Client Context, based on request from server\n", __func__);
-			snm_save_context(&snmCur, "quit");
+			if (((iPktCnt-iSavedPktCntPI) > 1) || (uSavedCtxtIdPI != me->uCtxtId)) {
+				fprintf(stderr, "INFO:%s: Saving Client Context, based on request from server\n", __func__);
+				snm_save_context(&snmCur, "quit");
+			} else {
+				fprintf(stderr, "WARN:%s: Skipping SaveClientContext request from server, too soon!!!\n", __func__);
+			}
+			uSavedCtxtIdPI = me->uCtxtId;
+			iSavedPktCntPI = iPktCnt;
 		}
 		if (me->uCtxtId != uCTXTId) {
 #ifdef CTXTAUTOLOAD
