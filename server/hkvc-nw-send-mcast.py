@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-PRGVER="v20190204IST0252"
+PRGVER="v20190303IST0049"
 # HanishKVC, GPL, 19XY
 #
 
@@ -196,7 +196,7 @@ else:
 prevPktid=pktid
 prevTime=time.time()
 curTime=0.0
-prevPITime=0.0
+prevPITime=prevTime
 prevTimeThrottle=time.time()
 while True:
 	if (fData != None):
