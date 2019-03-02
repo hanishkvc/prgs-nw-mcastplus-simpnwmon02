@@ -63,7 +63,16 @@ def send_pireq(sock, addr, port, totalBlocksInvolved, piSeqId, times=1):
 		time.sleep(1)
 
 
-def _presence_info(sock, clients, clientsDB, time4Clients):
+def _pi_silentclients(clientsDB, msgLvl):
+	iSilentClients = 0
+	for r in clientsDB:
+		dprint(msgLvl, "{} = {}".format(r, clientsDB[r]))
+		if (clientsDB[r]['cnt'] == 0):
+			iSilentClients += 1
+	return iSilentClients
+
+
+def _presence_info(sock, clients, clientsDB, time4Clients, mode):
 	sock.settimeout(10.0)
 	startTime = time.time()
 	deltaTime = 0
@@ -92,15 +101,16 @@ def _presence_info(sock, clients, clientsDB, time4Clients):
 		except socket.timeout as e:
 			d = None
 			dprint(7, ".")
+			iSilentClients = _pi_silentclients(clientsDB, 7)
+			if (mode == PIModes.KNOWN):
+				if (iSilentClients == 0):
+					dprint(7, "INFO:_PI: handshaked with all known clients")
+					break
 		curTime = time.time()
 		deltaTime = int(curTime - startTime)
 		iCnt += 1
 	dprint(9, "PI:END: Status:")
-	iSilentClients = 0
-	for r in clientsDB:
-		dprint(9, "{} = {}".format(r, clientsDB[r]))
-		if (clientsDB[r]['cnt'] == 0):
-			iSilentClients += 1
+	iSilentClients = _pi_silentclients(clientsDB, 9)
 	return iSilentClients
 
 
@@ -121,7 +131,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		dprint(9, "INFO:PI: Attempt [{}/{}], time4Clients[{}]...".format(i, attempts, time4Clients))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		status.pireq(maddr, i, attempts, time4Clients)
-		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients)
+		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients, mode)
 		status.ucast_pi(clientsDB)
 
 		lpMin = 1e9
