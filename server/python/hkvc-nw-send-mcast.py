@@ -24,9 +24,9 @@ import context
 
 PIInitTotalAttempts = 10
 PIInitTime4Clients = 10
-PIInBtwTotalAttempts = 2
-PIInBtwInterval = 15*60
-PIInBtwTime4Clients = 30
+PIInBtwTotalAttempts = 4
+PIInBtwInterval = 10*60
+PIInBtwTime4Clients = 15
 
 
 DBGLVL = 7

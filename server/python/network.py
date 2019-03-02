@@ -27,8 +27,8 @@ portMCast = 1111
 portServer = 1112
 portClient = 1113
 
-PIDefaultAttempts=2
-PITime4Clients = 30
+PIDefaultAttempts=4
+PITime4Clients = 15
 PIReqSeqNum = 0xffffff00
 PIAckSeqNum = 0xffffff01
 MCASTSTOPSeqNum = 0xffffffff
@@ -73,7 +73,7 @@ def _pi_silentclients(clientsDB, msgLvl):
 
 
 def _presence_info(sock, clients, clientsDB, time4Clients, mode):
-	sock.settimeout(10.0)
+	sock.settimeout(5.0)
 	startTime = time.time()
 	deltaTime = 0
 	iCnt = 0
