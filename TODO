@@ -17,6 +17,9 @@ node.
 Main logic
 =============
 
+* Save and Restore known clients list in send-mcast context related logic, as
+required.
+
 * Multicast data packets in UCastRecovery (rather it becomes a kind of
 MCastRecovery) phase.
 
@@ -77,6 +80,12 @@ see if a proper URRes comes or not, before resending the URReq packet again.
 
 Even client side the PI logic resends PIReq packets faster than the configured
 rate, if it recieves unrelated packets. Even this requires to be fixed.
+
+NOTE: The stateless client logic should have fixed this issue with PI and UR
+phases intermixing, bcas the client no longer sends PI related packets unless
+the server requests it to. i.e the Server is the master wrt PI handshake now
+instead of the previous client being the master wrt PI handshake (in the state
+based logic).
 
 
 DONE  - ONly maintained from 20190117
