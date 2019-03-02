@@ -1,7 +1,7 @@
 .DS_Store
 hkvc-notes.pdf
-/server/__pycache__
+/server/python/__pycache__
 /client/c_lang/simpnwmon02
 /client/c_lang/testll
 /client/c_lang/tags
-/server/tags
+/server/*/tags
