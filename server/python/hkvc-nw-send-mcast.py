@@ -187,7 +187,7 @@ def handle_sigint(sigNum, sigStack):
 
 signal.signal(signal.SIGINT, handle_sigint)
 gClients = []
-network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients)
+network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients, 0)
 if (bSimLossRandom):
 	iSimLossMod, iSimLossRange = simloss_random()
 else:
@@ -237,7 +237,7 @@ while True:
 		if (deltaPITime > PIInBtwInterval):
 			savedFlag = network.CurFlag
 			network.CurFlag = network.FV_FLAG_SAVECLNTCTXT
-			network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
+			network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients, pktid)
 			network.CurFlag = savedFlag
 			prevPITime = curTime
 
