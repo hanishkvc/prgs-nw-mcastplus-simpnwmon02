@@ -114,11 +114,11 @@ def _presence_info(sock, clients, clientsDB, time4Clients, mode):
 	return iSilentClients
 
 
-def p100(val, valMax):
+def p100(val, valMax, msgLvl=7):
 	if (valMax == 0):
 		valMax = 1
-		dprint(8, "INFO:P100: valMax is 0, reseting to 1...")
-	return int((val/valMax)*100)
+		dprint(msgLvl, "INFO:P100: valMax is 0, so reset to 1")
+	return round((val/valMax)*100, 2)
 
 
 PIModes=enum.Enum("PIModes", "BLIND, KNOWN")
@@ -154,12 +154,13 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		numClients = len(clients)
 		if (numClients > 0):
 			lpAvg = lpTotal/numClients
-			dprint(9, "INFO:PI:CurSummary: iSilent={}/{}:lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, lpMin, lpAvg, lpMax, lpTotal))
 			tbi = totalBlocksInvolved
-			dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
-			bi = curBlocksSent
-			if (bi != 0):
-				dprint(9, "INFO:PI:CurSummary:Relative2CurSent[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(tbi-lpMin,bi), p100(tbi-lpAvg,bi), p100(tbi-lpMax,bi), p100(lpTotal,bi)))
+			cbs = curBlocksSent
+			dprint(9, "INFO:PI:CurSummary: iSilent={}/{}: sent={}/{}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, cbs, tbi, lpMin, lpAvg, lpMax, lpTotal))
+			dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: sent={}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
+			#if (cbs != 0) and (cbs != tbi):
+			dprint(9, "INFO:PI:CurSummary:RcvdRelatv2CurSent[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(tbi-lpMin,cbs), p100(tbi-lpAvg,cbs), p100(tbi-lpMax,cbs), p100(lpTotal,cbs)))
+			status._print("PI_SUM:S={}:lm={}:la={}:lM={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi)))
 
 		if (mode == PIModes.KNOWN):
 			if (iSilentClients == 0):
