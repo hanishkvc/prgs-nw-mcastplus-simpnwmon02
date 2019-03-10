@@ -799,6 +799,48 @@ The default /path/to/saved_contextfile will be /tmp/snm02.context.quit
 Release Notes / Thoughts during some of the releases
 #####################################################
 
+
+v20190310IST1433 - v2.01
+============================
+
+* PI logic optimisation
+
+  * For the in the middle of data transfer PI queries, now once all clients
+    have responded, the logic exits PI phase.
+
+  * Also in a given PI phase, it queries the clients more times if required.
+    Also the time given to clients to respond has been reduced based on
+    practical verification of time taken.
+
+  * As PI is now called explicitly before data transfer starts, the previous
+    sneaking in of PI immidiately after data transfer has begun is no longer
+    required and so removed.
+
+    NOTE: The PI called before data transfer begins is used to build the list
+    of known clients. And for in the middle PI queries, whether to continue
+    in PI or come out is decided based on whether all clients in this known
+    list have responded or not. HOWEVER if a new client does come up in the
+    middle of the data transfer, even it will get added to the list of known
+    clients, the first time it responds to a PI query, and inturn in all
+    subsequent PI phases, a response from this newly known client is also
+    checked for.
+
+  * PI is also triggered at end of MCast data transfer. So one has rough
+    results of how mcast data was recieved by all the clients. Reason I am
+    calling this rought results is because, some clients may not respond
+    within the time alloted and the pi query retries done.
+
+
+* PI logging made more informative, to help analyse the nw behaviour faster.
+
+* Server logics log their version into status log
+
+* Client doesnt save the context again, if there has been no new data/context
+  to save. Client decides this based on whether any new packets came or not.
+
+v2.01 release tagged on 20190303
+
+
 v20190204IST0244
 ===================
 
