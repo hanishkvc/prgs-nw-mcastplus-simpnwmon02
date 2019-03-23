@@ -121,7 +121,7 @@ def p100(val, valMax, msgLvl=7):
 	return round((val/valMax)*100, 2)
 
 
-def _pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBlocksSent)
+def _pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBlocksSent):
 	lpMin = 1e9
 	lpMax = -1e9
 	lpTotal = 0
@@ -170,7 +170,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 	for r in clients:
 		clientsDB[r] = {'type':'known', 'cnt': 0, 'lostpkts': -1, 'name':'UNKNOWN'}
 	for i in range(attempts):
-		dprint(9, "INFO:PI: Attempt [{}/{}], time4Clients[{}]...".format(i, attempts, time4Clients))
+		dprint(9, "INFO:PI: Attempt [{}/{}], time4Clients[{}]...".format(i+1, attempts, time4Clients))
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		status.pireq(maddr, i, attempts, time4Clients)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients, mode)
