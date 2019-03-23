@@ -800,6 +800,11 @@ Release Notes / Thoughts during some of the releases
 #####################################################
 
 
+v20190323IST2355 - v2.02
+============================
+Better PI summary and status logging
+
+
 v20190310IST1433 - v2.01
 ============================
 
