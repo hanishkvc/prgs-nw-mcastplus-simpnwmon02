@@ -51,9 +51,9 @@ def pireq(addr, attempt, attempts, time4Clients):
 	_after()
 
 
-def ucast_pi(clientsDB):
+def ucast_pi(clientsDB, iSilent):
 	_before()
-	_print("SET:UCAST_PI:ClientCnt:{}".format(len(clientsDB)))
+	_print("SET:UCAST_PI:ClientCnt:{}:Silent:{}".format(len(clientsDB), iSilent))
 	for r in clientsDB:
 		_print("UCAST_PI:IP={}:LP={}:C={}:N={}".format(r, clientsDB[r]['lostpkts'], clientsDB[r]['cnt'], clientsDB[r]['name']))
 	_after()

@@ -137,7 +137,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		send_pireq(sock, maddr, portMCast, totalBlocksInvolved, i, 1)
 		status.pireq(maddr, i, attempts, time4Clients)
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients, mode)
-		status.ucast_pi(clientsDB)
+		status.ucast_pi(clientsDB, iSilentClients)
 
 		lpMin = 1e9
 		lpMax = -1e9
