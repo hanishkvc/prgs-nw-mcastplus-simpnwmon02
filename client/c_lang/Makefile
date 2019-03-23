@@ -1,5 +1,5 @@
 
-CMN_OPTS=-Wall -g
+CMN_OPTS=-Wall -g --static
 LL_FILES=LinkedListRange.c fileutils.c
 
 all: simpnwmon02 testll
