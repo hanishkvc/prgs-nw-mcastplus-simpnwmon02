@@ -127,13 +127,16 @@ def _pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBl
 	lpTotal = 0
 	dprint(7, "PI: Clients list")
 	gotBkts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	gotBktsR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	iOddGots = 0
 	for r in clients:
 		lpCur = clientsDB[r]['lostpkts']
 		gotCur = totalBlocksInvolved-lpCur
 		index = int((gotCur/totalBlocksInvolved)*10)
+		indexR = round((gotCur/totalBlocksInvolved)*10)
 		try:
 			gotBkts[index] += 1
+			gotBktsR[indexR] += 1
 		except IndexError:
 			iOddGots += 1
 		if (lpMin > lpCur):
@@ -153,9 +156,13 @@ def _pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBl
 		dprint(9, "INFO:PI:CurSummary:RcvdRelatv2CurSent[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(tbi-lpMin,cbs), p100(tbi-lpAvg,cbs), p100(tbi-lpMax,cbs), p100(lpTotal,cbs)))
 		status._print("PI_SUM:S={}:lm={}:la={}:lM={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi)))
 	gB=gotBkts
-	sGB="PI_SUM:00={:03} 10={:03} 20={:03} 30={:03} 40={:03} 50={:03} 60={:03} 70={:03} 80={:03} 90={:03} 100={:03} Odd={:03}".format(gB[0], gB[1], gB[2], gB[3], gB[4], gB[5], gB[6], gB[7], gB[8], gB[9], gB[10], iOddGots)
+	sGB="PI_SUM:I:00={:03} 10={:03} 20={:03} 30={:03} 40={:03} 50={:03} 60={:03} 70={:03} 80={:03} 90={:03} 100={:03} Odd={:03}".format(gB[0], gB[1], gB[2], gB[3], gB[4], gB[5], gB[6], gB[7], gB[8], gB[9], gB[10], iOddGots)
+	gB=gotBktsR
+	sGBR="PI_SUM:R:00={:03} 10={:03} 20={:03} 30={:03} 40={:03} 50={:03} 60={:03} 70={:03} 80={:03} 90={:03} 100={:03} Odd={:03}".format(gB[0], gB[1], gB[2], gB[3], gB[4], gB[5], gB[6], gB[7], gB[8], gB[9], gB[10], iOddGots)
 	status._print(sGB)
-	dprint(9, "INFO:PI:CurSummary:{}".format(sGB))
+	status._print(sGBR)
+	dprint(9, "INFO:PI:CurSummary:I:{}".format(sGB))
+	dprint(9, "INFO:PI:CurSummary:R:{}".format(sGBR))
 
 
 PIModes=enum.Enum("PIModes", "BLIND, KNOWN")
