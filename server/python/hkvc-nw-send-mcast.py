@@ -36,7 +36,7 @@ def dprint(lvl, msg):
 
 
 status.open()
-status._print("PRGVER:nw-send-mcast:{}".format(PRGVER))
+status._print("PRGVER:SNM02:nw-send-mcast:{}".format(PRGVER))
 
 nwGroup=0
 pktid=0
@@ -185,7 +185,15 @@ def handle_sigint(sigNum, sigStack):
 
 
 
+def status_state(sState):
+	t=time.gmtime()
+	sTime="{:04}{:02}{:02}{:02}{:02}{:02}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+	status._print("SNM02:NSM:STATE:{}:{}".format(sState, sTime))
+
+
+
 signal.signal(signal.SIGINT, handle_sigint)
+status_state("Start-FindClients")
 gClients = []
 network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients, 0)
 if (bSimLossRandom):
@@ -235,6 +243,7 @@ while True:
 		prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid)
 		deltaPITime = curTime-prevPITime
 		if (deltaPITime > PIInBtwInterval):
+			status_state("Btw-GetStatus")
 			savedFlag = network.CurFlag
 			network.CurFlag = network.FV_FLAG_SAVECLNTCTXT
 			network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients, pktid)
@@ -242,6 +251,7 @@ while True:
 			prevPITime = curTime
 
 print_throughput(prevTime, pktid, prevPktid)
+status_state("End-GetStatus")
 network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
 
 save_context(gsContext, pktid, giTotalBlocksInvolved)
