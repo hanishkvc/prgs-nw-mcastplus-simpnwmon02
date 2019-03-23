@@ -121,6 +121,31 @@ def p100(val, valMax, msgLvl=7):
 	return round((val/valMax)*100, 2)
 
 
+def _pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBlocksSent)
+	lpMin = 1e9
+	lpMax = -1e9
+	lpTotal = 0
+	dprint(7, "PI: Clients list")
+	for r in clients:
+		lpCur = clientsDB[r]['lostpkts']
+		if (lpMin > lpCur):
+			lpMin = lpCur
+		if (lpMax < lpCur):
+			lpMax = lpCur
+		lpTotal += lpCur
+		dprint(7, r)
+	numClients = len(clients)
+	if (numClients > 0):
+		lpAvg = lpTotal/numClients
+		tbi = totalBlocksInvolved
+		cbs = curBlocksSent
+		dprint(9, "INFO:PI:CurSummary: iSilent={}/{}: sent={}/{}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, cbs, tbi, lpMin, lpAvg, lpMax, lpTotal))
+		dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: sent={}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
+		#if (cbs != 0) and (cbs != tbi):
+		dprint(9, "INFO:PI:CurSummary:RcvdRelatv2CurSent[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(tbi-lpMin,cbs), p100(tbi-lpAvg,cbs), p100(tbi-lpMax,cbs), p100(lpTotal,cbs)))
+		status._print("PI_SUM:S={}:lm={}:la={}:lM={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi)))
+
+
 PIModes=enum.Enum("PIModes", "BLIND, KNOWN")
 def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts=PIDefaultAttempts, time4Clients=PITime4Clients, curBlocksSent=None):
 	if (curBlocksSent == None):
@@ -139,28 +164,7 @@ def presence_info(sock, maddr, portMCast, totalBlocksInvolved, clients, attempts
 		iSilentClients = _presence_info(sock, clients, clientsDB, time4Clients, mode)
 		status.ucast_pi(clientsDB, iSilentClients)
 
-		lpMin = 1e9
-		lpMax = -1e9
-		lpTotal = 0
-		dprint(7, "PI: Clients list")
-		for r in clients:
-			lpCur = clientsDB[r]['lostpkts']
-			if (lpMin > lpCur):
-				lpMin = lpCur
-			if (lpMax < lpCur):
-				lpMax = lpCur
-			lpTotal += lpCur
-			dprint(7, r)
-		numClients = len(clients)
-		if (numClients > 0):
-			lpAvg = lpTotal/numClients
-			tbi = totalBlocksInvolved
-			cbs = curBlocksSent
-			dprint(9, "INFO:PI:CurSummary: iSilent={}/{}: sent={}/{}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(iSilentClients, numClients, cbs, tbi, lpMin, lpAvg, lpMax, lpTotal))
-			dprint(9, "INFO:PI:CurSummary:Relative2Total[%]: sent={}: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi), p100(lpTotal,tbi)))
-			#if (cbs != 0) and (cbs != tbi):
-			dprint(9, "INFO:PI:CurSummary:RcvdRelatv2CurSent[%]: lpMin={}:lpAvg={}:lpMax={}:lpTotal={}".format(p100(tbi-lpMin,cbs), p100(tbi-lpAvg,cbs), p100(tbi-lpMax,cbs), p100(lpTotal,cbs)))
-			status._print("PI_SUM:S={}:lm={}:la={}:lM={}".format(p100(cbs,tbi), p100(lpMin,tbi), p100(lpAvg,tbi), p100(lpMax,tbi)))
+		_pi_statuslog(clients, clientsDB, iSilentClients, totalBlocksInvolved, curBlocksSent)
 
 		if (mode == PIModes.KNOWN):
 			if (iSilentClients == 0):
