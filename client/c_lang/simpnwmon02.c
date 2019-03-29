@@ -573,9 +573,18 @@ int snm_run(struct snm *me) {
 			fprintf(stderr, "WARN:%s: Wrong NwContext [0x%X:0x%X], Expected NwContext [0x%X:0x%X], Skipping\n", __func__, uCTXTId, uCTXTVer, me->uCtxtId, me->uCtxtVer);
 			continue;
 #endif
+		} else {
+#ifdef EXIT_ERRORSTATE
+			// Need to think throu implications and implement any additional required logic and only then enable this
+			if (me->state == STATE_ERROR) {
+				fprintf(stderr, "ERROR:%s: NwContext [?0x%X?:?0x%X?] in error state, skipping\n", __func__, me->uCtxtId, me->uCtxtVer);
+				me->state = STATE_DO;
+			}
+#endif
 		}
 		if (me->state == STATE_ERROR) {
 			fprintf(stderr, "ERROR:%s: NwContext [?0x%X?:?0x%X?] in error state, skipping\n", __func__, me->uCtxtId, me->uCtxtVer);
+			continue;
 		}
 		if (me->uCtxtVer != uCTXTVer) {
 			fprintf(stderr, "WARN:%s:NwCtxtVer: Ver being handled [0x%X:0x%X] doesnt match Ver in Pkt [0x%X:0x%X]\n", __func__, me->uCtxtId, me->uCtxtVer, uCTXTId, uCTXTVer);
