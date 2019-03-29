@@ -1,3 +1,10 @@
+
+#
+# mcast.py - A module providing network related mcast test/transfer logic
+# v20190330IST0037
+# HanishKVC, GPL, 19XY
+#
+
 import time
 import socket
 import struct

@@ -5,6 +5,8 @@
 # HanishKVC, 19XY
 #
 
+#cython: language_level=3
+
 import io
 
 
