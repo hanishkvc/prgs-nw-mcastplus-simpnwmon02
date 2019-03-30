@@ -99,12 +99,7 @@ def mcast(sock, fData, maddr, portMCast, giTotalBlocksInvolved, pktid, dataSize,
 			timeRemaining = timeAlloted - timeUsed
 			#print("timeAlloted [{}], timeRemaining[{}]".format(timeAlloted, timeRemaining))
 			if (timeRemaining > 0):
-				(rlist, wlist, xlist) = select.select([0],[],[],timeRemaining)
-				if (len(rlist) == 1):
-					try:
-						a=input()
-					except EOFError:
-						pass
+				(rlist, wlist, xlist) = select.select([],[],[],timeRemaining)
 			prevTimeThrottle = time.time()
 		if ((pktid%(N*N*256)) == 0):
 			prevTime, prevPktid = print_throughput(prevTime, pktid, prevPktid, giTotalBlocksInvolved, dataSize)
