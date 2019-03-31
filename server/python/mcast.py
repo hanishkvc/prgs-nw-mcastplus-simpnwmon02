@@ -59,7 +59,7 @@ def status_state(sState):
 def mcast(sock, fData, maddr, portMCast, giTotalBlocksInvolved, pktid, dataSize, perPktTime, N, bSimLoss, bSimLossRandom):
 	status_state("Start-FindClients")
 	gClients = []
-	network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients, 0)
+	network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInitTotalAttempts, PIInitTime4Clients, pktid)
 	if (bSimLossRandom):
 		iSimLossMod, iSimLossRange = simloss_random()
 	else:

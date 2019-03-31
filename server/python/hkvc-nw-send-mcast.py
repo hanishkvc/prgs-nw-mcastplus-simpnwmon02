@@ -4,7 +4,7 @@
 # hkvc-nw-send-mcast.py
 # A test script which sends contents of a file or dummy data over a multicast
 # channel, at a predetermined data rate, using a predetermined packet size
-PRGVER="v20190331IST0042"
+PRGVER="v20190331IST0545"
 # HanishKVC, GPL, 19XY
 #
 
@@ -141,7 +141,7 @@ dprint(9, "Listening on [{}:{}]".format(laddr, portServer))
 sock.bind((laddr, portServer))
 
 status._print("SNM02:NSM:RUNCFG1:MAddr[{}]:PortMCast[{}]:LAddrMS[{}]:NwGroup[{}]:NCid[{}]:NCver[{}]".format(maddr, portMCast, laddrms, nwGroup, network.CtxtId, network.CtxtVer))
-status._print("SNM02:NSM:RUNCFG2:Dim[{}]:DataSize[{}]:Bps[{}]".format(N, dataSize, Bps))
+status._print("SNM02:NSM:RUNCFG2:Dim[{}]:DataSize[{}]:Bps[{}]:pktid[{}]".format(N, dataSize, Bps, pktid))
 print("Will start in 10 secs...")
 time.sleep(10)
 print("Started")
