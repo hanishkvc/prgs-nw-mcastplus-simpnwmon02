@@ -5,6 +5,7 @@
 #
 
 import sys
+import devs2check
 
 sInFile = sys.argv[1]
 fInFile = open(sInFile)
@@ -74,7 +75,16 @@ def dict2sortlist(dIn):
 			lstNew.append([k, dIn[k]])
 	return lstNew
 
-#def devices_check(dC)
+def devices_check(dC):
+	for k in dC:
+		sName = dC[k][0]
+		try:
+			devs2check.devs2check.remove(sName)
+		except ValueError:
+			print("WARN:devices_check:UnknownDevice:[{}:{}]".format(k, sName))
+	print("WARN:devices_check:MissingDevices:[{}]".format(devs2check.devs2check))
+
+devices_check(dC)
 
 lC = dict2sortlist(dC)
 for l in lC:
