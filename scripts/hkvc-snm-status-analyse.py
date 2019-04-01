@@ -36,7 +36,7 @@ def parse_file(fFile):
 	return dC
 
 dC = parse_file(fInFile)
-print(dC)
+#print(dC)
 
 def dict2sortlist(dIn):
 	lstNew = []
@@ -54,5 +54,12 @@ def dict2sortlist(dIn):
 
 lC = dict2sortlist(dC)
 for l in lC:
-	print(l)
+	#print(l)
+	sIP = l[0]
+	sName = l[1][0]
+	iCnt = l[1][1]
+	iLP = l[1][2]
+	print("{:15}: {:8} {:12}    {}".format(sIP, iCnt, iLP, sName))
+
+print("NumOfDevices [{}]".format(len(lC)))
 
