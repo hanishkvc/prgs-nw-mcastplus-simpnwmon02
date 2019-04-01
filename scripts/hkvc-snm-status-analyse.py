@@ -24,11 +24,15 @@ def parse_file(fFile):
 			continue
 		try:
 			sNameInD = dC[sIP][0]
+			iLPInD = dC[sIP][2]
 			if (sNameInD != sName):
 				print("WARN:NameChange: for IP[{}] from [{}] to [{}]".format(sIP, sNameInD, sName))
-			dC[sIP] = [ sName, dC[sIP][1]+1 ]
+			if (iLPInD < iLP):
+				print("WARN:LPIncrease: for IP[{}] from [{}] to [{}]".format(sIP, iLPInD, iLP))
+			dC[sIP] = [ sName, dC[sIP][1]+1, iLP ]
 		except:
-			dC[sIP] = [ sName, 0 ]
+			dC[sIP] = [ sName, 0, iLP ]
+			print("INFO:NewDevice: IP[{}] [{}]".format(sIP, dC[sIP]))
 	return dC
 
 dC = parse_file(fInFile)
