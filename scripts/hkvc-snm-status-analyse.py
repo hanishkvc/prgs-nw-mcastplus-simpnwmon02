@@ -38,6 +38,28 @@ def parse_file(fFile):
 dC = parse_file(fInFile)
 #print(dC)
 
+def devname_cleanup1(dC):
+	for k in dC:
+		sName = dC[k][0]
+		for i in range(len(sName)):
+			print(i)
+			if (sName[i] == 0):
+				sName = sName[:i]
+				print(i, sName)
+				break
+		dC[k][0] = sName
+	return dC
+
+def devname_cleanup(dC):
+	for k in dC:
+		sName = dC[k][0]
+		sName = sName.split('\\x')[0]
+		sName = sName.split("'")[1]
+		dC[k][0] = sName
+	return dC
+
+dC = devname_cleanup(dC)
+
 def dict2sortlist(dIn):
 	lstNew = []
 	for k in dIn:
@@ -51,6 +73,8 @@ def dict2sortlist(dIn):
 		if (not bDone):
 			lstNew.append([k, dIn[k]])
 	return lstNew
+
+#def devices_check(dC)
 
 lC = dict2sortlist(dC)
 for l in lC:
