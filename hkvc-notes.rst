@@ -333,8 +333,8 @@ Optional arguments
 
 
 
-Client
-==========
+Client -old
+=============
 
 The client side logic is implemented in a single program.
 
@@ -675,6 +675,23 @@ status
 
 In addition to the status prints on the console, the logics also save important
 summary progress update info periodically to /tmp/snm02.srvr.status.log
+
+
+Cython
+--------
+Have added a compile.py script, which allows to convert the python based server
+logics into cython based programs. In this case one is required to share/release
+only the main python program script, while the individual modules can be released
+as linux based compiled shared libraries.
+
+Currently have updated the hkvc-nw-send-mcast program to use cython.
+
+Makefile in the server/python folder has a command called ccompile, it will
+generate the cython based shared libraries for all the program specific
+modules which i have created. In turn it will move the python code into
+a MOVED folder. A additional command called cclean will remove the compiled
+shared libraries and move the python module source code back into server/python
+folder.
 
 
 .. raw:: pdf

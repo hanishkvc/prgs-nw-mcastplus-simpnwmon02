@@ -38,6 +38,9 @@ if [ "$typeSCA" == "srv" ]; then
   if [ "$typeSB" == "bin" ]; then
     mkdir $fdir/srv
     cp -a server/python/*so $fdir/srv/
+    pushd $fdir/srv/
+    strip *so
+    popd
     cp -a server/python/hkvc-nw-send-mcast.py $fdir/srv/
   fi
 elif [ "$typeSCA" == "all" ]; then
