@@ -3,7 +3,8 @@
 # HanishKVC
 #
 
-PRGPATH="SimpNwMon02_v20190331IST0043-bin-srv/srv"
+FOUNDDIR=`find . | grep SimpNwMon02_v2019 | grep -v "srv/srv"`
+PRGPATH="$FOUNDDIR/srv"
 
 if [ -d $PRGPATH ]; then
   echo "Ok [$PRGPATH]";
@@ -11,7 +12,7 @@ else
   echo "Missing [$PRGPATH]";
   exit
 fi
-$PRGPATH/hkvc-nw-send-mcast.py --maddr 238.188.188.188 --Bps 400000 --dim 1 --testblocks 2000000 > /dev/null &
+$PRGPATH/hkvc-nw-send-mcast.py --maddr 238.188.188.188 --Bps 40000 --dim 1 --testblocks 1000000 > /dev/null &
 echo "thePID [$!]"
 sFilePrev=""
 sFile=""
