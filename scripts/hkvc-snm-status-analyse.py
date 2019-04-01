@@ -7,7 +7,7 @@
 import sys
 
 sInFile = sys.argv[1]
-fInFile = open(sFile)
+fInFile = open(sInFile)
 
 def parse_file(fFile):
 	dC = {}
@@ -39,14 +39,16 @@ def dict2sortlist(dIn):
 	for k in dIn:
 		bDone = False
 		for i in range(len(lstNew)):
-			if (lstNew[1][1] < dIn[k][1]):
+			if (lstNew[i][1][1] < dIn[k][1]):
 				continue
 			lstNew.insert(i, [ k, dIn[k] ])
 			bDone = True
+			break
 		if (not bDone):
-			lstNew.append(k, dIn[k])
+			lstNew.append([k, dIn[k]])
 	return lstNew
 
 lC = dict2sortlist(dC)
-print(lC)
+for l in lC:
+	print(l)
 
