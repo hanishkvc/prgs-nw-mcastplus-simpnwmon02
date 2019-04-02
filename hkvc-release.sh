@@ -36,6 +36,9 @@ echo "dir [$dir]"
 mkdir -p $fdir
 if [ "$typeSCA" == "srv" ]; then
   if [ "$typeSB" == "bin" ]; then
+    pushd server/python
+    make ccompile
+    popd
     mkdir $fdir/srv
     cp -a server/python/*so $fdir/srv/
     pushd $fdir/srv/
@@ -45,6 +48,9 @@ if [ "$typeSCA" == "srv" ]; then
     cp -a scripts/hkvc-run-nw-send-mcast.sh $fdir/
     cp -a scripts/hkvc-snm-status-analyse.py $fdir/
     cp -a scripts/testDevs2Check.py $fdir/
+    pushd server/python
+    make cclean
+    popd
   fi
 elif [ "$typeSCA" == "all" ]; then
   cp -a . $fdir/
