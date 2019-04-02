@@ -12,10 +12,11 @@ else
   exit
 fi
 $PRG --maddr 238.188.188.188 --Bps 40000 --dim 1 --testblocks 1000000 > /dev/null &
-echo "thePID [$!]"
+thePID=$!
+echo "thePID [$thePID]"
 sFilePrev=""
 sFile=""
-while /bin/true; do
+while [ -d /proc/$thePID ]; do
 	sTime=`date +%Y%m%d%Z%H%M`
 	echo $sTime
 	sFilePrev=$sFile
