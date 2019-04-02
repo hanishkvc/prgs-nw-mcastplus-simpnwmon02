@@ -16,14 +16,23 @@ thePID=$!
 echo "thePID [$thePID]"
 sFilePrev=""
 sFile=""
-while [ -d /proc/$thePID ]; do
+while /bin/true; do
 	sTime=`date +%Y%m%d%Z%H%M`
-	echo $sTime
 	sFilePrev=$sFile
 	sFile="snm02.srvr.status.$sTime.log"
+	if [ -d /proc/$thePID ]; then
+		echo "alive:$sTime"
+		bDone=false
+	else
+		echo "Done:$sTime"
+		bDone=true
+	fi
 	cp -a /tmp/snm02.srvr.status.log $sFile
 	if [ "$sFilePrev" != "" ]; then
 		rm $sFilePrev
+	fi
+	if $bDone; then
+		break
 	fi
 	sleep 2m
 done
