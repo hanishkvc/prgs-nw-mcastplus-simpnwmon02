@@ -17,9 +17,11 @@ import status
 
 PIInitTotalAttempts = 10
 PIInitTime4Clients = 10
-PIInBtwTotalAttempts = 4
 PIInBtwInterval = 10*60
+PIInBtwTotalAttempts = 4
 PIInBtwTime4Clients = 15
+PIEndTotalAttempts = 10
+PIEndTime4Clients = 15
 
 
 
@@ -114,5 +116,5 @@ def mcast(sock, fData, maddr, portMCast, giTotalBlocksInvolved, pktid, dataSize,
 
 	print_throughput(prevTime, pktid, prevPktid, giTotalBlocksInvolved, dataSize)
 	status_state("End-GetStatus")
-	network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIInBtwTotalAttempts, PIInBtwTime4Clients)
+	network.presence_info(sock, maddr, portMCast, giTotalBlocksInvolved, gClients, PIEndTotalAttempts, PIEndTime4Clients)
 
