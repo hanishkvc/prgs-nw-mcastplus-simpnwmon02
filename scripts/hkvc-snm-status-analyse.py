@@ -5,7 +5,6 @@
 #
 
 import sys
-import devs2check
 
 
 
@@ -99,7 +98,12 @@ def devlist_print(lDevs):
 
 
 
-sLogFile = sys.argv[1]
+try:
+	sLogFile = sys.argv[1]
+	sDevs2CheckMod = sys.argv[2].split(".py")[0]
+except:
+	print("usage: {} log_file pythonfile_with_devs2check_list".format(sys.argv[0]))
+	exit(-1)
 fLogFile = open(sLogFile)
 dDevs = logfile_parse(fLogFile)
 #print(dDevs)
@@ -107,5 +111,6 @@ dDevs = devname_cleanup(dDevs)
 lDevs = dict2sortlist(dDevs)
 devlist_print(lDevs)
 print("NumOfDevices [{}]".format(len(lDevs)))
+exec("import {} as devs2check".format(sDevs2CheckMod))
 devices_check(dDevs, devs2check)
 

@@ -44,6 +44,7 @@ if [ "$typeSCA" == "srv" ]; then
     cp -a server/python/hkvc-nw-send-mcast.py $fdir/srv/
     cp -a scripts/hkvc-run-nw-send-mcast.sh $fdir/
     cp -a scripts/hkvc-snm-status-analyse.py $fdir/
+    cp -a scripts/testDevs2Check.py $fdir/
   fi
 elif [ "$typeSCA" == "all" ]; then
   cp -a . $fdir/
