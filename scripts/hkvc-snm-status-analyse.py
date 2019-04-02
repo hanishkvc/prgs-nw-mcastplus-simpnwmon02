@@ -77,7 +77,7 @@ def dict2sortlist(dIn):
 
 
 
-def devices_check(dDevs):
+def devices_check(dDevs, devs2check):
 	for k in dDevs:
 		sName = dDevs[k][0]
 		try:
@@ -107,5 +107,5 @@ dDevs = devname_cleanup(dDevs)
 lDevs = dict2sortlist(dDevs)
 devlist_print(lDevs)
 print("NumOfDevices [{}]".format(len(lDevs)))
-devices_check(dDevs)
+devices_check(dDevs, devs2check)
 
