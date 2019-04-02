@@ -7,8 +7,7 @@
 import sys
 import devs2check
 
-sInFile = sys.argv[1]
-fInFile = open(sInFile)
+
 
 def parse_file(fFile):
 	dC = {}
@@ -36,8 +35,7 @@ def parse_file(fFile):
 			print("INFO:NewDevice: IP[{}] [{}]".format(sIP, dC[sIP]))
 	return dC
 
-dC = parse_file(fInFile)
-#print(dC)
+
 
 def devname_cleanup1(dC):
 	for k in dC:
@@ -51,6 +49,8 @@ def devname_cleanup1(dC):
 		dC[k][0] = sName
 	return dC
 
+
+
 def devname_cleanup(dC):
 	for k in dC:
 		sName = dC[k][0]
@@ -59,7 +59,7 @@ def devname_cleanup(dC):
 		dC[k][0] = sName
 	return dC
 
-dC = devname_cleanup(dC)
+
 
 def dict2sortlist(dIn):
 	lstNew = []
@@ -75,6 +75,8 @@ def dict2sortlist(dIn):
 			lstNew.append([k, dIn[k]])
 	return lstNew
 
+
+
 def devices_check(dC):
 	for k in dC:
 		sName = dC[k][0]
@@ -84,16 +86,26 @@ def devices_check(dC):
 			print("WARN:devices_check:UnknownDevice:[{}:{}]".format(k, sName))
 	print("WARN:devices_check:MissingDevices:[{}]".format(devs2check.devs2check))
 
-devices_check(dC)
 
+
+def devlist_print(lC):
+	for l in lC:
+		#print(l)
+		sIP = l[0]
+		sName = l[1][0]
+		iCnt = l[1][1]
+		iLP = l[1][2]
+		print("{:15}: {:8} {:12}    {}".format(sIP, iCnt, iLP, sName))
+
+
+
+sInFile = sys.argv[1]
+fInFile = open(sInFile)
+dC = parse_file(fInFile)
+#print(dC)
+dC = devname_cleanup(dC)
 lC = dict2sortlist(dC)
-for l in lC:
-	#print(l)
-	sIP = l[0]
-	sName = l[1][0]
-	iCnt = l[1][1]
-	iLP = l[1][2]
-	print("{:15}: {:8} {:12}    {}".format(sIP, iCnt, iLP, sName))
-
+devlist_print(lC)
 print("NumOfDevices [{}]".format(len(lC)))
+devices_check(dC)
 
