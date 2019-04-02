@@ -9,8 +9,8 @@ import devs2check
 
 
 
-def parse_file(fFile):
-	dC = {}
+def logfile_parse(fFile):
+	dDevs = {}
 	for l in fFile:
 		l = l.strip()
 		if (not l.startswith("UCAST_PI")):
@@ -23,41 +23,41 @@ def parse_file(fFile):
 		if (iCnt == 0):
 			continue
 		try:
-			sNameInD = dC[sIP][0]
-			iLPInD = dC[sIP][2]
+			sNameInD = dDevs[sIP][0]
+			iLPInD = dDevs[sIP][2]
 			if (sNameInD != sName):
 				print("WARN:NameChange: for IP[{}] from [{}] to [{}]".format(sIP, sNameInD, sName))
 			if (iLPInD < iLP):
 				print("WARN:LPIncrease: for IP[{}] from [{}] to [{}]".format(sIP, iLPInD, iLP))
-			dC[sIP] = [ sName, dC[sIP][1]+1, iLP ]
+			dDevs[sIP] = [ sName, dDevs[sIP][1]+1, iLP ]
 		except:
-			dC[sIP] = [ sName, 0, iLP ]
-			print("INFO:NewDevice: IP[{}] [{}]".format(sIP, dC[sIP]))
-	return dC
+			dDevs[sIP] = [ sName, 0, iLP ]
+			print("INFO:NewDevice: IP[{}] [{}]".format(sIP, dDevs[sIP]))
+	return dDevs
 
 
 
-def devname_cleanup1(dC):
-	for k in dC:
-		sName = dC[k][0]
+def devname_cleanup1(dDevs):
+	for k in dDevs:
+		sName = dDevs[k][0]
 		for i in range(len(sName)):
 			print(i)
 			if (sName[i] == 0):
 				sName = sName[:i]
 				print(i, sName)
 				break
-		dC[k][0] = sName
-	return dC
+		dDevs[k][0] = sName
+	return dDevs
 
 
 
-def devname_cleanup(dC):
-	for k in dC:
-		sName = dC[k][0]
+def devname_cleanup(dDevs):
+	for k in dDevs:
+		sName = dDevs[k][0]
 		sName = sName.split('\\x')[0]
 		sName = sName.split("'")[1]
-		dC[k][0] = sName
-	return dC
+		dDevs[k][0] = sName
+	return dDevs
 
 
 
@@ -77,9 +77,9 @@ def dict2sortlist(dIn):
 
 
 
-def devices_check(dC):
-	for k in dC:
-		sName = dC[k][0]
+def devices_check(dDevs):
+	for k in dDevs:
+		sName = dDevs[k][0]
 		try:
 			devs2check.devs2check.remove(sName)
 		except ValueError:
@@ -88,8 +88,8 @@ def devices_check(dC):
 
 
 
-def devlist_print(lC):
-	for l in lC:
+def devlist_print(lDevs):
+	for l in lDevs:
 		#print(l)
 		sIP = l[0]
 		sName = l[1][0]
@@ -99,13 +99,13 @@ def devlist_print(lC):
 
 
 
-sInFile = sys.argv[1]
-fInFile = open(sInFile)
-dC = parse_file(fInFile)
-#print(dC)
-dC = devname_cleanup(dC)
-lC = dict2sortlist(dC)
-devlist_print(lC)
-print("NumOfDevices [{}]".format(len(lC)))
-devices_check(dC)
+sLogFile = sys.argv[1]
+fLogFile = open(sLogFile)
+dDevs = logfile_parse(fLogFile)
+#print(dDevs)
+dDevs = devname_cleanup(dDevs)
+lDevs = dict2sortlist(dDevs)
+devlist_print(lDevs)
+print("NumOfDevices [{}]".format(len(lDevs)))
+devices_check(dDevs)
 
