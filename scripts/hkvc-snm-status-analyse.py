@@ -60,12 +60,12 @@ def devname_cleanup(dDevs):
 
 
 
-def dict2sortlist(dIn):
+def dict2sortlist(dIn, index):
 	lstNew = []
 	for k in dIn:
 		bDone = False
 		for i in range(len(lstNew)):
-			if (lstNew[i][1][1] < dIn[k][1]):
+			if (lstNew[i][1][index] < dIn[k][index]):
 				continue
 			lstNew.insert(i, [ k, dIn[k] ])
 			bDone = True
@@ -87,7 +87,8 @@ def devices_check(dDevs, devs2check):
 
 
 
-def devlist_print(lDevs):
+def devlist_print(lDevs, msg):
+	print("****\t\t{}\t\t****".format(msg))
 	for l in lDevs:
 		#print(l)
 		sIP = l[0]
@@ -108,8 +109,10 @@ fLogFile = open(sLogFile)
 dDevs = logfile_parse(fLogFile)
 #print(dDevs)
 dDevs = devname_cleanup(dDevs)
-lDevs = dict2sortlist(dDevs)
-devlist_print(lDevs)
+lDevs = dict2sortlist(dDevs, 1)
+lDevsLP = dict2sortlist(dDevs, 2)
+devlist_print(lDevs, "Sorted on HandshakeCnt")
+devlist_print(lDevsLP, "Sorted on LP")
 print("NumOfDevices [{}]".format(len(lDevs)))
 exec("import {} as devs2check".format(sDevs2CheckMod))
 devices_check(dDevs, devs2check)
