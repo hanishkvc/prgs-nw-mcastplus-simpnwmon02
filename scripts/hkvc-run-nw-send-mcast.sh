@@ -11,7 +11,15 @@ else
   echo "Missing [$PRG]";
   exit
 fi
-$PRG --maddr 238.188.188.188 --Bps 40000 --dim 1 --testblocks 1000000 > /dev/null &
+
+echo "INFO: Waiting for system to startup..."
+sleep 900
+echo "INFO: About to jump into the mix..."
+
+NSMNCVER=$((`date +%k`))
+echo "NSMNCVER=$NSMNCVER"
+
+$PRG --maddr 238.188.188.188 --Bps 300000 --dim 1 --testblocks 3000000 --ncver $NSMNCVER > /dev/null &
 thePID=$!
 echo "thePID [$thePID]"
 sFilePrev=""
