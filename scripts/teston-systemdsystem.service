@@ -1,0 +1,12 @@
+[Unit]
+Description=TestHlpr service
+ConditionPathExists=/home/user/snm02_temp/
+Wants=network.target
+
+[Service]
+User=user
+WorkingDirectory=/home/user/snm02_temp/
+ExecStart=/home/user/snm02_temp/hkvc-run-nw-send-mcast.sh
+
+[Install]
+WantedBy=multi-user.target
