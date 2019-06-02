@@ -78,6 +78,7 @@ def dict2sortlist(dIn, index):
 
 def devices_check(dDevs, devs2check):
 	for k in dDevs:
+		#print(k)
 		sName = dDevs[k][0]
 		try:
 			devs2check.devs2check.remove(sName)
@@ -99,6 +100,19 @@ def devlist_print(lDevs, msg):
 
 
 
+def devlist_print_seatflow(lDevs, msg, seatFlow):
+	print("****\t\t{}\t\t****".format(msg))
+	for sCur in seatFlow:
+		for l in lDevs:
+			sIP = l[0]
+			sName = l[1][0]
+			iCnt = l[1][1]
+			iLP = l[1][2]
+			if (sName == sCur):
+				print("{:15}: {:8} {:12}    {}".format(sIP, iCnt, iLP, sName))
+
+
+
 try:
 	sLogFile = sys.argv[1]
 	sDevs2CheckMod = sys.argv[2].split(".py")[0]
@@ -115,5 +129,6 @@ devlist_print(lDevs, "Sorted on HandshakeCnt")
 devlist_print(lDevsLP, "Sorted on LP")
 print("NumOfDevices [{}]".format(len(lDevs)))
 exec("import {} as devs2check".format(sDevs2CheckMod))
+devlist_print_seatflow(lDevs, "Sorted by SeatFlow", devs2check.devs2check)
 devices_check(dDevs, devs2check)
 
