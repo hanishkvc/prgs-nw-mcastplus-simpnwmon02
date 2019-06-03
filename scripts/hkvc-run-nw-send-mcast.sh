@@ -12,9 +12,13 @@ else
   exit
 fi
 
+if [ "$1" == "fast" ]; then
+echo "INFO: Not waiting for system to startup..."
+else
 echo "INFO: Waiting for system to startup..."
 sleep 900
 echo "INFO: About to jump into the mix..."
+fi
 
 NSMNCVER=$((`date +%k`))
 echo "NSMNCVER=$NSMNCVER"
