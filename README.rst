@@ -1,7 +1,7 @@
 ##################################
 Nw Testing/Data transfer logic
 ##################################
-:version: v20190204IST0244-NeedsUpdating
+:version: v20201011IST1127-NeedsUpdating
 :author: HanishKVC, 19XY
 
 .. contents::
@@ -11,6 +11,54 @@ Nw Testing/Data transfer logic
 
    PageBreak
 
+
+
+Highlevel Summary
+###################
+
+Another from scratch network monitor logic, that allows one to check network performance as well as behaviour.
+Which if push comes to shove, in a pinch can also be used to transfer data over a network using a combination
+of multicast and unicast.
+
+
+Code
+======
+
+Server side logic mainly implemented in python.
+
+WHile the Client side logic implementation is available in C (and a slightly older version in Java).
+
+Logics
+=======
+
+A single or multi pass multicast based data send logic.
+
+Followed by multi pass unicast based remaining data recovery logic.
+
+Uses a LostPacketRanges linked list at the core of the client to anchor the overall flows. The linked
+list is operated in a relatively efficient way for the common use cases in this program.
+
+Uses a Simple yet Flexible Stateless client logic (there is a slightly older state based version also,
+which is to be avoided).
+
+The logic can identify the clients dynamically at runtime and or work with a user provided list.
+
+Allow multiple sessions to be running parallely between different sets of server->clients AND OR
+transparently switch between multiple sessions in a single set of server->clients.
+
+Has mechanisms to allow continuing network sessions across reboots.
+
+Note
+======
+
+As anyone with experience in wifi networks will be aware, the current multicast mechanism in wifi,
+is a disaster in most cases and the automatic mcast to ucast mechanisms in AP firmwares to try and
+extract better performance and utilisation from the network also cant achieve what is really possible
+if one where to handle the same (parallel ucasts) on their own.
+
+In a wired network, one can get almost 90%+ performance and utilisation.
+
+Having FEC will improve things further. Look at my 2D FEC for a simple possible mechanism.
 
 
 Logic and Usage
